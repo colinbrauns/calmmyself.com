@@ -2,6 +2,8 @@
 
 Your personal toolbox for nervous system regulation and calming techniques.
 
+🚀 **Status**: Production ready with Docker deployment
+
 ## Quick Start
 
 ```bash
