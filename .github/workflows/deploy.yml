@@ -59,9 +59,8 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             # Set up application directory
-            sudo mkdir -p /var/www/calmmyself.com
-            sudo chown col:col /var/www/calmmyself.com
-            cd /var/www/calmmyself.com
+            mkdir -p /home/col/srv/apps/site-calmmyself
+            cd /home/col/srv/apps/site-calmmyself
             
             # Clone or pull latest code
             if [ -d ".git" ]; then
