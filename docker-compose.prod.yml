@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  calmmyself:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: calmmyself-app
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3001:3000"  # Bind to localhost only, use port 3001
+    env_file:
+      - .env.production
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /app/.next/cache
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+
+# No custom networks or volumes needed for single service
