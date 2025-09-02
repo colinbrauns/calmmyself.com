@@ -30,6 +30,8 @@ export default function NoiseAndAmbience() {
     if (!AC) return null
     if (!ctxRef.current) {
       ctxRef.current = new AC()
+    }
+    if (ctxRef.current) {
       mainGainRef.current = ctxRef.current.createGain()
       mainGainRef.current.gain.value = 0
       mainGainRef.current.connect(ctxRef.current.destination)
