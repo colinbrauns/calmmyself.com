@@ -1,6 +1,7 @@
-'use client'
+"use client"
 
 import { useState, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import RecommendationEngine, { RecommendationContext } from '@/lib/recommendations'
@@ -69,6 +70,15 @@ export default function RecommendationsPanel({ tools, onSelectTool }: Recommenda
     }
   }
 
+  const listVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { staggerChildren: 0.06 } },
+  }
+  const itemVariants = {
+    hidden: { opacity: 0, y: 8 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.3, ease: 'easeOut' } },
+  }
+
   return (
     <Card className="mb-8 bg-gradient-to-r from-purple-50 to-pink-50 border-purple-200">
       <CardHeader>
@@ -128,14 +138,23 @@ export default function RecommendationsPanel({ tools, onSelectTool }: Recommenda
         </div>
 
         {/* Insight */}
-        {insight && (
-          <div className="bg-white/60 rounded-lg p-3 border border-purple-200">
-            <div className="flex items-start space-x-2">
-              <TrendingUp className="w-4 h-4 text-purple-600 mt-0.5 flex-shrink-0" />
-              <p className="text-sm text-purple-800">{insight}</p>
-            </div>
-          </div>
-        )}
+        <AnimatePresence mode="wait">
+          {insight && (
+            <motion.div
+              key={insight}
+              className="bg-white/60 rounded-lg p-3 border border-purple-200"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.25, ease: 'easeOut' }}
+            >
+              <div className="flex items-start space-x-2">
+                <TrendingUp className="w-4 h-4 text-purple-600 mt-0.5 flex-shrink-0" />
+                <p className="text-sm text-purple-800">{insight}</p>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Recommended Tools */}
         <div>
@@ -151,41 +170,40 @@ export default function RecommendationsPanel({ tools, onSelectTool }: Recommenda
             </Button>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <motion.div className="grid grid-cols-1 md:grid-cols-2 gap-3" variants={listVariants} initial="hidden" animate="visible">
             {getRecommendedTools().slice(0, 4).map((tool, index) => (
-              <Card 
-                key={tool.id}
-                className="cursor-pointer transition-all duration-200 hover:scale-105 bg-white/80 border-purple-100 hover:border-purple-300"
-                onClick={() => onSelectTool(tool.id)}
-              >
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-medium text-purple-900 text-sm">{tool.title}</h4>
-                    {index === 0 && (
-                      <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full">
-                        Top Pick
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-xs text-purple-600 mb-2">{tool.description}</p>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-purple-500">{tool.duration}</span>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-xs text-purple-600 hover:text-purple-700 p-1 h-auto"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        onSelectTool(tool.id)
-                      }}
-                    >
-                      Try Now →
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+              <motion.div key={tool.id} variants={itemVariants} whileHover={{ y: -2, scale: 1.01 }} whileTap={{ scale: 0.995 }}>
+                <Card 
+                  className="cursor-pointer bg-white/80 border-purple-100 hover:border-purple-300 transition-colors"
+                  onClick={() => onSelectTool(tool.id)}
+                >
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="font-medium text-purple-900 text-sm">{tool.title}</h4>
+                      {index === 0 && (
+                        <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full">Top Pick</span>
+                      )}
+                    </div>
+                    <p className="text-xs text-purple-600 mb-2">{tool.description}</p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-purple-500">{tool.duration}</span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-xs text-purple-600 hover:text-purple-700 p-1 h-auto"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          onSelectTool(tool.id)
+                        }}
+                      >
+                        Try Now →
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
 
           {getRecommendedTools().length === 0 && (
             <div className="text-center py-4 text-purple-600">

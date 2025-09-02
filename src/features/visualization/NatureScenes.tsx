@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/Button'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card'
 import { Trees, Mountain, Waves, Sun, RefreshCw } from 'lucide-react'
@@ -221,9 +222,13 @@ export default function NatureScenes() {
               >
                 <CardContent className="p-4">
                   <div className="flex items-start space-x-3">
-                    <div className={`flex-shrink-0 w-12 h-12 rounded-lg ${colors.bg} flex items-center justify-center`}>
+                    <motion.div
+                      className={`flex-shrink-0 w-12 h-12 rounded-lg ${colors.bg} flex items-center justify-center`}
+                      animate={{ y: [0, -2, 0] }}
+                      transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+                    >
                       <Icon size={24} className={colors.text} />
-                    </div>
+                    </motion.div>
                     <div>
                       <h3 className="font-semibold text-gray-800 mb-1">{scene.name}</h3>
                       <p className="text-sm text-gray-600">{scene.description}</p>
@@ -264,7 +269,7 @@ export default function NatureScenes() {
         {/* Progress */}
         <div className="w-full bg-gray-200 rounded-full h-2">
           <div 
-            className={`${colors.accent} h-2 rounded-full transition-all duration-300`}
+            className={`${colors.accent} h-2 rounded-full transition-all duration-500`}
             style={{ width: `${(currentLineNumber / totalLines) * 100}%` }}
           />
         </div>
@@ -287,11 +292,20 @@ export default function NatureScenes() {
           ))}
         </div>
 
-        {/* Current content */}
-        <div className={`${colors.bg} rounded-lg p-6 text-center min-h-[120px] flex items-center justify-center`}>
-          <p className={`text-lg ${colors.text} leading-relaxed`}>
-            {currentContent[currentLineIndex]}
-          </p>
+        {/* Current content with animated transitions */}
+        <div className={`${colors.bg} rounded-lg p-6 text-center min-h-[120px] flex items-center justify-center overflow-hidden`}>
+          <AnimatePresence mode="wait">
+            <motion.p
+              key={`${currentStep}-${currentLineIndex}`}
+              className={`text-lg ${colors.text} leading-relaxed`}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.35, ease: 'easeOut' }}
+            >
+              {currentContent[currentLineIndex]}
+            </motion.p>
+          </AnimatePresence>
         </div>
 
         {/* Instructions */}

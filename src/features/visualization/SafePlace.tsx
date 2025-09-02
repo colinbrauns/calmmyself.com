@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/Button'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card'
 import { MapPin, RefreshCw } from 'lucide-react'
@@ -103,9 +104,13 @@ export default function SafePlace() {
         
         <CardContent className="space-y-6">
           <div className="bg-green-50 p-6 rounded-lg text-center">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <motion.div
+              className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4"
+              animate={{ y: [0, -2, 0] }}
+              transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+            >
               <MapPin className="w-8 h-8 text-green-600" />
-            </div>
+            </motion.div>
             <p className="text-gray-700 leading-relaxed mb-4">
               This guided visualization will help you create a detailed mental image 
               of a safe, peaceful place that you can return to whenever you need comfort.
@@ -150,7 +155,7 @@ export default function SafePlace() {
         {/* Progress */}
         <div className="w-full bg-gray-200 rounded-full h-2">
           <div 
-            className="bg-green-500 h-2 rounded-full transition-all duration-300"
+            className="bg-green-500 h-2 rounded-full transition-all duration-500"
             style={{ width: `${(currentQuestionNumber / totalQuestions) * 100}%` }}
           />
         </div>
@@ -162,11 +167,20 @@ export default function SafePlace() {
           </div>
         </div>
 
-        {/* Question */}
-        <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-lg p-6 text-center">
-          <p className="text-lg text-gray-800 leading-relaxed font-medium">
-            {currentQuestion}
-          </p>
+        {/* Question with smooth transition */}
+        <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-lg p-6 text-center overflow-hidden min-h-[88px] flex items-center justify-center">
+          <AnimatePresence mode="wait">
+            <motion.p
+              key={`${currentCategoryIndex}-${currentQuestionIndex}`}
+              className="text-lg text-gray-800 leading-relaxed font-medium"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.35, ease: 'easeOut' }}
+            >
+              {currentQuestion}
+            </motion.p>
+          </AnimatePresence>
         </div>
 
         {/* Reflection Area */}

@@ -1,4 +1,4 @@
-'use client'
+"use client"
 
 import { useState } from 'react'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card'
@@ -6,17 +6,27 @@ import { Button } from '@/components/ui/Button'
 import BoxBreathing from '@/features/breathing/BoxBreathing'
 import TriangleBreathing from '@/features/breathing/TriangleBreathing'
 import PhysiologicalSigh from '@/features/breathing/PhysiologicalSigh'
+import CoherentBreathing from '@/features/breathing/CoherentBreathing'
+import FourSevenEight from '@/features/breathing/FourSevenEight'
+import AlternateNostril from '@/features/breathing/AlternateNostril'
 import FiveThreeOne from '@/features/grounding/FiveThreeOne'
 import BodyScan from '@/features/grounding/BodyScan'
 import EmergencyGrounding from '@/features/grounding/EmergencyGrounding'
+import EFTTapping from '@/features/grounding/EFTTapping'
+import DiveReflex from '@/features/grounding/DiveReflex'
 import ProgressiveMuscleRelaxation from '@/features/progressive-relaxation/ProgressiveMuscleRelaxation'
 import BreathingSpace from '@/features/mindfulness/BreathingSpace'
 import PresentMoment from '@/features/mindfulness/PresentMoment'
 import LovingKindness from '@/features/mindfulness/LovingKindness'
+import AffirmationsMantras from '@/features/mindfulness/AffirmationsMantras'
 import SafePlace from '@/features/visualization/SafePlace'
 import NatureScenes from '@/features/visualization/NatureScenes'
+import SoundFrequencies from '@/features/sound/SoundFrequencies'
+import NoiseAndAmbience from '@/features/sound/NoiseAndAmbience'
 import QuickAccessMode from '@/features/quick-access/QuickAccessMode'
 import RecommendationsPanel from '@/components/RecommendationsPanel'
+import ShareBar from '@/components/ShareBar'
+import AnimationToggle from '@/components/AnimationToggle'
 import { 
   Wind, 
   Hand, 
@@ -33,6 +43,8 @@ import {
   AlertTriangle,
   Waves
 } from 'lucide-react'
+import { Music2, Quote, Activity, Timer, Shuffle, Snowflake } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
 
 type ActiveTool = 
   | 'home' 
@@ -40,15 +52,23 @@ type ActiveTool =
   | 'box-breathing' 
   | 'triangle-breathing'
   | 'physiological-sigh'
+  | 'coherent-breathing'
+  | 'four-seven-eight'
+  | 'alternate-nostril'
   | '5-4-3-2-1'
   | 'body-scan'
+  | 'eft-tapping'
+  | 'dive-reflex'
   | 'emergency-grounding'
   | 'progressive-relaxation'
   | 'breathing-space'
   | 'present-moment'
   | 'loving-kindness'
+  | 'affirmations-mantras'
   | 'safe-place'
   | 'nature-scenes'
+  | 'sound-frequencies'
+  | 'noise-ambience'
 
 const tools = [
   // Quick Access
@@ -73,6 +93,15 @@ const tools = [
     color: 'calm'
   },
   {
+    id: 'coherent-breathing' as const,
+    title: 'Coherent Breathing (6 bpm)',
+    description: '5s inhale and 5s exhale to balance HRV',
+    category: 'Breathing',
+    duration: '3-10 minutes',
+    icon: Activity,
+    color: 'calm'
+  },
+  {
     id: 'triangle-breathing' as const,
     title: 'Triangle Breathing',
     description: '4-4-6 pattern for relaxation and stress relief',
@@ -89,6 +118,24 @@ const tools = [
     duration: '30 seconds',
     icon: Zap,
     color: 'calm'
+  },
+  {
+    id: 'four-seven-eight' as const,
+    title: '4‑7‑8 Breathing',
+    description: '4s inhale, 7s hold, 8s slow exhale',
+    category: 'Breathing',
+    duration: '2-5 minutes',
+    icon: Timer,
+    color: 'calm'
+  },
+  {
+    id: 'alternate-nostril' as const,
+    title: 'Alternate Nostril',
+    description: 'Balanced left/right breathing to steady focus',
+    category: 'Breathing',
+    duration: '3-8 minutes',
+    icon: Shuffle,
+    color: 'grounding'
   },
   
   // Grounding Tools
@@ -109,6 +156,24 @@ const tools = [
     duration: '5-15 minutes',
     icon: Scan,
     color: 'grounding'
+  },
+  {
+    id: 'eft-tapping' as const,
+    title: 'EFT Tapping',
+    description: 'Gentle acupoint tapping sequence for relief',
+    category: 'Grounding',
+    duration: '3-8 minutes',
+    icon: Hand,
+    color: 'grounding'
+  },
+  {
+    id: 'dive-reflex' as const,
+    title: 'Dive Reflex Activation',
+    description: 'Cold stimulus to trigger calming reflex',
+    category: 'Grounding',
+    duration: '30-60 seconds',
+    icon: Snowflake,
+    color: 'calm'
   },
   {
     id: 'emergency-grounding' as const,
@@ -139,6 +204,15 @@ const tools = [
     category: 'Mindfulness',
     duration: '3 minutes',
     icon: Clock,
+    color: 'calm'
+  },
+  {
+    id: 'affirmations-mantras' as const,
+    title: 'Affirmations & Mantras',
+    description: 'Supportive phrases to guide attention kindly',
+    category: 'Mindfulness',
+    duration: '1-5 minutes',
+    icon: Quote,
     color: 'calm'
   },
   {
@@ -179,6 +253,26 @@ const tools = [
     icon: Trees,
     color: 'grounding'
   }
+  ,
+  // Sound Tools
+  {
+    id: 'sound-frequencies' as const,
+    title: 'Calming Sounds',
+    description: 'Gentle tone generator with smooth fades',
+    category: 'Sound',
+    duration: '1-10 minutes',
+    icon: Music2,
+    color: 'grounding'
+  },
+  {
+    id: 'noise-ambience' as const,
+    title: 'Noise & Ambience',
+    description: 'White/pink/brown/blue noise and ocean/rain',
+    category: 'Sound',
+    duration: '1-60 minutes',
+    icon: Waves,
+    color: 'grounding'
+  }
 ]
 
 // Group tools by category for better organization
@@ -189,11 +283,21 @@ const toolsByCategory = {
   'Grounding': tools.filter(tool => tool.category === 'Grounding'),
   'Mindfulness': tools.filter(tool => tool.category === 'Mindfulness'),
   'Relaxation': tools.filter(tool => tool.category === 'Relaxation'),
-  'Visualization': tools.filter(tool => tool.category === 'Visualization')
+  'Visualization': tools.filter(tool => tool.category === 'Visualization'),
+  'Sound': tools.filter(tool => tool.category === 'Sound')
 }
 
 export default function HomePage() {
   const [activeTool, setActiveTool] = useState<ActiveTool>('home')
+  
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { staggerChildren: 0.06 } },
+  }
+  const itemVariants = {
+    hidden: { opacity: 0, y: 8 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.35, ease: 'easeOut' } },
+  }
 
   // Tool rendering functions
   const renderTool = () => {
@@ -202,15 +306,23 @@ export default function HomePage() {
       case 'box-breathing': return <BoxBreathing />
       case 'triangle-breathing': return <TriangleBreathing />
       case 'physiological-sigh': return <PhysiologicalSigh />
+      case 'coherent-breathing': return <CoherentBreathing />
+      case 'four-seven-eight': return <FourSevenEight />
+      case 'alternate-nostril': return <AlternateNostril />
       case '5-4-3-2-1': return <FiveThreeOne />
       case 'body-scan': return <BodyScan />
+      case 'eft-tapping': return <EFTTapping />
+      case 'dive-reflex': return <DiveReflex />
       case 'emergency-grounding': return <EmergencyGrounding />
       case 'progressive-relaxation': return <ProgressiveMuscleRelaxation />
       case 'breathing-space': return <BreathingSpace />
       case 'present-moment': return <PresentMoment />
       case 'loving-kindness': return <LovingKindness />
+      case 'affirmations-mantras': return <AffirmationsMantras />
       case 'safe-place': return <SafePlace />
       case 'nature-scenes': return <NatureScenes />
+      case 'sound-frequencies': return <SoundFrequencies />
+      case 'noise-ambience': return <NoiseAndAmbience />
       default: return null
     }
   }
@@ -236,20 +348,27 @@ export default function HomePage() {
   return (
     <div className="max-w-6xl mx-auto">
       {/* Header */}
-      <div className="text-center mb-12">
+      <motion.div
+        className="text-center mb-12"
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.45, ease: 'easeOut' }}
+      >
         <div className="flex items-center justify-center space-x-3 mb-4">
-          <Heart className="w-8 h-8 text-calm-600" />
-          <h1 className="text-4xl font-bold text-calm-800">
-            CalmMyself
-          </h1>
+          <motion.div animate={{ y: [0, -2, 0] }} transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}>
+            <Heart className="w-8 h-8 text-calm-600" />
+          </motion.div>
+          <h1 className="text-4xl font-bold text-calm-800">CalmMyself</h1>
         </div>
-        <p className="text-xl text-gray-600 mb-2">
-          Your personal toolbox for nervous system regulation
-        </p>
-        <p className="text-sm text-gray-500">
-          13 evidence-based calming techniques with smart recommendations
-        </p>
-      </div>
+        <p className="text-xl text-gray-600 mb-2">Your personal toolbox for nervous system regulation</p>
+        <div className="flex items-center justify-center gap-3">
+          <p className="text-sm text-gray-500">Evidence-based calming techniques with smart recommendations</p>
+          <AnimationToggle />
+        </div>
+      </motion.div>
+
+      {/* Share */}
+      <ShareBar />
 
       {/* Recommendations Panel */}
       <RecommendationsPanel 
@@ -294,7 +413,7 @@ export default function HomePage() {
           if (categoryTools.length === 0) return null
           
           return (
-            <div key={categoryName}>
+            <motion.div key={categoryName} initial={{ opacity: 0, y: 8 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.2 }} transition={{ duration: 0.4, ease: 'easeOut' }}>
               <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
                 {categoryName === 'Quick Access' && <Zap className="w-5 h-5 text-yellow-600 mr-2" />}
                 {categoryName === 'Emergency' && <AlertTriangle className="w-5 h-5 text-red-600 mr-2" />}
@@ -303,83 +422,87 @@ export default function HomePage() {
                 {categoryName === 'Mindfulness' && <Sparkles className="w-5 h-5 text-purple-600 mr-2" />}
                 {categoryName === 'Relaxation' && <Waves className="w-5 h-5 text-teal-600 mr-2" />}
                 {categoryName === 'Visualization' && <Trees className="w-5 h-5 text-emerald-600 mr-2" />}
+                {categoryName === 'Sound' && <Music2 className="w-5 h-5 text-teal-700 mr-2" />}
                 {categoryName}
                 <span className="ml-2 text-sm text-gray-500 font-normal">
                   ({categoryTools.length} tool{categoryTools.length !== 1 ? 's' : ''})
                 </span>
               </h2>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {categoryTools.map((tool) => {
+              <motion.div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" variants={containerVariants} initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }}>
+                {categoryTools.map((tool, idx) => {
                   const Icon = tool.icon
                   const isEmergency = categoryName === 'Emergency'
                   const isQuickAccess = categoryName === 'Quick Access'
                   
                   return (
-                    <Card 
-                      key={tool.id} 
-                      className={`transition-all duration-200 hover:scale-105 cursor-pointer ${
-                        isEmergency ? 'border-red-200 bg-red-50' : 
-                        isQuickAccess ? 'border-yellow-200 bg-yellow-50' : ''
-                      }`}
-                    >
-                      <CardHeader>
-                        <div className="flex items-start space-x-3">
-                          <div className={`flex-shrink-0 w-12 h-12 rounded-lg flex items-center justify-center ${
-                            isEmergency 
-                              ? 'bg-red-100 text-red-700'
-                              : isQuickAccess
-                                ? 'bg-yellow-100 text-yellow-700'
-                                : tool.color === 'calm' 
-                                  ? 'bg-calm-100 text-calm-700' 
-                                  : 'bg-grounding-100 text-grounding-700'
-                          }`}>
-                            <Icon size={24} />
-                          </div>
-                          <div className="flex-1">
-                            <CardTitle className={`text-lg ${
-                              isEmergency ? 'text-red-800' : 
-                              isQuickAccess ? 'text-yellow-800' : ''
+                    <motion.div key={tool.id} variants={itemVariants} whileHover={{ y: -4, scale: 1.02 }} whileTap={{ scale: 0.995 }}>
+                      <Card 
+                        className={`transition-all duration-200 cursor-pointer ${
+                          isEmergency ? 'border-red-200 bg-red-50' : 
+                          isQuickAccess ? 'border-yellow-200 bg-yellow-50' : ''
+                        }`}
+                      >
+                        <CardHeader>
+                          <div className="flex items-start space-x-3">
+                            <div className={`flex-shrink-0 w-12 h-12 rounded-lg flex items-center justify-center ${
+                              isEmergency 
+                                ? 'bg-red-100 text-red-700'
+                                : isQuickAccess
+                                  ? 'bg-yellow-100 text-yellow-700'
+                                  : tool.color === 'calm' 
+                                    ? 'bg-calm-100 text-calm-700' 
+                                    : 'bg-grounding-100 text-grounding-700'
                             }`}>
-                              {tool.title}
-                            </CardTitle>
-                            <div className={`flex items-center space-x-2 text-xs mt-1 ${
-                              isEmergency ? 'text-red-600' : 
-                              isQuickAccess ? 'text-yellow-600' : 'text-gray-500'
-                            }`}>
-                              <span>{tool.category}</span>
-                              <span>•</span>
-                              <span>{tool.duration}</span>
+                            <motion.div animate={{ y: [0, -2, 0] }} transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut', delay: idx * 0.1 }}>
+                              <Icon size={24} />
+                            </motion.div>
+                            </div>
+                            <div className="flex-1">
+                              <CardTitle className={`text-lg ${
+                                isEmergency ? 'text-red-800' : 
+                                isQuickAccess ? 'text-yellow-800' : ''
+                              }`}>
+                                {tool.title}
+                              </CardTitle>
+                              <div className={`flex items-center space-x-2 text-xs mt-1 ${
+                                isEmergency ? 'text-red-600' : 
+                                isQuickAccess ? 'text-yellow-600' : 'text-gray-500'
+                              }`}>
+                                <span>{tool.category}</span>
+                                <span>•</span>
+                                <span>{tool.duration}</span>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        <CardDescription className={`mb-4 ${
-                          isEmergency ? 'text-red-700' : 
-                          isQuickAccess ? 'text-yellow-700' : ''
-                        }`}>
-                          {tool.description}
-                        </CardDescription>
-                        <Button
-                          onClick={() => setActiveTool(tool.id)}
-                          variant={isEmergency ? 'outline' : 
-                                   isQuickAccess ? 'outline' : 
-                                   (tool.color as 'calm' | 'grounding')}
-                          className={`w-full ${
-                            isEmergency ? 'border-red-300 text-red-700 hover:bg-red-100' :
-                            isQuickAccess ? 'border-yellow-300 text-yellow-700 hover:bg-yellow-100' : ''
-                          }`}
-                        >
-                          {isEmergency ? 'Use Now' : 
-                           isQuickAccess ? 'Quick Start' : 'Start Exercise'}
-                        </Button>
-                      </CardContent>
-                    </Card>
+                        </CardHeader>
+                        <CardContent>
+                          <CardDescription className={`mb-4 ${
+                            isEmergency ? 'text-red-700' : 
+                            isQuickAccess ? 'text-yellow-700' : ''
+                          }`}>
+                            {tool.description}
+                          </CardDescription>
+                          <Button
+                            onClick={() => setActiveTool(tool.id)}
+                            variant={isEmergency ? 'outline' : 
+                                     isQuickAccess ? 'outline' : 
+                                     (tool.color as 'calm' | 'grounding')}
+                            className={`w-full ${
+                              isEmergency ? 'border-red-300 text-red-700 hover:bg-red-100' :
+                              isQuickAccess ? 'border-yellow-300 text-yellow-700 hover:bg-yellow-100' : ''
+                            }`}
+                          >
+                            {isEmergency ? 'Use Now' : 
+                             isQuickAccess ? 'Quick Start' : 'Start Exercise'}
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
                   )
                 })}
-              </div>
-            </div>
+              </motion.div>
+            </motion.div>
           )
         })}
       </div>

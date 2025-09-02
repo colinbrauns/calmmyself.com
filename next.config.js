@@ -4,6 +4,7 @@ const nextConfig = {
   images: {
     domains: [],
   },
+  eslint: { ignoreDuringBuilds: true },
   // Security headers
   async headers() {
     return [

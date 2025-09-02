@@ -1,5 +1,5 @@
 // Service Worker for CalmMyself PWA
-const CACHE_NAME = 'calmmyself-v1.0.0'
+const CACHE_NAME = 'calmmyself-v1.1.0'
 const STATIC_CACHE_URLS = [
   '/',
   '/manifest.json',
@@ -15,8 +15,8 @@ self.addEventListener('install', (event) => {
     caches.open(CACHE_NAME)
       .then((cache) => {
         console.log('Opened cache')
-        // Cache the main page at minimum
-        return cache.add('/')
+        // Pre-cache minimal assets if desired (avoid HTML to reduce staleness)
+        return cache.addAll(['/manifest.json'])
       })
       .catch((error) => {
         console.log('Cache add failed:', error)
@@ -55,40 +55,49 @@ self.addEventListener('fetch', (event) => {
     return
   }
 
-  event.respondWith(
-    caches.match(event.request)
-      .then((response) => {
-        // Return cached version if available
-        if (response) {
-          return response
-        }
+  const req = event.request
 
-        // Otherwise fetch from network
-        return fetch(event.request)
-          .then((response) => {
-            // Don't cache if not a valid response
-            if (!response || response.status !== 200 || response.type !== 'basic') {
-              return response
-            }
+  // Network-first for HTML documents to avoid stale pages
+  if (req.destination === 'document') {
+    event.respondWith(
+      fetch(req).then((res) => {
+        const resClone = res.clone()
+        caches.open(CACHE_NAME).then((cache) => cache.put(req, resClone))
+        return res
+      }).catch(() => caches.match(req))
+    )
+    return
+  }
 
-            // Clone the response
-            const responseToCache = response.clone()
-
-            // Cache the fetched response
-            caches.open(CACHE_NAME)
-              .then((cache) => {
-                cache.put(event.request, responseToCache)
-              })
-
-            return response
-          })
-          .catch(() => {
-            // Return offline page if available
-            if (event.request.destination === 'document') {
-              return caches.match('/')
-            }
-          })
+  // Cache-first for Next.js hashed static assets
+  if (req.url.includes('/_next/static/')) {
+    event.respondWith(
+      caches.match(req).then((cached) => {
+        if (cached) return cached
+        return fetch(req).then((res) => {
+          if (res && res.status === 200) {
+            const resClone = res.clone()
+            caches.open(CACHE_NAME).then((cache) => cache.put(req, resClone))
+          }
+          return res
+        })
       })
+    )
+    return
+  }
+
+  // Stale-while-revalidate for others
+  event.respondWith(
+    caches.match(req).then((cached) => {
+      const fetchPromise = fetch(req).then((res) => {
+        if (res && res.status === 200) {
+          const resClone = res.clone()
+          caches.open(CACHE_NAME).then((cache) => cache.put(req, resClone))
+        }
+        return res
+      }).catch(() => cached)
+      return cached || fetchPromise
+    })
   )
 })
 

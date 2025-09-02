@@ -283,7 +283,7 @@ export default function EmergencyGrounding() {
               onClick={startProtocol}
               variant="grounding"
               size="lg"
-              className="w-full bg-red-600 hover:bg-red-700"
+              className="w-full bg-red-600 hover:bg-red-700 text-white font-bold"
             >
               Start Emergency Grounding
             </Button>

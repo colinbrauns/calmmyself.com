@@ -1,11 +1,14 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
+import BreathingCycle, { type BreathingPattern } from '@/components/BreathingCycle'
+import { useRef } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card'
 import { Play, Pause, RotateCcw } from 'lucide-react'
 import { useUsageTracking } from '@/hooks/useUsageTracking'
+import ShareInline from '@/components/ShareInline'
 
 type BreathingPhase = 'inhale' | 'hold1' | 'exhale' | 'hold2'
 
@@ -18,6 +21,13 @@ const PHASE_LABELS = {
 }
 
 const PHASES: BreathingPhase[] = ['inhale', 'hold1', 'exhale', 'hold2']
+
+const PATTERN: BreathingPattern = [
+  { phase: 'inhale', label: PHASE_LABELS.inhale, durationMs: PHASE_DURATION },
+  { phase: 'hold1', label: PHASE_LABELS.hold1, durationMs: PHASE_DURATION },
+  { phase: 'exhale', label: PHASE_LABELS.exhale, durationMs: PHASE_DURATION },
+  { phase: 'hold2', label: PHASE_LABELS.hold2, durationMs: PHASE_DURATION },
+]
 
 export default function BoxBreathing() {
   const [isActive, setIsActive] = useState(false)
@@ -72,16 +82,31 @@ export default function BoxBreathing() {
 
   const progress = ((PHASE_DURATION - timeRemaining) / PHASE_DURATION) * 100
 
-  const getCircleScale = () => {
+  // Square path trace setup
+  const pathRef = useRef<SVGPathElement | null>(null)
+  const [pathLen, setPathLen] = useState(400)
+  useEffect(() => {
+    if (pathRef.current) {
+      try {
+        const len = pathRef.current.getTotalLength()
+        if (Number.isFinite(len) && len > 0) setPathLen(len)
+      } catch {}
+    }
+  }, [])
+
+  const phaseStartEnd = () => {
+    // Trace around square in 4 equal sides per phase
     switch (currentPhase) {
-      case 'inhale':
-        return 1 + (progress / 100) * 0.5 // Scale from 1 to 1.5
-      case 'exhale':
-        return 1.5 - (progress / 100) * 0.5 // Scale from 1.5 to 1
-      default:
-        return currentPhase === 'hold1' ? 1.5 : 1
+      case 'inhale': return [0, 1 / 4] as const
+      case 'hold1': return [1 / 4, 2 / 4] as const
+      case 'exhale': return [2 / 4, 3 / 4] as const
+      case 'hold2': return [3 / 4, 1] as const
+      default: return [0, 0] as const
     }
   }
+  const [startFrac, endFrac] = phaseStartEnd()
+  const startOffset = pathLen * (1 - startFrac)
+  const endOffset = pathLen * (1 - endFrac)
 
   return (
     <Card className="max-w-md mx-auto">
@@ -92,30 +117,49 @@ export default function BoxBreathing() {
         </CardDescription>
       </CardHeader>
       
-      <CardContent className="space-y-6">
+      <CardContent className="space-y-6 pb-6">
         {/* Breathing Visual */}
         <div className="flex flex-col items-center space-y-4">
-          <div className="relative w-32 h-32 flex items-center justify-center">
-            <motion.div
-              className="w-24 h-24 rounded-full bg-gradient-to-br from-calm-300 to-calm-500 flex items-center justify-center shadow-lg"
-              animate={{
-                scale: getCircleScale(),
-              }}
-              transition={{
-                duration: isActive ? PHASE_DURATION / 1000 : 0,
-                ease: 'easeInOut'
-              }}
-            >
-              <div className="text-white font-medium text-sm text-center">
+          <div className="relative" style={{ width: 128, height: 128 }}>
+            <svg className="absolute" width={128} height={128} viewBox="0 0 112 112" aria-hidden="true">
+              {/* Track */}
+              <path d="M16 16 H96 V96 H16 Z" fill="none" stroke="rgba(2,132,199,0.15)" strokeWidth={4} strokeLinejoin="round" />
+              {/* Animated progress */}
+              <motion.path
+                key={`${currentPhase}-${phaseIndex}`}
+                ref={pathRef}
+                d="M16 16 H96 V96 H16 Z"
+                fill="none"
+                stroke="#0ea5e9"
+                strokeWidth={4}
+                strokeLinejoin="round"
+                strokeDasharray={pathLen}
+                initial={{ strokeDashoffset: startOffset }}
+                animate={{ strokeDashoffset: endOffset }}
+                transition={{ duration: isActive ? PHASE_DURATION / 1000 : 0, ease: 'linear' }}
+              />
+            </svg>
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <div className="text-calm-800 font-semibold text-sm text-center select-none bg-white/70 rounded px-2 py-0.5">
                 {Math.ceil(timeRemaining / 1000)}
               </div>
-            </motion.div>
+            </div>
           </div>
           
           {/* Phase Indicator */}
           <div className="text-center">
-            <div className="text-2xl font-semibold text-calm-800 mb-2">
-              {PHASE_LABELS[currentPhase]}
+            <div className="text-2xl font-semibold text-calm-800 mb-2 min-h-[32px]">
+              <AnimatePresence mode="wait">
+                <motion.span
+                  key={currentPhase}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  transition={{ duration: 0.25, ease: 'easeOut' }}
+                >
+                  {PHASE_LABELS[currentPhase]}
+                </motion.span>
+              </AnimatePresence>
             </div>
             <div className="text-sm text-gray-600">
               Cycle {cycleCount + 1}
@@ -136,17 +180,17 @@ export default function BoxBreathing() {
 
         {/* Instructions */}
         <div className="text-sm text-gray-600 text-center bg-calm-50 p-3 rounded-md">
-          <p className="mb-2">Follow the visual guide:</p>
+          <p className="mb-2">Follow the square sides:</p>
           <ul className="space-y-1">
-            <li>• Inhale as circle grows (4s)</li>
-            <li>• Hold breath (4s)</li>
-            <li>• Exhale as circle shrinks (4s)</li>
-            <li>• Hold empty (4s)</li>
+            <li>• Inhale: top side (4s)</li>
+            <li>• Hold: right side (4s)</li>
+            <li>• Exhale: bottom side (4s)</li>
+            <li>• Hold: left side (4s)</li>
           </ul>
         </div>
 
         {/* Controls */}
-        <div className="flex justify-center space-x-3">
+        <div className="flex justify-center space-x-3 mt-2">
           <Button
             onClick={() => setIsActive(!isActive)}
             variant="calm"
@@ -170,6 +214,14 @@ export default function BoxBreathing() {
           </Button>
         </div>
       </CardContent>
+      <div className="px-6 pb-6 space-y-3">
+        <div className="text-xs text-gray-600 bg-calm-50 border border-calm-100 p-3 rounded-md">
+          About: Box breathing (equal inhale/hold/exhale/hold) can aid attention and reduce arousal when practiced gently.
+          <br/>
+          Evidence: Variants of paced breathing are used across clinical settings to support regulation.
+        </div>
+        <ShareInline title="Box Breathing" text="Use Box Breathing on CalmMyself" />
+      </div>
     </Card>
   )
 }

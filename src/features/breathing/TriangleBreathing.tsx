@@ -1,7 +1,9 @@
-'use client'
+"use client"
 
-import { useState, useEffect, useCallback } from 'react'
-import { motion } from 'framer-motion'
+import { useState, useEffect, useCallback, useRef } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import ShareInline from '@/components/ShareInline'
+import BreathingCycle, { type BreathingPattern } from '@/components/BreathingCycle'
 import { Button } from '@/components/ui/Button'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card'
 import { Play, Pause, RotateCcw } from 'lucide-react'
@@ -16,6 +18,12 @@ const PHASE_LABELS = {
 }
 
 const PHASES: BreathingPhase[] = ['inhale', 'hold', 'exhale']
+
+const PATTERN: BreathingPattern = [
+  { phase: 'inhale', label: 'Breathe In', durationMs: 4000 },
+  { phase: 'hold1', label: 'Hold', durationMs: 4000 },
+  { phase: 'exhale', label: 'Breathe Out', durationMs: 6000 },
+]
 
 export default function TriangleBreathing() {
   const [isActive, setIsActive] = useState(false)
@@ -71,16 +79,35 @@ export default function TriangleBreathing() {
     return `rotate(${angle}deg)`
   }
 
-  const getCircleScale = () => {
+  // SVG triangle path tracing to visually match 4-4-6 timing
+  const pathRef = useRef<SVGPathElement | null>(null)
+  const [pathLen, setPathLen] = useState(300)
+
+  useEffect(() => {
+    if (pathRef.current) {
+      try {
+        const len = pathRef.current.getTotalLength()
+        if (Number.isFinite(len) && len > 0) setPathLen(len)
+      } catch {}
+    }
+  }, [])
+
+  const phaseStartEnd = () => {
+    // Fractions of total triangle perimeter to draw
+    // Inhale: 0 -> 1/3, Hold: 1/3 -> 1/3 (no change), Exhale: 1/3 -> 1
     switch (currentPhase) {
-      case 'inhale':
-        return 1 + (progress / 100) * 0.4
-      case 'exhale':
-        return 1.4 - (progress / 100) * 0.4
-      default:
-        return 1.4
+      case 'inhale': return [0, 1 / 3] as const
+      case 'hold': return [1 / 3, 1 / 3] as const
+      case 'exhale': return [1 / 3, 1] as const
+      default: return [0, 0] as const
     }
   }
+
+  const [startFrac, endFrac] = phaseStartEnd()
+  const startOffset = pathLen * (1 - startFrac)
+  const endOffset = pathLen * (1 - endFrac)
+
+
 
   return (
     <Card className="max-w-md mx-auto">
@@ -91,46 +118,62 @@ export default function TriangleBreathing() {
         </CardDescription>
       </CardHeader>
       
-      <CardContent className="space-y-6">
+      <CardContent className="space-y-6 pb-6">
         {/* Breathing Visual */}
         <div className="flex flex-col items-center space-y-4">
-          <div className="relative w-32 h-32 flex items-center justify-center">
-            {/* Triangle indicator */}
-            <motion.div
-              className="absolute w-20 h-20 border-3 border-grounding-400"
-              style={{
-                clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)'
-              }}
-              animate={{
-                transform: getTriangleTransform(),
-              }}
-              transition={{
-                duration: isActive ? currentPhaseDuration / 1000 : 0,
-                ease: 'linear'
-              }}
-            />
-            
-            {/* Center circle */}
-            <motion.div
-              className="w-16 h-16 rounded-full bg-gradient-to-br from-grounding-300 to-grounding-500 flex items-center justify-center shadow-lg z-10"
-              animate={{
-                scale: getCircleScale(),
-              }}
-              transition={{
-                duration: isActive ? currentPhaseDuration / 1000 : 0,
-                ease: 'easeInOut'
-              }}
-            >
-              <div className="text-white font-medium text-sm text-center">
-                {Math.ceil(timeRemaining / 1000)}
-              </div>
-            </motion.div>
+          <div className="relative" style={{ width: 128, height: 128 }}>
+            {/* Triangle path trace only (no scaling) */}
+            <svg className="absolute" width={112} height={112} viewBox="0 0 112 112" aria-hidden="true">
+              <defs>
+                <linearGradient id="triGrad" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stopColor="#fcd34d" stopOpacity="0.9" />
+                  <stop offset="100%" stopColor="#f59e0b" stopOpacity="0.9" />
+                </linearGradient>
+              </defs>
+              {/* Track */}
+              <path
+                d="M56 12 L16 92 L96 92 Z"
+                fill="none"
+                stroke="rgba(16,24,16,0.12)"
+                strokeWidth={3}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              {/* Animated progress */}
+              <motion.path
+                key={`${currentPhase}-${phaseIndex}-${currentPhaseDuration}`}
+                ref={pathRef}
+                d="M56 12 L16 92 L96 92 Z"
+                fill="none"
+                stroke="url(#triGrad)"
+                strokeWidth={3}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeDasharray={pathLen}
+                initial={{ strokeDashoffset: startOffset }}
+                animate={{ strokeDashoffset: endOffset }}
+                transition={{ duration: isActive ? currentPhaseDuration / 1000 : 0, ease: 'linear' }}
+              />
+            </svg>
+            <div className="absolute text-white font-medium text-sm text-center select-none z-10">
+              {Math.ceil(timeRemaining / 1000)}
+            </div>
           </div>
           
           {/* Phase Indicator */}
           <div className="text-center">
-            <div className="text-2xl font-semibold text-grounding-800 mb-2">
-              {PHASE_LABELS[currentPhase]}
+            <div className="text-2xl font-semibold text-grounding-800 mb-2 min-h-[32px]">
+              <AnimatePresence mode="wait">
+                <motion.span
+                  key={currentPhase}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  transition={{ duration: 0.25, ease: 'easeOut' }}
+                >
+                  {PHASE_LABELS[currentPhase]}
+                </motion.span>
+              </AnimatePresence>
             </div>
             <div className="text-sm text-gray-600">
               Cycle {cycleCount + 1}
@@ -184,6 +227,14 @@ export default function TriangleBreathing() {
           </Button>
         </div>
       </CardContent>
+      <div className="px-6 pb-6 space-y-3">
+        <div className="text-xs text-gray-600 bg-grounding-50 border border-grounding-100 p-3 rounded-md">
+          About: Triangle breathing emphasizes a slightly longer exhale, which can support parasympathetic activation.
+          <br/>
+          Evidence: Controlled breathing with extended exhalation is commonly used to reduce physiological arousal.
+        </div>
+        <ShareInline title="Triangle Breathing" text="Practice Triangle Breathing on CalmMyself" />
+      </div>
     </Card>
   )
 }

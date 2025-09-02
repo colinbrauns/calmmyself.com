@@ -3,6 +3,16 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --background: #ffffff;
+    --foreground: #0c4a6e; /* calm-900 */
+    --border: #e5e7eb; /* neutral-200 */
+  }
+  .dark {
+    --background: #0b1220;
+    --foreground: #e5f2fb;
+    --border: #1f2937; /* neutral-800 */
+  }
   * {
     @apply border-border;
   }
@@ -27,5 +37,15 @@
       transition-duration: 0.01ms !important;
       scroll-behavior: auto !important;
     }
+  }
+  
+  /* Subtle animated gradient shift for glows and accents */
+  @keyframes gradient-shift {
+    0% { filter: hue-rotate(0deg); }
+    50% { filter: hue-rotate(10deg) brightness(1.05); }
+    100% { filter: hue-rotate(0deg); }
+  }
+  .animate-gradient-shift {
+    animation: gradient-shift 10s ease-in-out infinite;
   }
 }
