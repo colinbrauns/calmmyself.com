@@ -27,9 +27,30 @@ services:
       - /tmp
       - /app/.next/cache
 
-
+  # Nginx reverse proxy for SSL termination and caching
+  nginx:
+    image: nginx:alpine
+    container_name: calmmyself-nginx
+    restart: unless-stopped
+    ports:
+      - "3001:80"  # Use a different external port to avoid conflict with Nginx Proxy Manager
+      - "3443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+      - nginx-cache:/var/cache/nginx
+    depends_on:
+      - calmmyself
+    networks:
+      - calmmyself-network
+    security_opt:
+      - no-new-privileges:true
 
 networks:
   calmmyself-network:
     driver: bridge
     name: calmmyself-network
+
+volumes:
+  nginx-cache:
+    name: calmmyself-nginx-cache
