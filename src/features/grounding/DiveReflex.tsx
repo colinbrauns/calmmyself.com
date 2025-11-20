@@ -53,7 +53,9 @@ export default function DiveReflex() {
       </CardContent>
       <div className="px-6 pb-6 space-y-3">
         <div className="text-xs text-gray-600 bg-calm-50 border border-calm-100 p-3 rounded-md">
-          About: Cooling the face can stimulate the mammalian dive reflex, increasing vagal tone and slowing heart rate.
+          About: Cooling the face can stimulate the mammalian dive reflex, increasing vagal tone and slowing heart rate. Stop if you feel unwell.
+          <br/>
+          If you have serious heart or blood pressure conditions, check with a clinician before using cold‑water practices.
           <br/>
           Evidence: See physiology texts on the “mammalian dive reflex” and trigeminal stimulation.
         </div>

@@ -3,13 +3,14 @@
 import { useState, useCallback } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card'
-import { ChevronRight, RotateCcw, CheckCircle } from 'lucide-react'
+import { ChevronRight, RotateCcw, CheckCircle, Eye, Hand, Ear, Wind, Sparkles } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
 
 interface GroundingStep {
   sense: string
   count: number
   prompt: string
-  examples: string[]
+  icon: any
   color: string
 }
 
@@ -17,44 +18,54 @@ const GROUNDING_STEPS: GroundingStep[] = [
   {
     sense: 'See',
     count: 5,
-    prompt: 'Name 5 things you can see around you',
-    examples: ['A book on the table', 'The color of the walls', 'Light coming through window', 'Your hands', 'A piece of furniture'],
-    color: 'calm'
+    prompt: '5 things you can see',
+    icon: Eye,
+    color: 'text-blue-500'
   },
   {
     sense: 'Touch',
     count: 4, 
-    prompt: 'Name 4 things you can touch or feel',
-    examples: ['The texture of your clothing', 'Temperature of the air', 'Surface you\'re sitting on', 'Your phone in your hand'],
-    color: 'grounding'
+    prompt: '4 things you can touch',
+    icon: Hand,
+    color: 'text-amber-600'
   },
   {
     sense: 'Hear',
     count: 3,
-    prompt: 'Name 3 things you can hear',
-    examples: ['Traffic outside', 'Your own breathing', 'Air conditioning humming'],
-    color: 'calm'
+    prompt: '3 things you can hear',
+    icon: Ear,
+    color: 'text-purple-500'
   },
   {
     sense: 'Smell',
     count: 2,
-    prompt: 'Name 2 things you can smell',
-    examples: ['Fresh air', 'Coffee', 'Soap', 'Food cooking'],
-    color: 'grounding'
+    prompt: '2 things you can smell',
+    icon: Wind,
+    color: 'text-emerald-500'
   },
   {
     sense: 'Taste',
     count: 1,
-    prompt: 'Name 1 thing you can taste',
-    examples: ['Mint from gum', 'Lingering coffee', 'Just the taste in your mouth'],
-    color: 'calm'
+    prompt: '1 thing you can taste',
+    icon: Sparkles,
+    color: 'text-rose-500'
   }
 ]
 
 export default function FiveThreeOne() {
   const [currentStep, setCurrentStep] = useState(0)
-  const [completedItems, setCompletedItems] = useState<string[]>([])
+  const [completedCounts, setCompletedCounts] = useState<number[]>([0, 0, 0, 0, 0])
   const [isComplete, setIsComplete] = useState(false)
+
+  const currentStepData = GROUNDING_STEPS[currentStep]
+
+  const handleTap = useCallback(() => {
+    const newCounts = [...completedCounts]
+    if (newCounts[currentStep] < currentStepData.count) {
+      newCounts[currentStep] += 1
+      setCompletedCounts(newCounts)
+    }
+  }, [completedCounts, currentStep, currentStepData.count])
 
   const nextStep = useCallback(() => {
     if (currentStep < GROUNDING_STEPS.length - 1) {
@@ -66,154 +77,169 @@ export default function FiveThreeOne() {
 
   const reset = useCallback(() => {
     setCurrentStep(0)
-    setCompletedItems([])
+    setCompletedCounts([0, 0, 0, 0, 0])
     setIsComplete(false)
   }, [])
 
-  const addItem = useCallback((item: string) => {
-    if (item.trim() && !completedItems.includes(item.trim())) {
-      setCompletedItems(prev => [...prev, item.trim()])
-    }
-  }, [completedItems])
-
-  const currentStepData = GROUNDING_STEPS[currentStep]
-  const currentStepItems = completedItems.filter((_, index) => 
-    index >= GROUNDING_STEPS.slice(0, currentStep).reduce((sum, step) => sum + step.count, 0) &&
-    index < GROUNDING_STEPS.slice(0, currentStep + 1).reduce((sum, step) => sum + step.count, 0)
-  )
+  const isStepComplete = completedCounts[currentStep] >= currentStepData.count
 
   if (isComplete) {
     return (
       <Card className="max-w-md mx-auto">
-        <CardContent className="text-center py-8">
-          <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
-          <h2 className="text-2xl font-semibold text-green-700 mb-2">
-            Well Done!
+        <CardContent className="text-center py-12">
+          <motion.div 
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ type: "spring", stiffness: 200, damping: 15 }}
+          >
+            <CheckCircle className="w-20 h-20 text-green-500 mx-auto mb-6" />
+          </motion.div>
+          <h2 className="text-2xl font-semibold text-green-700 mb-3">
+            Grounded & Ready
           </h2>
-          <p className="text-gray-600 mb-6">
-            You&rsquo;ve completed the 5-4-3-2-1 grounding exercise. 
-            Take a moment to notice how you feel now.
+          <p className="text-gray-600 mb-8">
+            You&rsquo;ve connected with all 5 senses. Take a deep breath and notice how you feel.
           </p>
           <Button onClick={reset} variant="grounding" size="lg">
-            Try Again
+            Start Again
           </Button>
         </CardContent>
       </Card>
     )
   }
 
+  const Icon = currentStepData.icon
+
   return (
-    <Card className="max-w-md mx-auto">
-      <CardHeader className="text-center">
+    <Card className="max-w-md mx-auto overflow-hidden">
+      <CardHeader className="text-center relative z-10">
         <CardTitle>5-4-3-2-1 Grounding</CardTitle>
         <CardDescription>
-          Use your senses to connect with the present moment
+          Tap the icons as you find things with your senses
         </CardDescription>
       </CardHeader>
       
-      <CardContent className="space-y-6">
-        {/* Progress */}
-        <div className="flex items-center justify-between text-sm text-gray-600">
-          <span>Step {currentStep + 1} of {GROUNDING_STEPS.length}</span>
-          <span>{completedItems.length} items completed</span>
+      <CardContent className="space-y-8 relative z-10">
+        {/* Dynamic Progress Header */}
+        <div className="text-center space-y-2">
+          <motion.div
+            key={currentStepData.sense}
+            initial={{ y: 10, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            className="text-2xl font-bold text-gray-800"
+          >
+            {currentStepData.prompt}
+          </motion.div>
+          <div className="text-sm text-gray-500 font-medium">
+            {completedCounts[currentStep]} / {currentStepData.count} Found
+          </div>
         </div>
 
-        <div className="w-full bg-gray-200 rounded-full h-2">
-          <div 
-            className="bg-calm-500 h-2 rounded-full transition-all duration-300"
-            style={{ width: `${((currentStep + 1) / GROUNDING_STEPS.length) * 100}%` }}
-          />
+        {/* Sensory Collector Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 justify-items-center min-h-[180px]">
+          <AnimatePresence mode="popLayout">
+            {Array.from({ length: currentStepData.count }).map((_, i) => {
+              const isFound = i < completedCounts[currentStep]
+              return (
+                <motion.button
+                  key={`${currentStep}-${i}`}
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0, opacity: 0 }}
+                  transition={{ delay: i * 0.1 }}
+                  onClick={() => !isFound && handleTap()}
+                  disabled={isFound}
+                  className={`
+                    relative w-20 h-20 rounded-2xl flex items-center justify-center
+                    transition-all duration-300
+                    ${isFound 
+                      ? 'bg-grounding-100 shadow-inner ring-2 ring-grounding-200' 
+                      : 'bg-white shadow-md hover:shadow-lg border-2 border-dashed border-gray-200 cursor-pointer hover:border-grounding-300 hover:bg-gray-50'
+                    }
+                  `}
+                >
+                  {isFound ? (
+                    <motion.div
+                      initial={{ scale: 0.5, rotate: -45 }}
+                      animate={{ scale: 1, rotate: 0 }}
+                      className={currentStepData.color}
+                    >
+                      <Icon className="w-8 h-8" />
+                    </motion.div>
+                  ) : (
+                    <Icon className="w-6 h-6 text-gray-300" />
+                  )}
+                  
+                  {/* Checkmark badge */}
+                  {isFound && (
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      className="absolute -top-2 -right-2 bg-green-500 text-white rounded-full p-1 shadow-sm"
+                    >
+                      <CheckCircle className="w-3 h-3" />
+                    </motion.div>
+                  )}
+                </motion.button>
+              )
+            })}
+          </AnimatePresence>
         </div>
 
-        {/* Current Step */}
-        <div className="space-y-4">
-          <div className="text-center">
-            <div className={`inline-flex items-center justify-center w-12 h-12 rounded-full ${
-              currentStepData.color === 'calm' ? 'bg-calm-100 text-calm-700' : 'bg-grounding-100 text-grounding-700'
-            } text-xl font-bold mb-3`}>
-              {currentStepData.count}
-            </div>
-            <h3 className="text-xl font-semibold text-gray-800 mb-2">
-              {currentStepData.prompt}
-            </h3>
-          </div>
-
-          {/* Current Progress */}
-          <div className="space-y-2">
-            {Array.from({ length: currentStepData.count }, (_, i) => (
-              <div 
-                key={i}
-                className={`p-3 rounded-md border-2 border-dashed ${
-                  currentStepItems[i] 
-                    ? 'border-green-300 bg-green-50 text-green-800' 
-                    : 'border-gray-300 bg-gray-50 text-gray-500'
-                }`}
-              >
-                {currentStepItems[i] || `${currentStepData.sense} ${i + 1}...`}
-              </div>
-            ))}
-          </div>
-
-          {/* Examples */}
-          {currentStepItems.length < currentStepData.count && (
-            <div className="bg-blue-50 p-3 rounded-md">
-              <p className="text-sm text-blue-800 font-medium mb-2">Examples:</p>
-              <ul className="text-sm text-blue-700 space-y-1">
-                {currentStepData.examples.map((example, i) => (
-                  <li key={i}>• {example}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </div>
-
-        {/* Input */}
-        {currentStepItems.length < currentStepData.count && (
-          <div className="space-y-3">
-            <input
-              type="text"
-              placeholder={`What can you ${currentStepData.sense.toLowerCase()}?`}
-              className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-calm-500 focus:border-calm-500"
-              onKeyPress={(e) => {
-                if (e.key === 'Enter') {
-                  addItem(e.currentTarget.value)
-                  e.currentTarget.value = ''
-                }
-              }}
-              aria-label={`Enter something you can ${currentStepData.sense.toLowerCase()}`}
-            />
-            <p className="text-xs text-gray-500 text-center">
-              Press Enter to add • {currentStepItems.length}/{currentStepData.count} completed
-            </p>
-          </div>
+        {/* Context Tip */}
+        {!isStepComplete && (
+           <div className="text-center text-sm text-gray-400 animate-pulse">
+              Look around you... tap a box when you find one.
+           </div>
         )}
 
         {/* Controls */}
-        <div className="flex justify-center space-x-3">
-          {currentStepItems.length === currentStepData.count && (
-            <Button
-              onClick={nextStep}
-              variant="grounding"
-              size="lg"
-              className="flex items-center space-x-2"
-            >
-              <span>{currentStep === GROUNDING_STEPS.length - 1 ? 'Complete' : 'Next Step'}</span>
-              <ChevronRight size={20} />
-            </Button>
-          )}
-          
-          <Button
-            onClick={reset}
-            variant="outline"
-            size="lg"
-            className="flex items-center space-x-2"
-            aria-label="Reset grounding exercise"
-          >
-            <RotateCcw size={20} />
-            <span>Reset</span>
-          </Button>
+        <div className="flex justify-center pt-4">
+          <AnimatePresence mode="wait">
+            {isStepComplete ? (
+              <motion.div
+                key="next"
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: 20, opacity: 0 }}
+                className="w-full"
+              >
+                <Button
+                  onClick={nextStep}
+                  variant="grounding"
+                  size="lg"
+                  className="w-full flex items-center justify-center gap-2 shadow-lg shadow-grounding-200"
+                >
+                  <span>Next Sense</span>
+                  <ChevronRight size={20} />
+                </Button>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="reset"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="w-full"
+              >
+                 <Button
+                  onClick={reset}
+                  variant="ghost"
+                  size="sm"
+                  className="w-full text-gray-400 hover:text-gray-600"
+                >
+                  Start Over
+                </Button>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </CardContent>
+
+      {/* Background Blobs */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
+        <div className="absolute -top-20 -right-20 w-64 h-64 bg-grounding-50 rounded-full blur-3xl opacity-50" />
+        <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-blue-50 rounded-full blur-3xl opacity-50" />
+      </div>
     </Card>
   )
 }

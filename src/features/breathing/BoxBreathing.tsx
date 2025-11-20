@@ -96,6 +96,8 @@ export default function BoxBreathing() {
     }
   }
   const [startFrac, endFrac] = phaseStartEnd()
+  // strokeDashoffset: pathLen = fully hidden, 0 = fully visible
+  // For first phase (inhale), start at pathLen (0% visible) and animate to pathLen * 0.75 (25% visible)
   const startOffset = pathLen * (1 - startFrac)
   const endOffset = pathLen * (1 - endFrac)
 
@@ -111,22 +113,22 @@ export default function BoxBreathing() {
       <CardContent className="space-y-6 pb-6">
         {/* Breathing Visual */}
         <div className="flex flex-col items-center space-y-4">
-          <div className="relative" style={{ width: 128, height: 128 }}>
-            <svg className="absolute" width={128} height={128} viewBox="0 0 112 112" aria-hidden="true">
+          <div className="relative" style={{ width: 200, height: 200 }}>
+            <svg className="absolute" width={200} height={200} viewBox="0 0 180 180" aria-hidden="true">
               {/* Track */}
-              <path d="M16 16 H96 V96 H16 Z" fill="none" stroke="rgba(2,132,199,0.15)" strokeWidth={4} strokeLinejoin="round" />
+              <path d="M20 20 H160 V160 H20 Z" fill="none" stroke="rgba(2,132,199,0.15)" strokeWidth={4} strokeLinejoin="round" />
               {/* Animated progress */}
               <motion.path
-                key={`${currentPhase}-${phaseIndex}`}
+                key={`${currentPhase}-${phaseIndex}-${isActive}`}
                 ref={pathRef}
-                d="M16 16 H96 V96 H16 Z"
+                d="M20 20 H160 V160 H20 Z"
                 fill="none"
                 stroke="#0ea5e9"
                 strokeWidth={4}
                 strokeLinejoin="round"
                 strokeDasharray={pathLen}
                 initial={{ strokeDashoffset: startOffset }}
-                animate={{ strokeDashoffset: endOffset }}
+                animate={{ strokeDashoffset: isActive ? endOffset : startOffset }}
                 transition={{ duration: isActive ? PHASE_DURATION / 1000 : 0, ease: 'linear' }}
               />
             </svg>

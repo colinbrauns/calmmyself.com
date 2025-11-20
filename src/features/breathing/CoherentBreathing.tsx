@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Play, Pause, RotateCcw, Activity } from 'lucide-react'
@@ -13,33 +13,63 @@ const PATTERN: BreathingPattern = [
   { phase: 'exhale', label: 'Exhale', durationMs: 5000 },
 ]
 
+const MAX_CYCLES = 6
+
 export default function CoherentBreathing() {
   const [isActive, setIsActive] = useState(false)
   const [phaseIndex, setPhaseIndex] = useState(0)
   const [cycleCount, setCycleCount] = useState(0)
   const [timeRemaining, setTimeRemaining] = useState(5000)
+  const [isComplete, setIsComplete] = useState(false)
+  const cycleCountRef = useRef(0)
 
   const next = useCallback(() => {
     setPhaseIndex((prev) => {
-      const next = (prev + 1) % PATTERN.length
-      if (next === 0) setCycleCount((c) => c + 1)
-      setTimeRemaining(PATTERN[next].durationMs)
-      return next
+      const nextPhase = (prev + 1) % PATTERN.length
+      
+      // Check if we're completing a cycle (returning to phase 0)
+      if (nextPhase === 0) {
+        cycleCountRef.current += 1
+        const newCycleCount = cycleCountRef.current
+        
+        setCycleCount(newCycleCount)
+        
+        // Stop after completing 6 cycles
+        if (newCycleCount >= MAX_CYCLES) {
+          setIsActive(false)
+          setIsComplete(true)
+          return prev // Don't advance phase
+        }
+      }
+      
+      setTimeRemaining(PATTERN[nextPhase].durationMs)
+      return nextPhase
     })
   }, [])
 
   useEffect(() => {
-    if (!isActive) return
+    if (!isActive || isComplete) return
     const id = setInterval(() => {
       setTimeRemaining((t) => {
-        if (t <= 100) { next(); return PATTERN[(phaseIndex + 1) % PATTERN.length].durationMs }
-        return t - 100
+        const newTime = t - 100
+        if (newTime <= 0) { 
+          next()
+          return PATTERN[(phaseIndex + 1) % PATTERN.length].durationMs 
+        }
+        return newTime
       })
     }, 100)
     return () => clearInterval(id)
-  }, [isActive, phaseIndex, next])
+  }, [isActive, isComplete, phaseIndex, next])
 
-  const reset = () => { setIsActive(false); setPhaseIndex(0); setCycleCount(0); setTimeRemaining(5000) }
+  const reset = () => { 
+    setIsActive(false)
+    setPhaseIndex(0)
+    setCycleCount(0)
+    cycleCountRef.current = 0
+    setTimeRemaining(5000)
+    setIsComplete(false)
+  }
   const currentLabel = PATTERN[phaseIndex].label
   const progress = ((PATTERN[phaseIndex].durationMs - timeRemaining) / PATTERN[phaseIndex].durationMs) * 100
 
@@ -75,7 +105,13 @@ export default function CoherentBreathing() {
                 </motion.span>
               </AnimatePresence>
             </div>
-            <div className="text-sm text-gray-600">Cycle {cycleCount + 1}</div>
+            <div className="text-sm text-gray-600">
+              {isComplete ? (
+                <span className="text-green-600 font-semibold">✨ Complete! {MAX_CYCLES} cycles finished</span>
+              ) : (
+                `Cycle ${cycleCount + 1} of ${MAX_CYCLES}`
+              )}
+            </div>
           </div>
           <div className="w-full bg-calm-100 rounded-full h-2">
             <div className="bg-calm-500 h-2 rounded-full transition-all duration-100 ease-linear" style={{ width: `${progress}%` }} />

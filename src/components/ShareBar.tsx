@@ -10,9 +10,8 @@ interface ShareBarProps {
   text?: string
 }
 
-interface WebShareNavigator extends Navigator {
-  // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
-  share?: (...args: [ShareData]) => Promise<void>
+interface WebShareNavigator extends Omit<Navigator, 'share'> {
+  share?: (data?: ShareData) => Promise<void>
 }
 
 export default function ShareBar({ title = 'CalmMyself', text = 'A free, evidence‑informed calming toolbox.' }: ShareBarProps) {

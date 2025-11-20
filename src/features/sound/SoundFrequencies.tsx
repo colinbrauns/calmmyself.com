@@ -35,8 +35,9 @@ export default function SoundFrequencies() {
   const startTone = async () => {
     if (typeof window === 'undefined') return
     type WindowWithAudio = Window & { webkitAudioContext?: typeof AudioContext }
+    // AudioContext is a global constructor, webkitAudioContext is the Safari fallback
     const AudioContextCtor =
-      (window as WindowWithAudio).AudioContext ??
+      (typeof AudioContext !== 'undefined' ? AudioContext : undefined) ??
       (window as WindowWithAudio).webkitAudioContext
     if (!AudioContextCtor) return
     if (!audioCtxRef.current) {

@@ -4,9 +4,8 @@ import { useCallback, useMemo } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Share2, Link2 } from 'lucide-react'
 
-interface WebShareNavigator extends Navigator {
-  // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
-  share?: (...args: [ShareData]) => Promise<void>
+interface WebShareNavigator extends Omit<Navigator, 'share'> {
+  share?: (data?: ShareData) => Promise<void>
 }
 
 interface ShareInlineProps {

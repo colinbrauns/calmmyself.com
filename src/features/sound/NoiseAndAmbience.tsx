@@ -22,13 +22,49 @@ export default function NoiseAndAmbience() {
   const srcRef = useRef<AudioScheduledSourceNode | null>(null)
   const lfoNodesRef = useRef<{ osc?: OscillatorNode; gain?: GainNode } | null>(null)
 
+  // Load and persist basic preferences locally
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    try {
+      const raw = window.localStorage.getItem('calmmyself:sound-preferences')
+      if (!raw) return
+      const parsed = JSON.parse(raw) as {
+        mode?: Mode
+        noise?: NoiseType
+        ambience?: AmbienceType
+        volume?: number
+      }
+      if (parsed.mode) setMode(parsed.mode)
+      if (parsed.noise) setNoise(parsed.noise)
+      if (parsed.ambience) setAmbience(parsed.ambience)
+      if (typeof parsed.volume === 'number') setVolume(parsed.volume)
+    } catch {
+      // Ignore invalid localStorage contents
+    }
+  }, [])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    try {
+      window.localStorage.setItem(
+        'calmmyself:sound-preferences',
+        JSON.stringify({ mode, noise, ambience, volume }),
+      )
+    } catch {
+      // Ignore storage errors; sound still works without persistence
+    }
+  }, [mode, noise, ambience, volume])
+
   useEffect(() => () => stopAll(true), [])
 
   const ensureCtx = () => {
     if (typeof window === 'undefined') return null
-    type WindowWithWebkitAudio = Window & { webkitAudioContext?: typeof AudioContext }
+    type WindowWithWebkitAudio = Window & { 
+      webkitAudioContext?: typeof AudioContext 
+    }
+    // AudioContext is a global constructor, webkitAudioContext is the Safari fallback
     const AudioContextCtor =
-      (window as WindowWithWebkitAudio).AudioContext ??
+      (typeof AudioContext !== 'undefined' ? AudioContext : undefined) ??
       (window as WindowWithWebkitAudio).webkitAudioContext
     if (!AudioContextCtor) return null
     if (!ctxRef.current) {

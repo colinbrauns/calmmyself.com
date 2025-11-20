@@ -92,25 +92,30 @@ export default function PhysiologicalSigh() {
             const visualSize = 112
             const visualScaleMax = 1.5
             const containerDim = visualSize * visualScaleMax
+            const topPadding = 24 // Extra space at top for dots
             return (
-              <div className="relative flex items-center justify-center" style={{ width: containerDim, height: containerDim }}>
-                <BreathingCycle
-                  pattern={PATTERN}
-                  isActive={isActive}
-                  cycleIndex={phaseIndex}
-                  onCycle={(next) => setPhaseIndex(next)}
-                  size={visualSize}
-                  colors={{ from: 'from-blue-300', to: 'to-blue-600' }}
-                  scaleMin={1}
-                  scaleMax={visualScaleMax}
-                />
-                <div className="absolute text-white font-medium text-sm text-center select-none">
-                  {Math.ceil(timeRemaining / 1000)}
+              <div className="relative flex items-center justify-center" style={{ width: containerDim, height: containerDim + topPadding }}>
+                <div className="relative" style={{ marginTop: topPadding }}>
+                  <BreathingCycle
+                    pattern={PATTERN}
+                    isActive={isActive}
+                    cycleIndex={phaseIndex}
+                    onCycle={(next) => setPhaseIndex(next)}
+                    size={visualSize}
+                    colors={{ from: 'from-blue-300', to: 'to-blue-600' }}
+                    scaleMin={1}
+                    scaleMax={visualScaleMax}
+                  />
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <div className="text-white font-medium text-sm text-center select-none">
+                      {Math.ceil(timeRemaining / 1000)}
+                    </div>
+                  </div>
                 </div>
 
                 {/* Double inhale indicator */}
                 {(currentPhase === 'inhale1' || currentPhase === 'inhale2') && (
-                  <div className="absolute top-2 left-1/2 transform -translate-x-1/2 z-10">
+                  <div className="absolute top-0 left-1/2 transform -translate-x-1/2 z-10">
                     <div className="flex space-x-1">
                       <div className={`w-2 h-2 rounded-full ${currentPhase === 'inhale1' ? 'bg-blue-500' : 'bg-blue-300'}`} />
                       <div className={`w-2 h-2 rounded-full ${currentPhase === 'inhale2' ? 'bg-blue-500' : 'bg-blue-300'}`} />

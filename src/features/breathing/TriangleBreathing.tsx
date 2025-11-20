@@ -109,9 +109,9 @@ export default function TriangleBreathing() {
       <CardContent className="space-y-6 pb-6">
         {/* Breathing Visual */}
         <div className="flex flex-col items-center space-y-4">
-          <div className="relative" style={{ width: 128, height: 128 }}>
+          <div className="relative" style={{ width: 200, height: 200 }}>
             {/* Triangle path trace only (no scaling) */}
-            <svg className="absolute" width={112} height={112} viewBox="0 0 112 112" aria-hidden="true">
+            <svg className="absolute" width={200} height={200} viewBox="0 0 180 180" aria-hidden="true">
               <defs>
                 <linearGradient id="triGrad" x1="0" y1="0" x2="1" y2="1">
                   <stop offset="0%" stopColor="#fcd34d" stopOpacity="0.9" />
@@ -120,31 +120,33 @@ export default function TriangleBreathing() {
               </defs>
               {/* Track */}
               <path
-                d="M56 12 L16 92 L96 92 Z"
+                d="M90 20 L20 160 L160 160 Z"
                 fill="none"
                 stroke="rgba(16,24,16,0.12)"
-                strokeWidth={3}
+                strokeWidth={4}
                 strokeLinecap="round"
                 strokeLinejoin="round"
               />
               {/* Animated progress */}
               <motion.path
-                key={`${currentPhase}-${phaseIndex}-${currentPhaseDuration}`}
+                key={`${currentPhase}-${phaseIndex}-${currentPhaseDuration}-${isActive}`}
                 ref={pathRef}
-                d="M56 12 L16 92 L96 92 Z"
+                d="M90 20 L20 160 L160 160 Z"
                 fill="none"
                 stroke="url(#triGrad)"
-                strokeWidth={3}
+                strokeWidth={4}
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeDasharray={pathLen}
                 initial={{ strokeDashoffset: startOffset }}
-                animate={{ strokeDashoffset: endOffset }}
+                animate={{ strokeDashoffset: isActive ? endOffset : startOffset }}
                 transition={{ duration: isActive ? currentPhaseDuration / 1000 : 0, ease: 'linear' }}
               />
             </svg>
-            <div className="absolute text-white font-medium text-sm text-center select-none z-10">
-              {Math.ceil(timeRemaining / 1000)}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <div className="text-white font-medium text-sm text-center select-none">
+                {Math.ceil(timeRemaining / 1000)}
+              </div>
             </div>
           </div>
           
