@@ -1,9 +1,7 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import BreathingCycle, { type BreathingPattern } from '@/components/BreathingCycle'
-import { useRef } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card'
 import { Play, Pause, RotateCcw } from 'lucide-react'
@@ -21,13 +19,6 @@ const PHASE_LABELS = {
 }
 
 const PHASES: BreathingPhase[] = ['inhale', 'hold1', 'exhale', 'hold2']
-
-const PATTERN: BreathingPattern = [
-  { phase: 'inhale', label: PHASE_LABELS.inhale, durationMs: PHASE_DURATION },
-  { phase: 'hold1', label: PHASE_LABELS.hold1, durationMs: PHASE_DURATION },
-  { phase: 'exhale', label: PHASE_LABELS.exhale, durationMs: PHASE_DURATION },
-  { phase: 'hold2', label: PHASE_LABELS.hold2, durationMs: PHASE_DURATION },
-]
 
 export default function BoxBreathing() {
   const [isActive, setIsActive] = useState(false)

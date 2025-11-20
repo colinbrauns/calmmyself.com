@@ -226,7 +226,7 @@ export default function BodyScan() {
         {/* Instructions */}
         <div className="text-xs text-gray-500 text-center bg-blue-50 p-3 rounded-md">
           <p className="font-medium mb-1">Tips for body scanning:</p>
-          <p>There's no "right" way to feel. Simply notice whatever sensations arise - 
+          <p>There&rsquo;s no &ldquo;right&rdquo; way to feel. Simply notice whatever sensations arise - 
           tension, warmth, tingling, or nothing at all.</p>
         </div>
 

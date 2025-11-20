@@ -34,9 +34,14 @@ export default function SoundFrequencies() {
 
   const startTone = async () => {
     if (typeof window === 'undefined') return
-    const AudioCtx = (window as any).AudioContext || (window as any).webkitAudioContext
-    if (!AudioCtx) return
-    if (!audioCtxRef.current) audioCtxRef.current = new AudioCtx()
+    type WindowWithAudio = Window & { webkitAudioContext?: typeof AudioContext }
+    const AudioContextCtor =
+      (window as WindowWithAudio).AudioContext ??
+      (window as WindowWithAudio).webkitAudioContext
+    if (!AudioContextCtor) return
+    if (!audioCtxRef.current) {
+      audioCtxRef.current = new AudioContextCtor()
+    }
     const ctx = audioCtxRef.current
     if (!ctx) return
 

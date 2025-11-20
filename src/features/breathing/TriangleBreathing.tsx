@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import ShareInline from '@/components/ShareInline'
-import BreathingCycle, { type BreathingPattern } from '@/components/BreathingCycle'
 import { Button } from '@/components/ui/Button'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card'
 import { Play, Pause, RotateCcw } from 'lucide-react'
@@ -18,12 +17,6 @@ const PHASE_LABELS = {
 }
 
 const PHASES: BreathingPhase[] = ['inhale', 'hold', 'exhale']
-
-const PATTERN: BreathingPattern = [
-  { phase: 'inhale', label: 'Breathe In', durationMs: 4000 },
-  { phase: 'hold1', label: 'Hold', durationMs: 4000 },
-  { phase: 'exhale', label: 'Breathe Out', durationMs: 6000 },
-]
 
 export default function TriangleBreathing() {
   const [isActive, setIsActive] = useState(false)
@@ -73,11 +66,6 @@ export default function TriangleBreathing() {
 
   const currentPhaseDuration = PHASE_DURATION[currentPhase]
   const progress = ((currentPhaseDuration - timeRemaining) / currentPhaseDuration) * 100
-
-  const getTriangleTransform = () => {
-    const angle = (progress / 100) * 360
-    return `rotate(${angle}deg)`
-  }
 
   // SVG triangle path tracing to visually match 4-4-6 timing
   const pathRef = useRef<SVGPathElement | null>(null)

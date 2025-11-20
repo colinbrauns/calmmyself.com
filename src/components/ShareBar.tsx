@@ -10,19 +10,24 @@ interface ShareBarProps {
   text?: string
 }
 
+interface WebShareNavigator extends Navigator {
+  // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
+  share?: (...args: [ShareData]) => Promise<void>
+}
+
 export default function ShareBar({ title = 'CalmMyself', text = 'A free, evidence‑informed calming toolbox.' }: ShareBarProps) {
   const url = useMemo(() => (typeof window !== 'undefined' ? window.location.href : 'https://calmmyself.com'), [])
-  const sharePayload = { title, text, url }
-
-  const canWebShare = typeof navigator !== 'undefined' && !!(navigator as any).share
+  const webSharePayload = useMemo(() => ({ title, text, url }), [title, text, url])
+  const navigatorWithShare = typeof navigator !== 'undefined' ? (navigator as WebShareNavigator) : undefined
+  const shareFn = navigatorWithShare?.share
+  const canWebShare = Boolean(shareFn)
 
   const onWebShare = useCallback(async () => {
+    if (!shareFn) return
     try {
-      if ((navigator as any).share) {
-        await (navigator as any).share(sharePayload)
-      }
+      await shareFn(webSharePayload)
     } catch {}
-  }, [sharePayload])
+  }, [shareFn, webSharePayload])
 
   const encoded = {
     url: encodeURIComponent(url),
@@ -75,4 +80,3 @@ export default function ShareBar({ title = 'CalmMyself', text = 'A free, evidenc
     </Card>
   )
 }
-

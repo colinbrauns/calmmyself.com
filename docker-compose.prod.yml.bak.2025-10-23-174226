@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  calmmyself:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: calmmyself-app
+    restart: unless-stopped
+    env_file:
+      - .env.production
+    networks:
+      - calmmyself-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /app/.next/cache
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+
+  nginx:
+    image: nginx:alpine
+    container_name: calmmyself-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - nginx-cache:/var/cache/nginx
+    depends_on:
+      calmmyself:
+        condition: service_healthy
+    networks:
+      - calmmyself-network
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: '0.25'
+
+networks:
+  calmmyself-network:
+    driver: bridge
+    name: calmmyself-network
+
+volumes:
+  nginx-cache:
+    name: calmmyself-nginx-cache

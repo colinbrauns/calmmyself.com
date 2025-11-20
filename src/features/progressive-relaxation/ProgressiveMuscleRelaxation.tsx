@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card'
-import { Play, Pause, RotateCcw, ChevronRight } from 'lucide-react'
+import { Play, Pause, RotateCcw } from 'lucide-react'
 
 interface MuscleGroup {
   name: string

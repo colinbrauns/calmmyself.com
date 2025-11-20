@@ -91,7 +91,7 @@ export default function FiveThreeOne() {
             Well Done!
           </h2>
           <p className="text-gray-600 mb-6">
-            You've completed the 5-4-3-2-1 grounding exercise. 
+            You&rsquo;ve completed the 5-4-3-2-1 grounding exercise. 
             Take a moment to notice how you feel now.
           </p>
           <Button onClick={reset} variant="grounding" size="lg">

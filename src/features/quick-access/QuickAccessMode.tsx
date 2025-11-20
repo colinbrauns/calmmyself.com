@@ -185,7 +185,7 @@ export default function QuickAccessMode() {
           
           <div className="bg-green-50 rounded-lg p-4 mb-6">
             <p className="text-sm text-green-800">
-              <strong>Great job!</strong> You've given yourself some quick relief. 
+              <strong>Great job!</strong> You&rsquo;ve given yourself some quick relief. 
               If you need more support, try a longer technique from the main menu.
             </p>
           </div>
@@ -242,7 +242,7 @@ export default function QuickAccessMode() {
               <li>• 8 rapid-fire calming techniques</li>
               <li>• 5-15 seconds per technique</li>
               <li>• Automatic progression</li>
-              <li>• Skip any technique that doesn't feel right</li>
+              <li>• Skip any technique that doesn&rsquo;t feel right</li>
             </ul>
           </div>
 

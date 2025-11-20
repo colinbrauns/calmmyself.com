@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import RecommendationEngine from '@/lib/recommendations'
 
 export function useUsageTracking(toolId: string, isActive: boolean) {
@@ -14,13 +14,13 @@ export function useUsageTracking(toolId: string, isActive: boolean) {
   }, [isActive])
 
   // Track when tool completes or stops
-  const trackUsage = (completed: boolean = true) => {
+  const trackUsage = useCallback((completed: boolean = true) => {
     if (startTimeRef.current) {
       const duration = Math.floor((Date.now() - startTimeRef.current) / 1000)
       RecommendationEngine.recordUsage(toolId, duration, completed)
       startTimeRef.current = null
     }
-  }
+  }, [toolId])
 
   // Auto-track when component unmounts (user navigates away)
   useEffect(() => {
@@ -29,7 +29,7 @@ export function useUsageTracking(toolId: string, isActive: boolean) {
         trackUsage(false) // Incomplete if navigating away
       }
     }
-  }, [])
+  }, [trackUsage])
 
   return { trackUsage }
 }

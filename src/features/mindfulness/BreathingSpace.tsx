@@ -112,7 +112,7 @@ export default function BreathingSpace() {
             Breathing Space Complete
           </h2>
           <p className="text-gray-600 mb-6">
-            You've created a mindful breathing space. Take this sense of presence 
+            You&rsquo;ve created a mindful breathing space. Take this sense of presence 
             and awareness with you as you continue your day.
           </p>
           <Button onClick={reset} variant="calm" size="lg">

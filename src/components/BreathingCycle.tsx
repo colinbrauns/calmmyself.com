@@ -15,6 +15,7 @@ export interface BreathingCycleProps {
   pattern: BreathingPattern
   isActive: boolean
   cycleIndex: number
+  // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
   onCycle?: (nextIndex: number) => void
   size?: number
   colors?: { from: string; to: string }
@@ -58,7 +59,7 @@ export default function BreathingCycle({
         ease: current.phase === 'exhale' ? 'easeOut' : 'easeInOut',
       },
     })
-  }, [controls, current, isActive, prefersReducedMotion, targetScale])
+  }, [allowOverride, controls, current, isActive, prefersReducedMotion, targetScale])
 
   useEffect(() => {
     if (!isActive) return

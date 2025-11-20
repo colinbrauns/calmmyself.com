@@ -16,50 +16,50 @@ interface GroundingStep {
 const EMERGENCY_STEPS: GroundingStep[] = [
   {
     title: "STOP",
-    instruction: "Stop what you're doing. You're going to be okay.",
+    instruction: "Stop what you’re doing. You’re going to be okay.",
     action: "Take a moment to pause everything",
     duration: 3000,
     type: 'cognitive'
   },
   {
     title: "BREATHE",
-    instruction: "Take a deep breath in through your nose, hold for 3, then breathe out slowly through your mouth.",
+    instruction: 'Take a deep breath in through your nose, hold for 3, then breathe out slowly through your mouth.',
     action: "In... 2... 3... Hold... 2... 3... Out... 2... 3... 4... 5... 6",
     duration: 12000,
     type: 'breathing'
   },
   {
     title: "FEET ON GROUND",
-    instruction: "Feel your feet firmly planted on the ground. Press them down. You are here, you are safe.",
+    instruction: 'Feel your feet firmly planted on the ground. Press them down. You are here, you are safe.',
     action: "Press your feet firmly into the floor",
     duration: 8000,
     type: 'physical'
   },
   {
     title: "5 THINGS YOU CAN SEE",
-    instruction: "Look around and name 5 things you can see. Say them out loud if possible.",
+    instruction: 'Look around and name 5 things you can see. Say them out loud if possible.',
     action: "Look around and count: 1... 2... 3... 4... 5",
     duration: 15000,
     type: 'sensory'
   },
   {
     title: "4 THINGS YOU CAN TOUCH",
-    instruction: "Find 4 things you can touch. Feel their texture, temperature, weight.",
+    instruction: 'Find 4 things you can touch. Feel their texture, temperature, weight.',
     action: "Touch and count: 1... 2... 3... 4",
     duration: 12000,
     type: 'sensory'
   },
   {
     title: "3 THINGS YOU CAN HEAR",
-    instruction: "Listen carefully. What are 3 sounds you can hear right now?",
+    instruction: 'Listen carefully. What are 3 sounds you can hear right now?',
     action: "Listen and count: 1... 2... 3",
     duration: 10000,
     type: 'sensory'
   },
   {
     title: "YOU ARE SAFE",
-    instruction: "This feeling will pass. You are in control. You are safe right now.",
-    action: "Repeat: 'I am safe. This will pass. I am in control.'",
+    instruction: 'This feeling will pass. You are in control. You are safe right now.',
+    action: 'Repeat: “I am safe. This will pass. I am in control.”',
     duration: 8000,
     type: 'cognitive'
   }
@@ -222,13 +222,13 @@ export default function EmergencyGrounding() {
             You Made It Through
           </h2>
           <p className="text-gray-600 mb-6">
-            You've completed the emergency grounding protocol. 
-            Take a moment to notice how you're feeling now. You are safe.
+            You&rsquo;ve completed the emergency grounding protocol. 
+            Take a moment to notice how you&rsquo;re feeling now. You are safe.
           </p>
           
           <div className="space-y-3">
             <Button onClick={reset} variant="grounding" size="lg" className="w-full">
-              I'm Feeling Better
+              I&rsquo;m Feeling Better
             </Button>
             <Button 
               onClick={() => setShowCrisisResources(true)}
@@ -261,7 +261,7 @@ export default function EmergencyGrounding() {
         <CardContent className="space-y-6">
           <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
             <p className="text-red-800 font-medium mb-2">
-              If you're feeling overwhelmed, panicked, or disconnected:
+              If you&rsquo;re feeling overwhelmed, panicked, or disconnected:
             </p>
             <p className="text-red-700 text-sm">
               This protocol will guide you through 7 steps to help you feel grounded and safe again.

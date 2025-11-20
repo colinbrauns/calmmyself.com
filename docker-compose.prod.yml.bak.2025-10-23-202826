@@ -10,7 +10,7 @@ services:
     env_file:
       - .env.production
     networks:
-      - proxy
+      - calmmyself-network
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:3000/"]
       interval: 30s
@@ -32,6 +32,34 @@ services:
           memory: 256M
           cpus: '0.25'
 
+  nginx:
+    image: nginx:alpine
+    container_name: calmmyself-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - nginx-cache:/var/cache/nginx
+    depends_on:
+      calmmyself:
+        condition: service_healthy
+    networks:
+      - calmmyself-network
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: '0.25'
+
 networks:
-  proxy:
-    external: true
+  calmmyself-network:
+    driver: bridge
+    name: calmmyself-network
+
+volumes:
+  nginx-cache:
+    name: calmmyself-nginx-cache

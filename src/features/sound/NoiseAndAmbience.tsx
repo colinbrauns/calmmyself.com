@@ -19,19 +19,20 @@ export default function NoiseAndAmbience() {
 
   const ctxRef = useRef<AudioContext | null>(null)
   const mainGainRef = useRef<GainNode | null>(null)
-  const srcRef = useRef<AudioNode | null>(null)
+  const srcRef = useRef<AudioScheduledSourceNode | null>(null)
   const lfoNodesRef = useRef<{ osc?: OscillatorNode; gain?: GainNode } | null>(null)
 
   useEffect(() => () => stopAll(true), [])
 
   const ensureCtx = () => {
     if (typeof window === 'undefined') return null
-    const AC = (window as any).AudioContext || (window as any).webkitAudioContext
-    if (!AC) return null
+    type WindowWithWebkitAudio = Window & { webkitAudioContext?: typeof AudioContext }
+    const AudioContextCtor =
+      (window as WindowWithWebkitAudio).AudioContext ??
+      (window as WindowWithWebkitAudio).webkitAudioContext
+    if (!AudioContextCtor) return null
     if (!ctxRef.current) {
-      ctxRef.current = new AC()
-    }
-    if (ctxRef.current) {
+      ctxRef.current = new AudioContextCtor()
       mainGainRef.current = ctxRef.current.createGain()
       mainGainRef.current.gain.value = 0
       mainGainRef.current.connect(ctxRef.current.destination)
@@ -52,9 +53,10 @@ export default function NoiseAndAmbience() {
     }
     if (srcRef.current) {
       try {
-        // Attempt stop on buffer source or oscillator
-        ;(srcRef.current as any).stop?.()
-        ;(srcRef.current as any).disconnect?.()
+        srcRef.current.stop()
+      } catch {}
+      try {
+        srcRef.current.disconnect()
       } catch {}
       srcRef.current = null
     }
@@ -91,9 +93,9 @@ export default function NoiseAndAmbience() {
     for (let i = 0; i < bufferSize; i++) {
       data[i] = Math.random() * 2 - 1
     }
-    let source: AudioNode = ctx.createBufferSource()
-    ;(source as AudioBufferSourceNode).buffer = buffer
-    ;(source as AudioBufferSourceNode).loop = true
+    const source = ctx.createBufferSource()
+    source.buffer = buffer
+    source.loop = true
 
     // Basic filtering to approximate different spectra
     const filter1 = ctx.createBiquadFilter()
@@ -125,7 +127,7 @@ export default function NoiseAndAmbience() {
     source.connect(filter1)
     filter1.connect(filter2)
     filter2.connect(mainGainRef.current!)
-    ;(source as AudioBufferSourceNode).start()
+    source.start()
     srcRef.current = source
   }
 
@@ -234,4 +236,3 @@ export default function NoiseAndAmbience() {
     </Card>
   )
 }
-

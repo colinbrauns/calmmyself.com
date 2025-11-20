@@ -153,7 +153,7 @@ export default function LovingKindness() {
             Loving Kindness Complete
           </h2>
           <p className="text-gray-600 mb-6">
-            You've sent loving kindness to yourself, a loved one, and all beings. 
+            You&rsquo;ve sent loving kindness to yourself, a loved one, and all beings. 
             Notice how your heart feels now - perhaps softer, warmer, more open.
           </p>
           <Button onClick={reset} variant="calm" size="lg">
@@ -229,7 +229,7 @@ export default function LovingKindness() {
             <li>• Repeat each phrase silently or aloud</li>
             <li>• Feel the intention behind the words</li>
             <li>• Notice warmth or softness in your heart</li>
-            <li>• It's okay if feelings don't come immediately</li>
+            <li>• It&rsquo;s okay if feelings don&rsquo;t come immediately</li>
           </ul>
         </div>
 

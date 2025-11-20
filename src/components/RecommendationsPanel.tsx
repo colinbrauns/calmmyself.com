@@ -1,11 +1,11 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import RecommendationEngine, { RecommendationContext } from '@/lib/recommendations'
-import { Sparkles, Clock, Zap, TrendingUp, RefreshCw } from 'lucide-react'
+import { Sparkles, TrendingUp, RefreshCw } from 'lucide-react'
 
 interface Tool {
   id: string
@@ -17,22 +17,26 @@ interface Tool {
 
 interface RecommendationsPanelProps {
   tools: Tool[]
-  onSelectTool: (toolId: string) => void
+  // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
+  onSelectTool: (selection: { toolId: string }) => void
 }
 
 export default function RecommendationsPanel({ tools, onSelectTool }: RecommendationsPanelProps) {
   const [recommendations, setRecommendations] = useState<string[]>([])
   const [insight, setInsight] = useState<string>('')
-  const [context, setContext] = useState<RecommendationContext>({
-    timeOfDay: RecommendationEngine.getTimeOfDay(),
-    dayOfWeek: new Date().getDay()
-  })
+  const baseContext = useMemo<Pick<RecommendationContext, 'timeOfDay' | 'dayOfWeek'>>(
+    () => ({
+      timeOfDay: RecommendationEngine.getTimeOfDay(),
+      dayOfWeek: new Date().getDay(),
+    }),
+    []
+  )
   const [timeAvailable, setTimeAvailable] = useState<'quick' | 'moderate' | 'long'>('moderate')
   const [stressLevel, setStressLevel] = useState<'high' | 'medium' | 'low'>('medium')
 
-  const updateRecommendations = () => {
+  const updateRecommendations = useCallback(() => {
     const newContext: RecommendationContext = {
-      ...context,
+      ...baseContext,
       timeAvailable,
       recentStress: stressLevel
     }
@@ -40,11 +44,11 @@ export default function RecommendationsPanel({ tools, onSelectTool }: Recommenda
     const recs = RecommendationEngine.getRecommendations(newContext)
     setRecommendations(recs)
     setInsight(RecommendationEngine.getInsight())
-  }
+  }, [baseContext, stressLevel, timeAvailable])
 
   useEffect(() => {
     updateRecommendations()
-  }, [timeAvailable, stressLevel])
+  }, [updateRecommendations])
 
   const getRecommendedTools = () => {
     return recommendations
@@ -175,7 +179,7 @@ export default function RecommendationsPanel({ tools, onSelectTool }: Recommenda
               <motion.div key={tool.id} variants={itemVariants} whileHover={{ y: -2, scale: 1.01 }} whileTap={{ scale: 0.995 }}>
                 <Card 
                   className="cursor-pointer bg-white/80 border-purple-100 hover:border-purple-300 transition-colors"
-                  onClick={() => onSelectTool(tool.id)}
+                  onClick={() => onSelectTool({ toolId: tool.id })}
                 >
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between mb-2">
@@ -193,7 +197,7 @@ export default function RecommendationsPanel({ tools, onSelectTool }: Recommenda
                         className="text-xs text-purple-600 hover:text-purple-700 p-1 h-auto"
                         onClick={(e) => {
                           e.stopPropagation()
-                          onSelectTool(tool.id)
+                          onSelectTool({ toolId: tool.id })
                         }}
                       >
                         Try Now →

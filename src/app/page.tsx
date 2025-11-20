@@ -44,7 +44,7 @@ import {
   Waves
 } from 'lucide-react'
 import { Music2, Quote, Activity, Timer, Shuffle, Snowflake } from 'lucide-react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 
 type ActiveTool = 
   | 'home' 
@@ -379,7 +379,7 @@ export default function HomePage() {
           duration: tool.duration,
           category: tool.category
         }))}
-        onSelectTool={(toolId) => setActiveTool(toolId as ActiveTool)}
+        onSelectTool={({ toolId }) => setActiveTool(toolId as ActiveTool)}
       />
 
       {/* Emergency Banner */}
@@ -392,8 +392,8 @@ export default function HomePage() {
           </div>
           <div className="flex-1 flex items-center justify-between">
             <p className="text-sm text-red-800">
-              <strong>Crisis Support:</strong> If you're experiencing thoughts of self-harm, 
-              call 988 (Suicide & Crisis Lifeline) or text "HELLO" to 741741 (Crisis Text Line)
+              <strong>Crisis Support:</strong> If you&rsquo;re experiencing thoughts of self-harm, 
+              call 988 (Suicide &amp; Crisis Lifeline) or text &ldquo;HELLO&rdquo; to 741741 (Crisis Text Line)
             </p>
             <Button
               onClick={() => setActiveTool('emergency-grounding')}

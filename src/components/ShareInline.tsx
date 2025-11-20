@@ -1,8 +1,13 @@
 "use client"
 
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Share2, Link2 } from 'lucide-react'
+
+interface WebShareNavigator extends Navigator {
+  // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
+  share?: (...args: [ShareData]) => Promise<void>
+}
 
 interface ShareInlineProps {
   title?: string
@@ -11,14 +16,19 @@ interface ShareInlineProps {
 
 export default function ShareInline({ title = 'CalmMyself', text = 'A free, evidence‑informed calming toolbox.' }: ShareInlineProps) {
   const url = useMemo(() => (typeof window !== 'undefined' ? window.location.href : 'https://calmmyself.com'), [])
-  const canWebShare = typeof navigator !== 'undefined' && !!(navigator as any).share
+  const navigatorWithShare = typeof navigator !== 'undefined' ? (navigator as WebShareNavigator) : undefined
+  const shareFn = navigatorWithShare?.share
+  const canWebShare = Boolean(shareFn)
 
-  const handleShare = async () => {
+  const handleShare = useCallback(async () => {
     try {
-      if ((navigator as any).share) await (navigator as any).share({ title, text, url })
-      else await navigator.clipboard?.writeText(url)
+      if (shareFn) {
+        await shareFn({ title, text, url })
+      } else {
+        await navigator.clipboard?.writeText(url)
+      }
     } catch {}
-  }
+  }, [shareFn, text, title, url])
 
   return (
     <div className="flex items-center justify-between bg-white/60 border border-calm-100 rounded-md p-2">
@@ -29,4 +39,3 @@ export default function ShareInline({ title = 'CalmMyself', text = 'A free, evid
     </div>
   )
 }
-
