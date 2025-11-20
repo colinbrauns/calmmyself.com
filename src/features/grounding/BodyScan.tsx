@@ -209,16 +209,114 @@ export default function BodyScan() {
         <div className="flex justify-center">
           <div className="relative">
             <svg width="120" height="200" viewBox="0 0 120 200" className="text-gray-300">
-              {/* Simple body outline */}
-              <ellipse cx="60" cy="25" rx="20" ry="15" fill={currentPart <= 3 ? "#fbbf24" : "currentColor"} />
-              <rect x="45" y="40" width="30" height="40" rx="8" fill={currentPart >= 4 && currentPart <= 7 ? "#fbbf24" : "currentColor"} />
-              <rect x="25" y="45" width="15" height="35" rx="7" fill={currentPart === 5 ? "#fbbf24" : "currentColor"} />
-              <rect x="80" y="45" width="15" height="35" rx="7" fill={currentPart === 5 ? "#fbbf24" : "currentColor"} />
-              <rect x="45" y="80" width="30" height="50" rx="8" fill={currentPart >= 6 && currentPart <= 9 ? "#fbbf24" : "currentColor"} />
-              <rect x="50" y="130" width="10" height="40" rx="5" fill={currentPart >= 10 && currentPart <= 12 ? "#fbbf24" : "currentColor"} />
-              <rect x="65" y="130" width="10" height="40" rx="5" fill={currentPart >= 10 && currentPart <= 12 ? "#fbbf24" : "currentColor"} />
-              <ellipse cx="55" cy="175" rx="8" ry="5" fill={currentPart === 12 ? "#fbbf24" : "currentColor"} />
-              <ellipse cx="70" cy="175" rx="8" ry="5" fill={currentPart === 12 ? "#fbbf24" : "currentColor"} />
+              <defs>
+                <filter id="glow">
+                  <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                  <feMerge>
+                    <feMergeNode in="coloredBlur"/>
+                    <feMergeNode in="SourceGraphic"/>
+                  </feMerge>
+                </filter>
+                <filter id="pulse">
+                  <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+                  <feMerge>
+                    <feMergeNode in="coloredBlur"/>
+                    <feMergeNode in="coloredBlur"/>
+                    <feMergeNode in="SourceGraphic"/>
+                  </feMerge>
+                </filter>
+              </defs>
+
+              {/* Head */}
+              <ellipse
+                cx="60" cy="25" rx="20" ry="15"
+                fill={currentPart <= 3 ? "#fbbf24" : "currentColor"}
+                filter={currentPart <= 3 ? "url(#pulse)" : "none"}
+                style={{ transition: 'fill 0.5s ease-in-out' }}
+              />
+
+              {/* Torso */}
+              <rect
+                x="45" y="40" width="30" height="40" rx="8"
+                fill={currentPart >= 4 && currentPart <= 7 ? "#fbbf24" : "currentColor"}
+                filter={currentPart >= 4 && currentPart <= 7 ? "url(#pulse)" : "none"}
+                style={{ transition: 'fill 0.5s ease-in-out' }}
+              />
+
+              {/* Left Arm */}
+              <rect
+                x="25" y="45" width="15" height="35" rx="7"
+                fill={currentPart === 5 ? "#fbbf24" : "currentColor"}
+                filter={currentPart === 5 ? "url(#pulse)" : "none"}
+                style={{ transition: 'fill 0.5s ease-in-out' }}
+              />
+
+              {/* Right Arm */}
+              <rect
+                x="80" y="45" width="15" height="35" rx="7"
+                fill={currentPart === 5 ? "#fbbf24" : "currentColor"}
+                filter={currentPart === 5 ? "url(#pulse)" : "none"}
+                style={{ transition: 'fill 0.5s ease-in-out' }}
+              />
+
+              {/* Abdomen */}
+              <rect
+                x="45" y="80" width="30" height="50" rx="8"
+                fill={currentPart >= 6 && currentPart <= 9 ? "#fbbf24" : "currentColor"}
+                filter={currentPart >= 6 && currentPart <= 9 ? "url(#pulse)" : "none"}
+                style={{ transition: 'fill 0.5s ease-in-out' }}
+              />
+
+              {/* Left Leg */}
+              <rect
+                x="50" y="130" width="10" height="40" rx="5"
+                fill={currentPart >= 10 && currentPart <= 12 ? "#fbbf24" : "currentColor"}
+                filter={currentPart >= 10 && currentPart <= 12 ? "url(#pulse)" : "none"}
+                style={{ transition: 'fill 0.5s ease-in-out' }}
+              />
+
+              {/* Right Leg */}
+              <rect
+                x="65" y="130" width="10" height="40" rx="5"
+                fill={currentPart >= 10 && currentPart <= 12 ? "#fbbf24" : "currentColor"}
+                filter={currentPart >= 10 && currentPart <= 12 ? "url(#pulse)" : "none"}
+                style={{ transition: 'fill 0.5s ease-in-out' }}
+              />
+
+              {/* Left Foot */}
+              <ellipse
+                cx="55" cy="175" rx="8" ry="5"
+                fill={currentPart === 12 ? "#fbbf24" : "currentColor"}
+                filter={currentPart === 12 ? "url(#pulse)" : "none"}
+                style={{ transition: 'fill 0.5s ease-in-out' }}
+              />
+
+              {/* Right Foot */}
+              <ellipse
+                cx="70" cy="175" rx="8" ry="5"
+                fill={currentPart === 12 ? "#fbbf24" : "currentColor"}
+                filter={currentPart === 12 ? "url(#pulse)" : "none"}
+                style={{ transition: 'fill 0.5s ease-in-out' }}
+              />
+
+              {/* Animated scanning line */}
+              {isActive && (
+                <line
+                  x1="20" y1={10 + (currentPart * 12)}
+                  x2="100" y2={10 + (currentPart * 12)}
+                  stroke="#f59e0b"
+                  strokeWidth="2"
+                  opacity="0.6"
+                  strokeDasharray="4 4"
+                >
+                  <animate
+                    attributeName="opacity"
+                    values="0.3;0.8;0.3"
+                    dur="2s"
+                    repeatCount="indefinite"
+                  />
+                </line>
+              )}
             </svg>
           </div>
         </div>

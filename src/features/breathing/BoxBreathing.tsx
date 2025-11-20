@@ -9,6 +9,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { Play, Pause, RotateCcw } from 'lucide-react'
 import { useUsageTracking } from '@/hooks/useUsageTracking'
 import ShareInline from '@/components/ShareInline'
+import CelebrationAnimation from '@/components/CelebrationAnimation'
 
 type BreathingPhase = 'inhale' | 'hold1' | 'exhale' | 'hold2'
 
@@ -35,18 +36,30 @@ export default function BoxBreathing() {
   const [phaseIndex, setPhaseIndex] = useState(0)
   const [cycleCount, setCycleCount] = useState(0)
   const [timeRemaining, setTimeRemaining] = useState(PHASE_DURATION)
-  
+  const [showCelebration, setShowCelebration] = useState(false)
+  const phaseStartTimeRef = useRef<number>(0)
+
   // Usage tracking
   const { trackUsage } = useUsageTracking('box-breathing', isActive)
 
   const nextPhase = useCallback(() => {
     setPhaseIndex((prev) => {
       const next = (prev + 1) % PHASES.length
-      if (next === 0) setCycleCount((c) => c + 1)
+      if (next === 0) {
+        setCycleCount((c) => {
+          const newCount = c + 1
+          if (newCount === 5) {
+            setShowCelebration(true)
+            setTimeout(() => setShowCelebration(false), 3000)
+          }
+          return newCount
+        })
+      }
       setCurrentPhase(PHASES[next])
       return next
     })
     setTimeRemaining(PHASE_DURATION)
+    phaseStartTimeRef.current = Date.now()
   }, [])
 
   const reset = useCallback(() => {
@@ -61,24 +74,31 @@ export default function BoxBreathing() {
   }, [isActive, cycleCount, trackUsage])
 
   useEffect(() => {
-    let interval: NodeJS.Timeout | null = null
-    
+    let animationFrame: number | null = null
+
     if (isActive) {
-      interval = setInterval(() => {
-        setTimeRemaining((time) => {
-          if (time <= 100) {
-            nextPhase()
-            return PHASE_DURATION
-          }
-          return time - 100
-        })
-      }, 100)
+      phaseStartTimeRef.current = Date.now()
+
+      const updateTimer = () => {
+        const elapsed = Date.now() - phaseStartTimeRef.current
+        const remaining = Math.max(0, PHASE_DURATION - elapsed)
+
+        setTimeRemaining(remaining)
+
+        if (remaining <= 0) {
+          nextPhase()
+        } else {
+          animationFrame = requestAnimationFrame(updateTimer)
+        }
+      }
+
+      animationFrame = requestAnimationFrame(updateTimer)
     }
 
     return () => {
-      if (interval) clearInterval(interval)
+      if (animationFrame) cancelAnimationFrame(animationFrame)
     }
-  }, [isActive, nextPhase])
+  }, [isActive, phaseIndex, nextPhase])
 
   const progress = ((PHASE_DURATION - timeRemaining) / PHASE_DURATION) * 100
 
@@ -109,13 +129,15 @@ export default function BoxBreathing() {
   const endOffset = pathLen * (1 - endFrac)
 
   return (
-    <Card className="max-w-md mx-auto">
-      <CardHeader className="text-center">
-        <CardTitle>Box Breathing</CardTitle>
-        <CardDescription>
-          4-4-4-4 pattern for calm and focus
-        </CardDescription>
-      </CardHeader>
+    <>
+      <CelebrationAnimation show={showCelebration} />
+      <Card className="max-w-md mx-auto">
+        <CardHeader className="text-center">
+          <CardTitle>Box Breathing</CardTitle>
+          <CardDescription>
+            4-4-4-4 pattern for calm and focus
+          </CardDescription>
+        </CardHeader>
       
       <CardContent className="space-y-6 pb-6">
         {/* Breathing Visual */}
@@ -223,5 +245,6 @@ export default function BoxBreathing() {
         <ShareInline title="Box Breathing" text="Use Box Breathing on CalmMyself" />
       </div>
     </Card>
+    </>
   )
 }
