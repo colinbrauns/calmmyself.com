@@ -7,6 +7,7 @@ import { Play, Pause, RotateCcw, Activity } from 'lucide-react'
 import BreathingCycle, { type BreathingPattern } from '@/components/BreathingCycle'
 import { AnimatePresence, motion } from 'framer-motion'
 import ShareInline from '@/components/ShareInline'
+import CelebrationAnimation from '@/components/CelebrationAnimation'
 
 const PATTERN: BreathingPattern = [
   { phase: 'inhale', label: 'Inhale', durationMs: 5000 },
@@ -18,11 +19,21 @@ export default function CoherentBreathing() {
   const [phaseIndex, setPhaseIndex] = useState(0)
   const [cycleCount, setCycleCount] = useState(0)
   const [timeRemaining, setTimeRemaining] = useState(5000)
+  const [showCelebration, setShowCelebration] = useState(false)
 
   const next = useCallback(() => {
     setPhaseIndex((prev) => {
       const next = (prev + 1) % PATTERN.length
-      if (next === 0) setCycleCount((c) => c + 1)
+      if (next === 0) {
+        setCycleCount((c) => {
+          const newCount = c + 1
+          if (newCount === 6) {
+            setShowCelebration(true)
+            setTimeout(() => setShowCelebration(false), 3000)
+          }
+          return newCount
+        })
+      }
       setTimeRemaining(PATTERN[next].durationMs)
       return next
     })
@@ -44,7 +55,9 @@ export default function CoherentBreathing() {
   const progress = ((PATTERN[phaseIndex].durationMs - timeRemaining) / PATTERN[phaseIndex].durationMs) * 100
 
   return (
-    <Card className="max-w-md mx-auto">
+    <>
+      <CelebrationAnimation show={showCelebration} />
+      <Card className="max-w-md mx-auto">
       <CardHeader className="text-center">
         <div className="flex items-center justify-center gap-2 mb-2">
           <Activity className="w-5 h-5 text-calm-600" />
@@ -97,5 +110,6 @@ export default function CoherentBreathing() {
         <ShareInline title="Coherent Breathing" text="Try coherent breathing (6 bpm) on CalmMyself" />
       </div>
     </Card>
+    </>
   )
 }

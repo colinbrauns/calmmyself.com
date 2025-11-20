@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo } from 'react'
-import { motion, useAnimationControls, useReducedMotion } from 'framer-motion'
+import { motion, useAnimationControls, useReducedMotion, AnimatePresence } from 'framer-motion'
 
 export type CyclePhase = 'inhale' | 'inhale1' | 'inhale2' | 'hold' | 'hold1' | 'exhale' | 'hold2'
 
@@ -79,6 +79,19 @@ export default function BreathingCycle({
     )
   }
 
+  // Get color based on phase
+  const getPhaseColor = () => {
+    if (current.phase === 'inhale' || current.phase === 'inhale1' || current.phase === 'inhale2') {
+      return { text: 'text-blue-100', bg: 'from-blue-300 to-blue-500' }
+    }
+    if (current.phase === 'exhale') {
+      return { text: 'text-green-100', bg: 'from-green-300 to-green-500' }
+    }
+    return { text: 'text-amber-100', bg: 'from-amber-300 to-amber-500' }
+  }
+
+  const phaseColor = getPhaseColor()
+
   return (
     <div className="relative flex items-center justify-center" style={{ width: dimension, height: dimension }}>
       {/* Outer soft glow that subtly brightens on inhale */}
@@ -88,7 +101,7 @@ export default function BreathingCycle({
         animate={controls}
         initial={{ scale: scaleMin, opacity: 0.35 }}
       >
-        <div className={`w-full h-full rounded-full ${colors.from} ${colors.to} bg-gradient-to-br animate-gradient-shift`} />
+        <div className={`w-full h-full rounded-full ${phaseColor.bg} bg-gradient-to-br animate-gradient-shift`} />
       </motion.div>
 
       {/* Animated progress ring synced to current phase */}
@@ -132,21 +145,62 @@ export default function BreathingCycle({
 
       {/* Main animated core */}
       <motion.div
-        className={`rounded-full ${colors.from} ${colors.to} bg-gradient-to-br shadow-lg will-change-transform`}
+        className={`rounded-full ${phaseColor.bg} bg-gradient-to-br shadow-lg will-change-transform`}
         style={{ width: dimension, height: dimension }}
         animate={controls}
         initial={{ scale: scaleMin, opacity: 1 }}
       />
 
+      {/* Phase label in center */}
+      <motion.div
+        key={`label-${cycleIndex}`}
+        className={`absolute flex items-center justify-center ${phaseColor.text} font-semibold text-center pointer-events-none`}
+        style={{ fontSize: size > 80 ? '0.875rem' : '0.75rem' }}
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.8 }}
+        transition={{ duration: 0.3 }}
+      >
+        {current.label}
+      </motion.div>
+
       {/* Gentle inner ripple on phase change */}
       <motion.div
-        key={`${cycleIndex}`}
+        key={`ripple-${cycleIndex}`}
         className="absolute rounded-full border-2 border-white/30"
         style={{ width: dimension, height: dimension }}
         initial={{ scale: 0.9, opacity: 0.2 }}
         animate={{ scale: 1.15, opacity: 0 }}
         transition={{ duration: 0.8, ease: 'easeOut' }}
       />
+
+      {/* Particle effects */}
+      {isActive && (
+        <>
+          {[...Array(8)].map((_, i) => (
+            <motion.div
+              key={`particle-${cycleIndex}-${i}`}
+              className="absolute w-1 h-1 rounded-full bg-white/40"
+              style={{
+                left: '50%',
+                top: '50%',
+              }}
+              initial={{ scale: 0, x: 0, y: 0, opacity: 0 }}
+              animate={{
+                scale: targetScale > 1 ? [0, 1, 0] : [1, 0],
+                x: targetScale > 1 ? Math.cos((i * Math.PI * 2) / 8) * size * 0.4 : 0,
+                y: targetScale > 1 ? Math.sin((i * Math.PI * 2) / 8) * size * 0.4 : 0,
+                opacity: targetScale > 1 ? [0, 0.6, 0] : 0,
+              }}
+              transition={{
+                duration: current.durationMs / 1000,
+                ease: 'easeOut',
+                repeat: 0,
+              }}
+            />
+          ))}
+        </>
+      )}
     </div>
   )
 }

@@ -7,6 +7,7 @@ import { Play, Pause, RotateCcw, Timer } from 'lucide-react'
 import BreathingCycle, { type BreathingPattern } from '@/components/BreathingCycle'
 import { AnimatePresence, motion } from 'framer-motion'
 import ShareInline from '@/components/ShareInline'
+import CelebrationAnimation from '@/components/CelebrationAnimation'
 
 const PATTERN: BreathingPattern = [
   { phase: 'inhale', label: 'Inhale (4)', durationMs: 4000 },
@@ -19,11 +20,21 @@ export default function FourSevenEight() {
   const [phaseIndex, setPhaseIndex] = useState(0)
   const [cycleCount, setCycleCount] = useState(0)
   const [timeRemaining, setTimeRemaining] = useState(PATTERN[0].durationMs)
+  const [showCelebration, setShowCelebration] = useState(false)
 
   const next = useCallback(() => {
     setPhaseIndex((prev) => {
       const next = (prev + 1) % PATTERN.length
-      if (next === 0) setCycleCount((c) => c + 1)
+      if (next === 0) {
+        setCycleCount((c) => {
+          const newCount = c + 1
+          if (newCount === 4) {
+            setShowCelebration(true)
+            setTimeout(() => setShowCelebration(false), 3000)
+          }
+          return newCount
+        })
+      }
       setTimeRemaining(PATTERN[next].durationMs)
       return next
     })
@@ -45,7 +56,9 @@ export default function FourSevenEight() {
   const progress = ((current.durationMs - timeRemaining) / current.durationMs) * 100
 
   return (
-    <Card className="max-w-md mx-auto">
+    <>
+      <CelebrationAnimation show={showCelebration} />
+      <Card className="max-w-md mx-auto">
       <CardHeader className="text-center">
         <div className="flex items-center justify-center gap-2 mb-2">
           <Timer className="w-5 h-5 text-calm-600" />
@@ -98,5 +111,6 @@ export default function FourSevenEight() {
         <ShareInline title="4‑7‑8 Breathing" text="Practice 4‑7‑8 breathing on CalmMyself" />
       </div>
     </Card>
+    </>
   )
 }
