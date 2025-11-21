@@ -78,7 +78,11 @@ export default function CoherentBreathing() {
               scaleMin={1}
               scaleMax={1.5}
             />
-            <div className="absolute text-white font-medium text-sm select-none">{Math.ceil(timeRemaining/1000)}</div>
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <div className="text-calm-900 font-semibold text-sm select-none bg-white/80 rounded px-2 py-0.5">
+                {Math.ceil(timeRemaining/1000)}
+              </div>
+            </div>
           </div>
           <div className="text-center">
             <div className="text-2xl font-semibold text-calm-800 mb-2 min-h-[32px]">
