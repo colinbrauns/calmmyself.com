@@ -155,8 +155,10 @@ export default function TriangleBreathing() {
                 transition={{ duration: isActive ? currentPhaseDuration / 1000 : 0, ease: 'linear' }}
               />
             </svg>
-            <div className="absolute text-white font-medium text-sm text-center select-none z-10">
-              {Math.ceil(timeRemaining / 1000)}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <div className="text-grounding-900 font-semibold text-sm text-center select-none bg-white/80 rounded px-2 py-0.5">
+                {Math.ceil(timeRemaining / 1000)}
+              </div>
             </div>
           </div>
           
