@@ -132,7 +132,7 @@ export default function TriangleBreathing() {
               </defs>
               {/* Track */}
               <path
-                d="M56 12 L16 92 L96 92 Z"
+                d="M56 12 L96 92 L16 92 Z"
                 fill="none"
                 stroke="rgba(16,24,16,0.12)"
                 strokeWidth={3}
@@ -143,7 +143,7 @@ export default function TriangleBreathing() {
               <motion.path
                 key={`${currentPhase}-${phaseIndex}-${currentPhaseDuration}`}
                 ref={pathRef}
-                d="M56 12 L16 92 L96 92 Z"
+                d="M56 12 L96 92 L16 92 Z"
                 fill="none"
                 stroke="url(#triGrad)"
                 strokeWidth={3}
