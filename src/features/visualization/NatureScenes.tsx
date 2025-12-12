@@ -317,9 +317,10 @@ export default function NatureScenes() {
           ))}
         </div>
 
-        {/* Current content with animated transitions */}
+<<<<<<< HEAD
+        {/* Current content with animated transitions and ambient animations */}
         <div
-          className={`${colors.bg} rounded-xl p-8 text-center min-h-[120px] flex items-center justify-center overflow-hidden shadow-lg border border-gray-100`}
+          className={`${colors.bg} rounded-xl p-8 text-center min-h-[120px] flex items-center justify-center overflow-hidden shadow-lg border border-gray-100 relative`}
           tabIndex={0}
           ref={contentRef}
           onKeyDown={handleKeyDown}
@@ -327,14 +328,282 @@ export default function NatureScenes() {
           aria-label={getStepTitle()}
           role="group"
         >
+          {/* Forest: Falling leaves */}
+          {selectedScene.id === 'forest' && (
+            <>
+              {[...Array(6)].map((_, i) => (
+                <motion.div
+                  key={`leaf-${i}`}
+                  className="absolute text-2xl"
+                  style={{
+                    left: `${10 + i * 15}%`,
+                    top: -20,
+                  }}
+                  animate={{
+                    y: [0, 200],
+                    x: [0, Math.sin(i) * 20],
+                    rotate: [0, 360],
+                    opacity: [0, 1, 1, 0],
+                  }}
+                  transition={{
+                    duration: 8 + i * 2,
+                    repeat: Infinity,
+                    delay: i * 1.5,
+                    ease: 'easeInOut',
+                  }}
+                >
+                  🍃
+                </motion.div>
+              ))}
+            </>
+          )}
+
+          {/* Ocean: Animated waves */}
+          {selectedScene.id === 'ocean' && (
+            <>
+              {[...Array(3)].map((_, i) => (
+                <motion.div
+                  key={`wave-${i}`}
+                  className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-blue-300/20 to-transparent"
+                  style={{ bottom: i * 8 }}
+                  animate={{
+                    scaleX: [1, 1.1, 1],
+                    opacity: [0.3, 0.5, 0.3],
+                  }}
+                  transition={{
+                    duration: 4,
+                    repeat: Infinity,
+                    delay: i * 0.8,
+                    ease: 'easeInOut',
+                  }}
+                />
+              ))}
+            </>
+          )}
+
+          {/* Mountain: Drifting clouds */}
+          {selectedScene.id === 'mountain' && (
+            <>
+              {[...Array(4)].map((_, i) => (
+                <motion.div
+                  key={`cloud-${i}`}
+                  className="absolute text-3xl opacity-40"
+                  style={{
+                    top: `${10 + i * 20}%`,
+                    left: -100,
+                  }}
+                  animate={{
+                    x: [0, 500],
+                  }}
+                  transition={{
+                    duration: 20 + i * 5,
+                    repeat: Infinity,
+                    delay: i * 3,
+                    ease: 'linear',
+                  }}
+                >
+                  ☁️
+                </motion.div>
+              ))}
+            </>
+          )}
+
+          {/* Meadow: Swaying grass and butterflies */}
+          {selectedScene.id === 'meadow' && (
+            <>
+              {[...Array(5)].map((_, i) => (
+                <motion.div
+                  key={`flower-${i}`}
+                  className="absolute text-xl"
+                  style={{
+                    left: `${15 + i * 18}%`,
+                    bottom: 10,
+                  }}
+                  animate={{
+                    rotate: [-5, 5, -5],
+                  }}
+                  transition={{
+                    duration: 2 + i * 0.5,
+                    repeat: Infinity,
+                    ease: 'easeInOut',
+                  }}
+                >
+                  {i % 3 === 0 ? '🌼' : i % 3 === 1 ? '🌸' : '🌺'}
+                </motion.div>
+              ))}
+              {[...Array(2)].map((_, i) => (
+                <motion.div
+                  key={`butterfly-${i}`}
+                  className="absolute text-lg"
+                  style={{
+                    left: `${20 + i * 40}%`,
+                    top: `${30 + i * 20}%`,
+                  }}
+                  animate={{
+                    x: [0, 30, 0, -30, 0],
+                    y: [0, -20, 0, -10, 0],
+                  }}
+                  transition={{
+                    duration: 8,
+                    repeat: Infinity,
+                    delay: i * 3,
+                    ease: 'easeInOut',
+                  }}
+                >
+                  🦋
+                </motion.div>
+              ))}
+            </>
+          )}
+
           <AnimatePresence mode="wait">
             <motion.p
               key={`${currentStep}-${currentLineIndex}`}
-              className={`text-xl font-medium ${colors.text} leading-relaxed drop-shadow-sm`}
+              className={`text-xl font-medium ${colors.text} leading-relaxed drop-shadow-sm relative z-10`}
               initial={prefersReducedMotion ? undefined : { opacity: 0, y: 8 }}
               animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
               exit={prefersReducedMotion ? undefined : { opacity: 0, y: -8 }}
               transition={prefersReducedMotion ? undefined : { type: 'spring', stiffness: 90, damping: 18, mass: 0.7 }}
+            >
+              {currentContent[currentLineIndex]}
+            </motion.p>
+          </AnimatePresence>
+        </div>
+            <>
+              {[...Array(6)].map((_, i) => (
+                <motion.div
+                  key={`leaf-${i}`}
+                  className="absolute text-2xl"
+                  style={{
+                    left: `${10 + i * 15}%`,
+                    top: -20,
+                  }}
+                  animate={{
+                    y: [0, 200],
+                    x: [0, Math.sin(i) * 20],
+                    rotate: [0, 360],
+                    opacity: [0, 1, 1, 0],
+                  }}
+                  transition={{
+                    duration: 8 + i * 2,
+                    repeat: Infinity,
+                    delay: i * 1.5,
+                    ease: 'easeInOut',
+                  }}
+                >
+                  🍃
+                </motion.div>
+              ))}
+            </>
+          )}
+
+          {/* Ocean: Animated waves */}
+          {selectedScene.id === 'ocean' && (
+            <>
+              {[...Array(3)].map((_, i) => (
+                <motion.div
+                  key={`wave-${i}`}
+                  className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-blue-300/20 to-transparent"
+                  style={{ bottom: i * 8 }}
+                  animate={{
+                    scaleX: [1, 1.1, 1],
+                    opacity: [0.3, 0.5, 0.3],
+                  }}
+                  transition={{
+                    duration: 4,
+                    repeat: Infinity,
+                    delay: i * 0.8,
+                    ease: 'easeInOut',
+                  }}
+                />
+              ))}
+            </>
+          )}
+
+          {/* Mountain: Drifting clouds */}
+          {selectedScene.id === 'mountain' && (
+            <>
+              {[...Array(4)].map((_, i) => (
+                <motion.div
+                  key={`cloud-${i}`}
+                  className="absolute text-3xl opacity-40"
+                  style={{
+                    top: `${10 + i * 20}%`,
+                    left: -100,
+                  }}
+                  animate={{
+                    x: [0, 500],
+                  }}
+                  transition={{
+                    duration: 20 + i * 5,
+                    repeat: Infinity,
+                    delay: i * 3,
+                    ease: 'linear',
+                  }}
+                >
+                  ☁️
+                </motion.div>
+              ))}
+            </>
+          )}
+
+          {/* Meadow: Swaying grass and butterflies */}
+          {selectedScene.id === 'meadow' && (
+            <>
+              {[...Array(5)].map((_, i) => (
+                <motion.div
+                  key={`flower-${i}`}
+                  className="absolute text-xl"
+                  style={{
+                    left: `${15 + i * 18}%`,
+                    bottom: 10,
+                  }}
+                  animate={{
+                    rotate: [-5, 5, -5],
+                  }}
+                  transition={{
+                    duration: 2 + i * 0.5,
+                    repeat: Infinity,
+                    ease: 'easeInOut',
+                  }}
+                >
+                  {i % 3 === 0 ? '🌼' : i % 3 === 1 ? '🌸' : '🌺'}
+                </motion.div>
+              ))}
+              {[...Array(2)].map((_, i) => (
+                <motion.div
+                  key={`butterfly-${i}`}
+                  className="absolute text-lg"
+                  style={{
+                    left: `${20 + i * 40}%`,
+                    top: `${30 + i * 20}%`,
+                  }}
+                  animate={{
+                    x: [0, 30, 0, -30, 0],
+                    y: [0, -20, 0, -10, 0],
+                  }}
+                  transition={{
+                    duration: 8,
+                    repeat: Infinity,
+                    delay: i * 3,
+                    ease: 'easeInOut',
+                  }}
+                >
+                  🦋
+                </motion.div>
+              ))}
+            </>
+          )}
+
+          <AnimatePresence mode="wait">
+            <motion.p
+              key={`${currentStep}-${currentLineIndex}`}
+              className={`text-lg ${colors.text} leading-relaxed relative z-10`}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.35, ease: 'easeOut' }}
+>>>>>>> 7568bd483db1085f884919e35c36244ef4a8a8ac
             >
               {currentContent[currentLineIndex]}
             </motion.p>

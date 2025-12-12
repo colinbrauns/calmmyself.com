@@ -25,12 +25,69 @@ export default function SoundFrequencies() {
   const audioCtxRef = useRef<AudioContext | null>(null)
   const oscRef = useRef<OscillatorNode | null>(null)
   const gainRef = useRef<GainNode | null>(null)
+  const analyserRef = useRef<AnalyserNode | null>(null)
+  const canvasRef = useRef<HTMLCanvasElement | null>(null)
+  const animationFrameRef = useRef<number | null>(null)
 
   useEffect(() => {
     return () => {
       stopTone(true)
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current)
+      }
     }
   }, [])
+
+  const drawVisualizer = () => {
+    const canvas = canvasRef.current
+    const analyser = analyserRef.current
+    if (!canvas || !analyser) return
+
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+
+    const bufferLength = analyser.frequencyBinCount
+    const dataArray = new Uint8Array(bufferLength)
+
+    const draw = () => {
+      if (!isPlaying) return
+
+      animationFrameRef.current = requestAnimationFrame(draw)
+      analyser.getByteFrequencyData(dataArray)
+
+      ctx.fillStyle = 'rgb(254, 252, 232)' // grounding-50
+      ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+      const barCount = 64
+      const barWidth = canvas.width / barCount
+      const step = Math.floor(bufferLength / barCount)
+
+      for (let i = 0; i < barCount; i++) {
+        const barHeight = (dataArray[i * step] / 255) * canvas.height * 0.8
+        const x = i * barWidth
+        const y = canvas.height - barHeight
+
+        // Create gradient for each bar
+        const gradient = ctx.createLinearGradient(x, canvas.height, x, y)
+        gradient.addColorStop(0, '#f59e0b') // grounding-500
+        gradient.addColorStop(0.5, '#fbbf24') // grounding-400
+        gradient.addColorStop(1, '#fde68a') // grounding-200
+
+        ctx.fillStyle = gradient
+        ctx.fillRect(x + 1, y, barWidth - 2, barHeight)
+      }
+    }
+
+    draw()
+  }
+
+  useEffect(() => {
+    if (isPlaying) {
+      drawVisualizer()
+    } else if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current)
+    }
+  }, [isPlaying])
 
   const startTone = async () => {
     if (typeof window === 'undefined') return
@@ -43,17 +100,27 @@ export default function SoundFrequencies() {
     stopTone(true)
     const osc = ctx.createOscillator()
     const gain = ctx.createGain()
+    const analyser = ctx.createAnalyser()
+
+    analyser.fftSize = 2048
+    analyser.smoothingTimeConstant = 0.8
+
     osc.frequency.value = selected.hz
     osc.type = 'sine'
     gain.gain.value = 0
-    osc.connect(gain)
+
+    osc.connect(analyser)
+    analyser.connect(gain)
     gain.connect(ctx.destination)
+
     osc.start()
     // fade in
     gain.gain.linearRampToValueAtTime(volume, ctx.currentTime + 0.6)
     ctx.resume?.()
+
     oscRef.current = osc
     gainRef.current = gain
+    analyserRef.current = analyser
     setIsPlaying(true)
   }
 
@@ -133,14 +200,19 @@ export default function SoundFrequencies() {
           These tones are gentle aids; listen at low volume. Evidence for specific “healing frequencies” varies—use what feels pleasant and calming to you.
         </div>
 
-        <div className="relative h-16 overflow-hidden rounded-md bg-gradient-to-r from-grounding-50 to-calm-50">
-          <motion.div
-            className="absolute inset-0 opacity-70"
-            initial={{ x: '-100%' }}
-            animate={{ x: '100%' }}
-            transition={{ duration: 6, repeat: Infinity, ease: 'linear' }}
-            style={{ background: 'radial-gradient(60px 12px at 30% 50%, rgba(245,158,11,0.25), transparent 60%)' }}
+        <div className="relative h-32 overflow-hidden rounded-lg bg-gradient-to-r from-grounding-50 to-calm-50 border border-grounding-200">
+          <canvas
+            ref={canvasRef}
+            width={600}
+            height={128}
+            className="w-full h-full"
+            style={{ imageRendering: 'auto' }}
           />
+          {!isPlaying && (
+            <div className="absolute inset-0 flex items-center justify-center text-sm text-gray-400">
+              Press Play to see audio visualization
+            </div>
+          )}
         </div>
       </CardContent>
       <div className="px-6 pb-6 space-y-3">
