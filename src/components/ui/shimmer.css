@@ -1,0 +1,19 @@
+/* Premium shimmer effect for glows */
+.shimmer-glow {
+  position: relative;
+  overflow: hidden;
+}
+.shimmer-glow::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(120deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.32) 50%, rgba(255,255,255,0.12) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 2.2s infinite linear;
+  z-index: 1;
+  pointer-events: none;
+}
+@keyframes shimmer {
+  0% { background-position: -200px 0; }
+  100% { background-position: 200px 0; }
+}

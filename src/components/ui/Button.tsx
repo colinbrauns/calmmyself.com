@@ -1,7 +1,7 @@
 import { ButtonHTMLAttributes, forwardRef } from 'react'
 
 const getButtonClasses = (variant: string = 'default', size: string = 'default') => {
-  const baseClasses = 'inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-calm-600 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50'
+  const baseClasses = 'inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-calm-600 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 shimmer-glow hover:scale-[1.04] active:scale-95 transition-transform duration-200'
   
   const variantClasses = {
     default: 'bg-calm-600 text-white hover:bg-calm-700 active:bg-calm-800',

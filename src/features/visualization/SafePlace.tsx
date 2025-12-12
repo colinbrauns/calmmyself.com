@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
+import '@/components/ui/shimmer.css'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/Button'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card'
@@ -54,6 +55,14 @@ export default function SafePlace() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
   const [hasStarted, setHasStarted] = useState(false)
   const [responses, setResponses] = useState<string[]>([])
+  const prefersReducedMotion = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // Focus management for accessibility
+  const questionRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (questionRef.current) {
+      questionRef.current.focus();
+    }
+  }, [currentQuestionIndex, currentCategoryIndex, hasStarted]);
 
   const currentCategory = SAFE_PLACE_PROMPTS[currentCategoryIndex]
   const currentQuestion = currentCategory.questions[currentQuestionIndex]
@@ -64,22 +73,33 @@ export default function SafePlace() {
 
   const nextQuestion = () => {
     if (currentQuestionIndex < currentCategory.questions.length - 1) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1)
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
     } else if (currentCategoryIndex < SAFE_PLACE_PROMPTS.length - 1) {
-      setCurrentCategoryIndex(currentCategoryIndex + 1)
-      setCurrentQuestionIndex(0)
+      setCurrentCategoryIndex(currentCategoryIndex + 1);
+      setCurrentQuestionIndex(0);
     }
-  }
+  };
 
   const prevQuestion = () => {
     if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex(currentQuestionIndex - 1)
+      setCurrentQuestionIndex(currentQuestionIndex - 1);
     } else if (currentCategoryIndex > 0) {
-      const prevCategoryIndex = currentCategoryIndex - 1
-      setCurrentCategoryIndex(prevCategoryIndex)
-      setCurrentQuestionIndex(SAFE_PLACE_PROMPTS[prevCategoryIndex].questions.length - 1)
+      const prevCategoryIndex = currentCategoryIndex - 1;
+      setCurrentCategoryIndex(prevCategoryIndex);
+      setCurrentQuestionIndex(SAFE_PLACE_PROMPTS[prevCategoryIndex].questions.length - 1);
     }
-  }
+  };
+
+  // Keyboard navigation
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === 'ArrowRight' || e.key === 'Enter') {
+      nextQuestion();
+      e.preventDefault();
+    } else if (e.key === 'ArrowLeft') {
+      prevQuestion();
+      e.preventDefault();
+    }
+  };
 
   const resetVisualization = () => {
     setCurrentCategoryIndex(0)
@@ -94,67 +114,64 @@ export default function SafePlace() {
 
   if (!hasStarted) {
     return (
-      <Card className="max-w-md mx-auto">
+      <Card className="max-w-md mx-auto shadow-xl" role="region" aria-label="Safe place visualization intro">
         <CardHeader className="text-center">
           <CardTitle>Safe Place Visualization</CardTitle>
           <CardDescription>
             Create a mental sanctuary you can visit anytime
           </CardDescription>
         </CardHeader>
-        
-        <CardContent className="space-y-6">
-          <div className="bg-green-50 p-6 rounded-lg text-center">
+        <CardContent className="space-y-8">
+          <div className="bg-gradient-to-br from-green-50 to-blue-50 p-8 rounded-xl text-center shadow-lg border border-green-100">
             <motion.div
-              className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4"
-              animate={{ y: [0, -2, 0] }}
-              transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+              className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 shadow shimmer-glow"
+              animate={prefersReducedMotion ? undefined : { y: [0, -2, 0] }}
+              transition={prefersReducedMotion ? undefined : { type: 'spring', stiffness: 80, damping: 16, mass: 0.7, repeat: Infinity, repeatType: 'loop', duration: 4 }}
             >
-              <MapPin className="w-8 h-8 text-green-600" />
+              <MapPin className="w-8 h-8 text-green-700" />
             </motion.div>
-            <p className="text-gray-700 leading-relaxed mb-4">
-              This guided visualization will help you create a detailed mental image 
+            <p className="text-lg text-gray-800 leading-relaxed mb-4 font-medium">
+              This guided visualization will help you create a detailed mental image
               of a safe, peaceful place that you can return to whenever you need comfort.
             </p>
           </div>
-
-          <div className="bg-blue-50 p-4 rounded-lg">
-            <p className="text-sm text-blue-800 font-medium mb-2">What you'll do:</p>
-            <ul className="text-sm text-blue-700 space-y-1">
+          <div className="bg-gradient-to-r from-blue-50 to-green-50 p-5 rounded-lg border border-blue-100">
+            <p className="text-base text-blue-900 font-semibold mb-2">What you'll do:</p>
+            <ul className="text-base text-blue-800 space-y-1">
               <li>• Answer guided questions about your safe place</li>
               <li>• Use all your senses to build the visualization</li>
               <li>• Create a detailed mental sanctuary</li>
               <li>• Learn to access it quickly when needed</li>
             </ul>
           </div>
-
           <div className="text-center">
             <Button
               onClick={() => setHasStarted(true)}
               variant="grounding"
               size="lg"
               className="w-full"
+              aria-label="Begin visualization"
             >
               Begin Visualization
             </Button>
           </div>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   return (
-    <Card className="max-w-md mx-auto">
+    <Card className="max-w-md mx-auto shadow-xl" role="region" aria-label="Safe place visualization">
       <CardHeader className="text-center">
         <CardTitle>Safe Place Visualization</CardTitle>
         <CardDescription>
           Question {currentQuestionNumber} of {totalQuestions}
         </CardDescription>
       </CardHeader>
-      
-      <CardContent className="space-y-6">
+      <CardContent className="space-y-8">
         {/* Progress */}
-        <div className="w-full bg-gray-200 rounded-full h-2">
-          <div 
+        <div className="w-full bg-gray-200 rounded-full h-2" aria-label="Progress bar" role="progressbar" aria-valuenow={currentQuestionNumber} aria-valuemax={totalQuestions} aria-valuemin={1}>
+          <div
             className="bg-green-500 h-2 rounded-full transition-all duration-500"
             style={{ width: `${(currentQuestionNumber / totalQuestions) * 100}%` }}
           />
@@ -162,21 +179,29 @@ export default function SafePlace() {
 
         {/* Category */}
         <div className="text-center">
-          <div className="inline-block px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
+          <div className="inline-block px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium" aria-label={currentCategory.category}>
             {currentCategory.category}
           </div>
         </div>
 
         {/* Question with smooth transition */}
-        <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-lg p-6 text-center overflow-hidden min-h-[88px] flex items-center justify-center">
+        <div
+          className="bg-gradient-to-br from-green-50 to-blue-100 rounded-xl p-8 text-center overflow-hidden min-h-[88px] flex items-center justify-center shadow-lg border border-blue-100"
+          tabIndex={0}
+          ref={questionRef}
+          onKeyDown={handleKeyDown}
+          aria-live="polite"
+          aria-label={currentCategory.category}
+          role="group"
+        >
           <AnimatePresence mode="wait">
             <motion.p
               key={`${currentCategoryIndex}-${currentQuestionIndex}`}
-              className="text-lg text-gray-800 leading-relaxed font-medium"
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.35, ease: 'easeOut' }}
+              className="text-xl text-gray-900 leading-relaxed font-semibold drop-shadow-sm"
+              initial={prefersReducedMotion ? undefined : { opacity: 0, y: 8 }}
+              animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
+              exit={prefersReducedMotion ? undefined : { opacity: 0, y: -8 }}
+              transition={prefersReducedMotion ? undefined : { type: 'spring', stiffness: 90, damping: 18, mass: 0.7 }}
             >
               {currentQuestion}
             </motion.p>
@@ -185,42 +210,45 @@ export default function SafePlace() {
 
         {/* Reflection Area */}
         <div className="space-y-3">
-          <label className="text-sm font-medium text-gray-700">
+          <label className="text-base font-semibold text-gray-800" htmlFor="safeplace-reflect">
             Take time to visualize and reflect:
           </label>
           <textarea
-            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 resize-none"
+            id="safeplace-reflect"
+            className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 resize-none text-gray-900 bg-white shadow"
             rows={4}
             placeholder="Close your eyes and imagine... What do you see, hear, feel, smell, or taste?"
+            aria-label="Reflection area"
           />
         </div>
 
         {/* Instructions */}
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-          <p className="text-sm text-yellow-800">
-            💡 <strong>Tip:</strong> Take your time. Close your eyes and really 
+        <div className="bg-gradient-to-r from-yellow-50 to-green-50 border border-yellow-200 rounded-lg p-4" aria-label="Instructions">
+          <p className="text-base text-yellow-900 font-medium">
+            💡 <strong>Tip:</strong> Take your time. Close your eyes and really
             try to experience this place with all your senses before moving on.
           </p>
         </div>
 
         {/* Controls */}
-        <div className="flex space-x-3">
+        <div className="flex space-x-3" role="group" aria-label="Navigation controls">
           <Button
             onClick={prevQuestion}
             variant="outline"
             size="lg"
             className="flex-1"
             disabled={isFirstQuestion}
+            aria-label="Previous question"
           >
             Previous
           </Button>
-          
           {!isLastQuestion ? (
             <Button
               onClick={nextQuestion}
               variant="grounding"
               size="lg"
               className="flex-1"
+              aria-label="Next question"
             >
               Next
             </Button>
@@ -230,6 +258,7 @@ export default function SafePlace() {
               variant="grounding"
               size="lg"
               className="flex-1"
+              aria-label="Complete visualization"
             >
               Complete
             </Button>
@@ -243,6 +272,7 @@ export default function SafePlace() {
             variant="ghost"
             size="sm"
             className="flex items-center space-x-2"
+            aria-label="Start over"
           >
             <RefreshCw size={16} />
             <span>Start Over</span>
@@ -250,5 +280,5 @@ export default function SafePlace() {
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }

@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useMemo } from 'react'
+import '@/components/ui/shimmer.css'
 import { motion, useAnimationControls, useReducedMotion } from 'framer-motion'
 import type { CyclePhase } from '@/components/BreathingCycle'
 
@@ -48,8 +49,10 @@ export default function ShapeBreather({
     controls.start({
       scale: targetScale,
       transition: {
-        duration: durationMs / 1000,
-        ease: phase === 'exhale' ? 'easeOut' : 'easeInOut',
+        type: 'spring',
+        stiffness: 120,
+        damping: 18,
+        mass: 0.8,
       },
     })
   }, [controls, durationMs, isActive, prefersReducedMotion, allowOverride, phase, targetScale])
@@ -62,9 +65,9 @@ export default function ShapeBreather({
       if (styleMode === 'stroke') {
         return (
           <>
-            {/* Outer subtle glow */}
+            {/* Outer subtle glow with shimmer */}
             <motion.div
-              className="absolute rounded-xl blur-xl opacity-70"
+              className="absolute rounded-xl blur-xl opacity-70 shimmer-glow"
               style={{ width: dimension, height: dimension }}
               animate={controls}
               initial={{ scale: scaleMin, opacity: 0.35 }}
@@ -95,9 +98,9 @@ export default function ShapeBreather({
       // fill mode
       return (
         <>
-          {/* Soft outer glow */}
+          {/* Soft outer glow with shimmer */}
           <motion.div
-            className="absolute rounded-xl blur-xl opacity-70"
+            className="absolute rounded-xl blur-xl opacity-70 shimmer-glow"
             style={{ width: dimension, height: dimension }}
             animate={controls}
             initial={{ scale: scaleMin, opacity: 0.35 }}
