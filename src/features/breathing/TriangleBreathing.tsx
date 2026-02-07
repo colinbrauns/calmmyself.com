@@ -53,7 +53,7 @@ export default function TriangleBreathing() {
 
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null
-    
+
     if (isActive) {
       interval = setInterval(() => {
         setTimeRemaining((time) => {
@@ -74,11 +74,6 @@ export default function TriangleBreathing() {
   const currentPhaseDuration = PHASE_DURATION[currentPhase]
   const progress = ((currentPhaseDuration - timeRemaining) / currentPhaseDuration) * 100
 
-  const getTriangleTransform = () => {
-    const angle = (progress / 100) * 360
-    return `rotate(${angle}deg)`
-  }
-
   // SVG triangle path tracing to visually match 4-4-6 timing
   const pathRef = useRef<SVGPathElement | null>(null)
   const [pathLen, setPathLen] = useState(300)
@@ -93,11 +88,9 @@ export default function TriangleBreathing() {
   }, [])
 
   const phaseStartEnd = () => {
-    // Fractions of total triangle perimeter to draw
-    // Inhale: 0 -> 1/3, Hold: 1/3 -> 1/3 (no change), Exhale: 1/3 -> 1
     switch (currentPhase) {
       case 'inhale': return [0, 1 / 3] as const
-      case 'hold': return [1 / 3, 1 / 3] as const
+      case 'hold': return [1 / 3, 1 / 3] as const // no movement
       case 'exhale': return [1 / 3, 1] as const
       default: return [0, 0] as const
     }
@@ -107,8 +100,6 @@ export default function TriangleBreathing() {
   const startOffset = pathLen * (1 - startFrac)
   const endOffset = pathLen * (1 - endFrac)
 
-
-
   return (
     <Card className="max-w-md mx-auto">
       <CardHeader className="text-center">
@@ -117,25 +108,31 @@ export default function TriangleBreathing() {
           4-4-6 pattern for relaxation and stress relief
         </CardDescription>
       </CardHeader>
-      
+
       <CardContent className="space-y-6 pb-6">
         {/* Breathing Visual */}
         <div className="flex flex-col items-center space-y-4">
-          <div className="relative" style={{ width: 128, height: 128 }}>
-            {/* Triangle path trace only (no scaling) */}
-            <svg className="absolute" width={112} height={112} viewBox="0 0 112 112" aria-hidden="true">
+          <div className="relative" style={{ width: 192, height: 192 }}>
+            <svg className="absolute" width={192} height={192} viewBox="0 0 168 168" aria-hidden="true">
               <defs>
                 <linearGradient id="triGrad" x1="0" y1="0" x2="1" y2="1">
                   <stop offset="0%" stopColor="#fcd34d" stopOpacity="0.9" />
                   <stop offset="100%" stopColor="#f59e0b" stopOpacity="0.9" />
                 </linearGradient>
+                <filter id="triGlow" x="-50%" y="-50%" width="200%" height="200%">
+                  <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur" />
+                  <feMerge>
+                    <feMergeNode in="blur" />
+                    <feMergeNode in="SourceGraphic" />
+                  </feMerge>
+                </filter>
               </defs>
               {/* Track */}
               <path
-                d="M56 12 L96 92 L16 92 Z"
+                d="M84 18 L148 138 L20 138 Z"
                 fill="none"
                 stroke="rgba(16,24,16,0.12)"
-                strokeWidth={3}
+                strokeWidth={5}
                 strokeLinecap="round"
                 strokeLinejoin="round"
               />
@@ -143,17 +140,35 @@ export default function TriangleBreathing() {
               <motion.path
                 key={`${currentPhase}-${phaseIndex}-${currentPhaseDuration}`}
                 ref={pathRef}
-                d="M56 12 L96 92 L16 92 Z"
+                d="M84 18 L148 138 L20 138 Z"
                 fill="none"
                 stroke="url(#triGrad)"
-                strokeWidth={3}
+                strokeWidth={5}
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeDasharray={pathLen}
                 initial={{ strokeDashoffset: startOffset }}
                 animate={{ strokeDashoffset: endOffset }}
                 transition={{ duration: isActive ? currentPhaseDuration / 1000 : 0, ease: 'linear' }}
+                filter="url(#triGlow)"
               />
+              {/* Pulsing opacity during hold phase */}
+              {isActive && currentPhase === 'hold' && (
+                <motion.path
+                  d="M84 18 L148 138 L20 138 Z"
+                  fill="none"
+                  stroke="url(#triGrad)"
+                  strokeWidth={5}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeDasharray={pathLen}
+                  strokeDashoffset={pathLen * (1 - 1 / 3)}
+                  initial={{ opacity: 0.4 }}
+                  animate={{ opacity: [0.4, 0.9, 0.4] }}
+                  transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+                  filter="url(#triGlow)"
+                />
+              )}
             </svg>
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
               <div className="text-grounding-900 font-semibold text-sm text-center select-none bg-white/80 rounded px-2 py-0.5">
@@ -161,7 +176,7 @@ export default function TriangleBreathing() {
               </div>
             </div>
           </div>
-          
+
           {/* Phase Indicator */}
           <div className="text-center">
             <div className="text-2xl font-semibold text-grounding-800 mb-2 min-h-[32px]">
@@ -184,7 +199,7 @@ export default function TriangleBreathing() {
 
           {/* Progress Bar */}
           <div className="w-full bg-grounding-100 rounded-full h-2">
-            <div 
+            <div
               className="bg-grounding-500 h-2 rounded-full transition-all duration-100 ease-linear"
               style={{ width: `${progress}%` }}
             />
@@ -195,9 +210,9 @@ export default function TriangleBreathing() {
         <div className="text-sm text-gray-600 text-center bg-grounding-50 p-3 rounded-md">
           <p className="mb-2">Follow the triangle pattern:</p>
           <ul className="space-y-1">
-            <li>• Inhale for 4 seconds</li>
-            <li>• Hold breath for 4 seconds</li>
-            <li>• Exhale slowly for 6 seconds</li>
+            <li>Inhale for 4 seconds</li>
+            <li>Hold breath for 4 seconds</li>
+            <li>Exhale slowly for 6 seconds</li>
           </ul>
           <p className="text-xs text-gray-500 mt-2">
             Longer exhale activates the parasympathetic nervous system
@@ -216,7 +231,7 @@ export default function TriangleBreathing() {
             {isActive ? <Pause size={20} /> : <Play size={20} />}
             <span>{isActive ? 'Pause' : 'Start'}</span>
           </Button>
-          
+
           <Button
             onClick={reset}
             variant="outline"

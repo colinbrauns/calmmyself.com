@@ -7,14 +7,14 @@ import { Music2, Play, Pause } from 'lucide-react'
 import { motion } from 'framer-motion'
 import ShareInline from '@/components/ShareInline'
 
-type Preset = { id: string; name: string; hz: number; note?: string }
+type Preset = { id: string; name: string; hz: number; hue: number }
 
 const PRESETS: Preset[] = [
-  { id: '174', name: '174 Hz – Relax', hz: 174 },
-  { id: '396', name: '396 Hz – Release', hz: 396 },
-  { id: '432', name: '432 Hz – Soothing', hz: 432 },
-  { id: '528', name: '528 Hz – Bright', hz: 528 },
-  { id: '639', name: '639 Hz – Warm', hz: 639 },
+  { id: '174', name: '174 Hz – Relax', hz: 174, hue: 30 },
+  { id: '396', name: '396 Hz – Release', hz: 396, hue: 15 },
+  { id: '432', name: '432 Hz – Soothing', hz: 432, hue: 38 },
+  { id: '528', name: '528 Hz – Bright', hz: 528, hue: 45 },
+  { id: '639', name: '639 Hz – Warm', hz: 639, hue: 22 },
 ]
 
 export default function SoundFrequencies() {
@@ -22,12 +22,18 @@ export default function SoundFrequencies() {
   const [selected, setSelected] = useState<Preset>(PRESETS[2])
   const [volume, setVolume] = useState(0.08)
 
+  const isPlayingRef = useRef(false)
   const audioCtxRef = useRef<AudioContext | null>(null)
   const oscRef = useRef<OscillatorNode | null>(null)
   const gainRef = useRef<GainNode | null>(null)
   const analyserRef = useRef<AnalyserNode | null>(null)
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const animationFrameRef = useRef<number | null>(null)
+  const selectedRef = useRef(selected)
+
+  useEffect(() => {
+    selectedRef.current = selected
+  }, [selected])
 
   useEffect(() => {
     return () => {
@@ -50,7 +56,12 @@ export default function SoundFrequencies() {
     const dataArray = new Uint8Array(bufferLength)
 
     const draw = () => {
-      if (!isPlaying) return
+      if (!isPlayingRef.current) {
+        // Clear canvas to background when stopped
+        ctx.fillStyle = 'rgb(254, 252, 232)'
+        ctx.fillRect(0, 0, canvas.width, canvas.height)
+        return
+      }
 
       animationFrameRef.current = requestAnimationFrame(draw)
       analyser.getByteFrequencyData(dataArray)
@@ -61,21 +72,52 @@ export default function SoundFrequencies() {
       const barCount = 64
       const barWidth = canvas.width / barCount
       const step = Math.floor(bufferLength / barCount)
+      const hue = selectedRef.current.hue
+      const centerY = canvas.height / 2
 
       for (let i = 0; i < barCount; i++) {
-        const barHeight = (dataArray[i * step] / 255) * canvas.height * 0.8
-        const x = i * barWidth
-        const y = canvas.height - barHeight
+        const value = dataArray[i * step] / 255
+        const barHeight = value * centerY * 0.85
+        const x = i * barWidth + 1
+        const w = barWidth - 2
+        const topY = centerY - barHeight
+        const radius = Math.min(w / 2, 4)
 
-        // Create gradient for each bar
-        const gradient = ctx.createLinearGradient(x, canvas.height, x, y)
-        gradient.addColorStop(0, '#f59e0b') // grounding-500
-        gradient.addColorStop(0.5, '#fbbf24') // grounding-400
-        gradient.addColorStop(1, '#fde68a') // grounding-200
+        // Main bar gradient (varies per preset hue)
+        const gradient = ctx.createLinearGradient(x, centerY, x, topY)
+        gradient.addColorStop(0, `hsl(${hue}, 90%, 60%)`)
+        gradient.addColorStop(0.5, `hsl(${hue + 10}, 85%, 65%)`)
+        gradient.addColorStop(1, `hsl(${hue + 20}, 80%, 80%)`)
 
+        // Draw bar with rounded top
         ctx.fillStyle = gradient
-        ctx.fillRect(x + 1, y, barWidth - 2, barHeight)
+        ctx.beginPath()
+        ctx.moveTo(x, centerY)
+        ctx.lineTo(x, topY + radius)
+        ctx.arcTo(x, topY, x + radius, topY, radius)
+        ctx.arcTo(x + w, topY, x + w, topY + radius, radius)
+        ctx.lineTo(x + w, centerY)
+        ctx.closePath()
+        ctx.fill()
+
+        // Mirrored bar below center (shorter, more transparent)
+        const mirrorHeight = barHeight * 0.35
+        const mirrorBottomY = centerY + mirrorHeight
+        const mirrorGradient = ctx.createLinearGradient(x, centerY, x, mirrorBottomY)
+        mirrorGradient.addColorStop(0, `hsla(${hue}, 80%, 65%, 0.4)`)
+        mirrorGradient.addColorStop(1, `hsla(${hue}, 70%, 75%, 0.1)`)
+
+        ctx.fillStyle = mirrorGradient
+        ctx.fillRect(x, centerY + 1, w, mirrorHeight)
       }
+
+      // Subtle center line
+      ctx.strokeStyle = `hsla(${hue}, 60%, 50%, 0.15)`
+      ctx.lineWidth = 1
+      ctx.beginPath()
+      ctx.moveTo(0, centerY)
+      ctx.lineTo(canvas.width, centerY)
+      ctx.stroke()
     }
 
     draw()
@@ -86,6 +128,15 @@ export default function SoundFrequencies() {
       drawVisualizer()
     } else if (animationFrameRef.current) {
       cancelAnimationFrame(animationFrameRef.current)
+      // Clear canvas when stopped
+      const canvas = canvasRef.current
+      if (canvas) {
+        const ctx = canvas.getContext('2d')
+        if (ctx) {
+          ctx.fillStyle = 'rgb(254, 252, 232)'
+          ctx.fillRect(0, 0, canvas.width, canvas.height)
+        }
+      }
     }
   }, [isPlaying])
 
@@ -121,6 +172,7 @@ export default function SoundFrequencies() {
     oscRef.current = osc
     gainRef.current = gain
     analyserRef.current = analyser
+    isPlayingRef.current = true
     setIsPlaying(true)
   }
 
@@ -139,6 +191,7 @@ export default function SoundFrequencies() {
     }
     oscRef.current = null
     gainRef.current = null
+    isPlayingRef.current = false
     setIsPlaying(false)
   }
 
@@ -197,7 +250,7 @@ export default function SoundFrequencies() {
         </div>
 
         <div className="text-xs text-gray-500 bg-yellow-50 border border-yellow-200 p-3 rounded-md">
-          These tones are gentle aids; listen at low volume. Evidence for specific “healing frequencies” varies—use what feels pleasant and calming to you.
+          These tones are gentle aids; listen at low volume. Evidence for specific "healing frequencies" varies—use what feels pleasant and calming to you.
         </div>
 
         <div className="relative h-32 overflow-hidden rounded-lg bg-gradient-to-r from-grounding-50 to-calm-50 border border-grounding-200">

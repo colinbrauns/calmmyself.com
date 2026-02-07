@@ -15,6 +15,28 @@ const PATTERN: BreathingPattern = [
   { phase: 'exhale', label: 'Exhale (8)', durationMs: 8000 },
 ]
 
+// Arc segment helper: returns SVG arc path for a segment of a circle
+function arcPath(cx: number, cy: number, r: number, startAngle: number, endAngle: number): string {
+  const start = {
+    x: cx + r * Math.cos(startAngle),
+    y: cy + r * Math.sin(startAngle),
+  }
+  const end = {
+    x: cx + r * Math.cos(endAngle),
+    y: cy + r * Math.sin(endAngle),
+  }
+  const largeArc = endAngle - startAngle > Math.PI ? 1 : 0
+  return `M ${start.x} ${start.y} A ${r} ${r} 0 ${largeArc} 1 ${end.x} ${end.y}`
+}
+
+// Segment definitions: 4/19 inhale, 7/19 hold, 8/19 exhale
+const TOTAL = 19
+const SEGMENTS = [
+  { label: '4', fraction: 4 / TOTAL, color: '#3b82f6', activeColor: '#2563eb' }, // blue
+  { label: '7', fraction: 7 / TOTAL, color: '#f59e0b', activeColor: '#d97706' }, // amber
+  { label: '8', fraction: 8 / TOTAL, color: '#10b981', activeColor: '#059669' }, // green
+]
+
 export default function FourSevenEight() {
   const [isActive, setIsActive] = useState(false)
   const [phaseIndex, setPhaseIndex] = useState(0)
@@ -55,6 +77,13 @@ export default function FourSevenEight() {
   const current = PATTERN[phaseIndex]
   const progress = ((current.durationMs - timeRemaining) / current.durationMs) * 100
 
+  // Arc segment rendering
+  const arcR = 76
+  const arcCx = 80
+  const arcCy = 80
+  const gap = 0.04 // small gap between segments in radians
+  const startAngleBase = -Math.PI / 2 // start from top
+
   return (
     <>
       <CelebrationAnimation show={showCelebration} />
@@ -62,13 +91,55 @@ export default function FourSevenEight() {
       <CardHeader className="text-center">
         <div className="flex items-center justify-center gap-2 mb-2">
           <Timer className="w-5 h-5 text-calm-600" />
-          <CardTitle>4‑7‑8 Breathing</CardTitle>
+          <CardTitle>4&#x2011;7&#x2011;8 Breathing</CardTitle>
         </div>
         <CardDescription>4s inhale • 7s hold • 8s exhale</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="flex flex-col items-center space-y-4">
-          <div className="relative w-32 h-32 flex items-center justify-center">
+          <div className="relative w-40 h-40 flex items-center justify-center">
+            {/* Arc segments overlay */}
+            <svg className="absolute" width={160} height={160} viewBox="0 0 160 160" aria-hidden="true">
+              {(() => {
+                let currentAngle = startAngleBase
+                return SEGMENTS.map((seg, i) => {
+                  const segStart = currentAngle + gap / 2
+                  const segEnd = currentAngle + seg.fraction * Math.PI * 2 - gap / 2
+                  const midAngle = (segStart + segEnd) / 2
+                  const labelR = arcR + 2
+                  const labelX = arcCx + labelR * Math.cos(midAngle)
+                  const labelY = arcCy + labelR * Math.sin(midAngle)
+                  const isActiveSegment = i === phaseIndex
+                  currentAngle += seg.fraction * Math.PI * 2
+
+                  return (
+                    <g key={i}>
+                      <path
+                        d={arcPath(arcCx, arcCy, arcR, segStart, segEnd)}
+                        fill="none"
+                        stroke={isActiveSegment ? seg.activeColor : seg.color}
+                        strokeWidth={isActiveSegment ? 5 : 3}
+                        strokeLinecap="round"
+                        opacity={isActiveSegment ? 1 : 0.3}
+                      />
+                      <text
+                        x={labelX}
+                        y={labelY}
+                        textAnchor="middle"
+                        dominantBaseline="central"
+                        fill={isActiveSegment ? seg.activeColor : seg.color}
+                        fontSize={11}
+                        fontWeight={isActiveSegment ? 700 : 500}
+                        opacity={isActiveSegment ? 1 : 0.5}
+                      >
+                        {seg.label}
+                      </text>
+                    </g>
+                  )
+                })
+              })()}
+            </svg>
+
             <BreathingCycle
               pattern={PATTERN}
               isActive={isActive}
@@ -104,11 +175,11 @@ export default function FourSevenEight() {
       </CardContent>
       <div className="px-6 pb-6 space-y-3">
         <div className="text-xs text-gray-600 bg-calm-50 border border-calm-100 p-3 rounded-md">
-          About: 4‑7‑8 uses a longer exhale to encourage parasympathetic activation. Keep breaths gentle; skip holds if dizzy.
+          About: 4&#x2011;7&#x2011;8 uses a longer exhale to encourage parasympathetic activation. Keep breaths gentle; skip holds if dizzy.
           <br/>
           Evidence: Longer exhalation patterns are commonly used in clinical breathing interventions to downshift arousal.
         </div>
-        <ShareInline title="4‑7‑8 Breathing" text="Practice 4‑7‑8 breathing on CalmMyself" />
+        <ShareInline title="4&#x2011;7&#x2011;8 Breathing" text="Practice 4-7-8 breathing on CalmMyself" />
       </div>
     </Card>
     </>

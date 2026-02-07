@@ -14,6 +14,19 @@ const PATTERN: BreathingPattern = [
   { phase: 'exhale', label: 'Exhale', durationMs: 5000 },
 ]
 
+// Generate a sine wave SVG path
+function sineWavePath(width: number, height: number, points: number = 100): string {
+  const midY = height / 2
+  const amplitude = height / 2 - 4
+  const parts: string[] = []
+  for (let i = 0; i <= points; i++) {
+    const x = (i / points) * width
+    const y = midY - amplitude * Math.sin((i / points) * Math.PI * 2)
+    parts.push(`${i === 0 ? 'M' : 'L'}${x.toFixed(1)},${y.toFixed(1)}`)
+  }
+  return parts.join(' ')
+}
+
 export default function CoherentBreathing() {
   const [isActive, setIsActive] = useState(false)
   const [phaseIndex, setPhaseIndex] = useState(0)
@@ -54,6 +67,17 @@ export default function CoherentBreathing() {
   const currentLabel = PATTERN[phaseIndex].label
   const progress = ((PATTERN[phaseIndex].durationMs - timeRemaining) / PATTERN[phaseIndex].durationMs) * 100
 
+  // Sine wave dimensions
+  const waveW = 280
+  const waveH = 48
+  const wavePath = sineWavePath(waveW, waveH)
+
+  // Calculate dot position along the wave: full cycle = 10s (5s inhale + 5s exhale)
+  // phaseIndex 0 = inhale (0..0.5), phaseIndex 1 = exhale (0.5..1.0)
+  const cycleProgress = (phaseIndex * 0.5) + (progress / 100) * 0.5
+  const dotX = cycleProgress * waveW
+  const dotY = waveH / 2 - (waveH / 2 - 4) * Math.sin(cycleProgress * Math.PI * 2)
+
   return (
     <>
       <CelebrationAnimation show={showCelebration} />
@@ -84,6 +108,32 @@ export default function CoherentBreathing() {
               </div>
             </div>
           </div>
+
+          {/* Sine wave visualization */}
+          <div className="w-full flex justify-center">
+            <svg width={waveW} height={waveH} viewBox={`0 0 ${waveW} ${waveH}`} aria-hidden="true" className="overflow-visible">
+              {/* Track wave */}
+              <path d={wavePath} fill="none" stroke="rgba(14,165,233,0.15)" strokeWidth={2} />
+              {/* Animated dot following the wave */}
+              {isActive && (
+                <circle
+                  cx={dotX}
+                  cy={dotY}
+                  r={6}
+                  fill="#0ea5e9"
+                  opacity={0.9}
+                >
+                  <animate attributeName="r" values="5;7;5" dur="2s" repeatCount="indefinite" />
+                </circle>
+              )}
+              {/* Center line */}
+              <line x1={0} y1={waveH / 2} x2={waveW} y2={waveH / 2} stroke="rgba(14,165,233,0.08)" strokeWidth={1} strokeDasharray="4 4" />
+              {/* Labels */}
+              <text x={waveW * 0.25} y={10} textAnchor="middle" className="fill-calm-400 text-[10px]">In</text>
+              <text x={waveW * 0.75} y={waveH - 2} textAnchor="middle" className="fill-calm-400 text-[10px]">Out</text>
+            </svg>
+          </div>
+
           <div className="text-center">
             <div className="text-2xl font-semibold text-calm-800 mb-2 min-h-[32px]">
               <AnimatePresence mode="wait">
@@ -107,9 +157,9 @@ export default function CoherentBreathing() {
       </CardContent>
       <div className="px-6 pb-6 space-y-3">
         <div className="text-xs text-gray-600 bg-calm-50 border border-calm-100 p-3 rounded-md">
-          About: Coherent breathing (around 5–6 breaths per minute) can help balance autonomic tone and improve HRV. Breathe softly without strain.
+          About: Coherent breathing (around 5-6 breaths per minute) can help balance autonomic tone and improve HRV. Breathe softly without strain.
           <br/>
-          Evidence: Search for “hrv biofeedback coherent breathing randomized controlled trial”.
+          Evidence: Search for "hrv biofeedback coherent breathing randomized controlled trial".
         </div>
         <ShareInline title="Coherent Breathing" text="Try coherent breathing (6 bpm) on CalmMyself" />
       </div>

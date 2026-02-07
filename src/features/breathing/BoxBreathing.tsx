@@ -17,7 +17,7 @@ const PHASE_DURATION = 4000 // 4 seconds
 const PHASE_LABELS = {
   inhale: 'Breathe In',
   hold1: 'Hold',
-  exhale: 'Breathe Out', 
+  exhale: 'Breathe Out',
   hold2: 'Hold'
 }
 
@@ -138,27 +138,45 @@ export default function BoxBreathing() {
             4-4-4-4 pattern for calm and focus
           </CardDescription>
         </CardHeader>
-      
+
       <CardContent className="space-y-6 pb-6">
         {/* Breathing Visual */}
         <div className="flex flex-col items-center space-y-4">
-          <div className="relative" style={{ width: 128, height: 128 }}>
-            <svg className="absolute" width={128} height={128} viewBox="0 0 112 112" aria-hidden="true">
+          <div className="relative" style={{ width: 192, height: 192 }}>
+            <svg className="absolute" width={192} height={192} viewBox="0 0 168 168" aria-hidden="true">
+              <defs>
+                <filter id="boxGlow" x="-50%" y="-50%" width="200%" height="200%">
+                  <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur" />
+                  <feMerge>
+                    <feMergeNode in="blur" />
+                    <feMergeNode in="SourceGraphic" />
+                  </feMerge>
+                </filter>
+                <linearGradient id="boxFill" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stopColor="#0ea5e9" stopOpacity="0.06" />
+                  <stop offset="100%" stopColor="#38bdf8" stopOpacity="0.12" />
+                </linearGradient>
+              </defs>
+              {/* Subtle fill inside square */}
+              {isActive && (
+                <path d="M24 24 H144 V144 H24 Z" fill="url(#boxFill)" />
+              )}
               {/* Track */}
-              <path d="M16 16 H96 V96 H16 Z" fill="none" stroke="rgba(2,132,199,0.15)" strokeWidth={4} strokeLinejoin="round" />
-              {/* Animated progress */}
+              <path d="M24 24 H144 V144 H24 Z" fill="none" stroke="rgba(2,132,199,0.15)" strokeWidth={6} strokeLinejoin="round" />
+              {/* Animated progress with glow */}
               <motion.path
                 key={`${currentPhase}-${phaseIndex}`}
                 ref={pathRef}
-                d="M16 16 H96 V96 H16 Z"
+                d="M24 24 H144 V144 H24 Z"
                 fill="none"
                 stroke="#0ea5e9"
-                strokeWidth={4}
+                strokeWidth={6}
                 strokeLinejoin="round"
                 strokeDasharray={pathLen}
                 initial={{ strokeDashoffset: startOffset }}
                 animate={{ strokeDashoffset: endOffset }}
                 transition={{ duration: isActive ? PHASE_DURATION / 1000 : 0, ease: 'linear' }}
+                filter="url(#boxGlow)"
               />
             </svg>
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -167,7 +185,7 @@ export default function BoxBreathing() {
               </div>
             </div>
           </div>
-          
+
           {/* Phase Indicator */}
           <div className="text-center">
             <div className="text-2xl font-semibold text-calm-800 mb-2 min-h-[32px]">
@@ -186,14 +204,14 @@ export default function BoxBreathing() {
             <div className="text-sm text-gray-600">
               Cycle {cycleCount + 1}
               {cycleCount >= 3 && (
-                <span className="ml-2 text-green-600">✨ Great job!</span>
+                <span className="ml-2 text-green-600">Great job!</span>
               )}
             </div>
           </div>
 
           {/* Progress Bar */}
           <div className="w-full bg-calm-100 rounded-full h-2">
-            <div 
+            <div
               className="bg-calm-500 h-2 rounded-full transition-all duration-100 ease-linear"
               style={{ width: `${progress}%` }}
             />
@@ -204,10 +222,10 @@ export default function BoxBreathing() {
         <div className="text-sm text-gray-600 text-center bg-calm-50 p-3 rounded-md">
           <p className="mb-2">Follow the square sides:</p>
           <ul className="space-y-1">
-            <li>• Inhale: top side (4s)</li>
-            <li>• Hold: right side (4s)</li>
-            <li>• Exhale: bottom side (4s)</li>
-            <li>• Hold: left side (4s)</li>
+            <li>Inhale: top side (4s)</li>
+            <li>Hold: right side (4s)</li>
+            <li>Exhale: bottom side (4s)</li>
+            <li>Hold: left side (4s)</li>
           </ul>
         </div>
 
@@ -223,7 +241,7 @@ export default function BoxBreathing() {
             {isActive ? <Pause size={20} /> : <Play size={20} />}
             <span>{isActive ? 'Pause' : 'Start'}</span>
           </Button>
-          
+
           <Button
             onClick={reset}
             variant="outline"
