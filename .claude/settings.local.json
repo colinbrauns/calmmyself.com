@@ -9,7 +9,13 @@
       "Bash(npm install:*)",
       "Bash(npm run dev:*)",
       "Bash(npm test)",
-      "Bash(docker logs:*)"
+      "Bash(docker logs:*)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\colin\\\\Coding\\\\CalmMyself.com\" -Force)",
+      "Bash(Select-Object Name, Mode, LastWriteTime)",
+      "Bash(npm run build:*)",
+      "Bash(git add:*)",
+      "Bash(git push:*)",
+      "Bash(git commit:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"
