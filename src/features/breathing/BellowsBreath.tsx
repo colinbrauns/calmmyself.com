@@ -70,7 +70,7 @@ export default function BellowsBreath() {
     )
   }
 
-  const lungScale = phase === 'in' ? 1.3 : 0.7
+  const lungScale = isRunning ? (phase === 'in' ? 1.3 : 0.7) : 1
 
   return (
     <Card className="max-w-md mx-auto">
@@ -86,12 +86,13 @@ export default function BellowsBreath() {
           <div className="relative w-32 h-40 flex items-center justify-center">
             <motion.div
               className="w-24 h-32 rounded-[40%] bg-gradient-to-b from-amber-200 to-amber-400 dark:from-amber-700 dark:to-amber-900 opacity-60"
+              initial={false}
               animate={{ scaleY: lungScale, scaleX: lungScale * 0.8 }}
-              transition={{ duration: 0.4, ease: 'easeInOut' }}
+              transition={{ duration: isRunning ? 0.4 : 0, ease: 'easeInOut' }}
             />
             <div className="absolute inset-0 flex items-center justify-center">
               <span className="text-lg font-bold text-amber-800 dark:text-amber-200">
-                {phase === 'in' ? 'IN' : 'OUT'}
+                {isRunning ? (phase === 'in' ? 'IN' : 'OUT') : 'READY'}
               </span>
             </div>
           </div>
@@ -104,7 +105,9 @@ export default function BellowsBreath() {
         <div className="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-2">
           <motion.div
             className="bg-amber-500 h-2 rounded-full"
+            initial={false}
             animate={{ width: `${(cycle / TOTAL_CYCLES) * 100}%` }}
+            transition={{ duration: isRunning ? 0.3 : 0 }}
           />
         </div>
 

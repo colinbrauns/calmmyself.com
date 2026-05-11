@@ -44,7 +44,12 @@ export default function ShapeBreather({
   }, [phase, scaleMax, scaleMin])
 
   useEffect(() => {
-    if (!isActive || !animationsEnabled) return
+    if (!isActive || !animationsEnabled) {
+      controls.stop()
+      controls.set({ scale: scaleMin })
+      return
+    }
+
     controls.start({
       scale: targetScale,
       transition: {
@@ -52,7 +57,7 @@ export default function ShapeBreather({
         ease: phase === 'exhale' ? 'easeOut' : 'easeInOut',
       },
     })
-  }, [animationsEnabled, controls, durationMs, isActive, phase, targetScale])
+  }, [animationsEnabled, controls, durationMs, isActive, phase, scaleMin, targetScale])
 
   const containerDim = size * (shape === 'flower' ? scaleMax * 1.6 : scaleMax)
   const dimension = `${size}px`
@@ -77,14 +82,16 @@ export default function ShapeBreather({
                 animate={controls}
                 initial={{ scale: scaleMin, opacity: 1 }}
               />
-              <motion.div
-                key={`${phase}`}
-                className={`absolute rounded-lg bg-gradient-to-br ${colors.from} ${colors.to}`}
-                style={{ width: dimension, height: dimension, opacity: 0.18 }}
-                initial={{ scale: 0.92, opacity: 0.18 }}
-                animate={{ scale: 1.12, opacity: 0 }}
-                transition={{ duration: 0.8, ease: 'easeOut' }}
-              />
+              {isActive && (
+                <motion.div
+                  key={`${phase}`}
+                  className={`absolute rounded-lg bg-gradient-to-br ${colors.from} ${colors.to}`}
+                  style={{ width: dimension, height: dimension, opacity: 0.18 }}
+                  initial={{ scale: 0.92, opacity: 0.18 }}
+                  animate={{ scale: 1.12, opacity: 0 }}
+                  transition={{ duration: 0.8, ease: 'easeOut' }}
+                />
+              )}
             </>
           )
         }
@@ -123,14 +130,16 @@ export default function ShapeBreather({
               animate={controls}
               initial={{ scale: scaleMin, opacity: 1 }}
             />
-            <motion.div
-              key={`${phase}-circle-ripple`}
-              className="absolute rounded-full border-2 border-white/40"
-              style={{ width: dimension, height: dimension }}
-              initial={{ scale: 0.9, opacity: 0.25 }}
-              animate={{ scale: 1.25, opacity: 0 }}
-              transition={{ duration: 1.1, ease: 'easeOut' }}
-            />
+            {isActive && (
+              <motion.div
+                key={`${phase}-circle-ripple`}
+                className="absolute rounded-full border-2 border-white/40"
+                style={{ width: dimension, height: dimension }}
+                initial={{ scale: 0.9, opacity: 0.25 }}
+                animate={{ scale: 1.25, opacity: 0 }}
+                transition={{ duration: 1.1, ease: 'easeOut' }}
+              />
+            )}
           </>
         )
       case 'triangle':
@@ -200,14 +209,16 @@ export default function ShapeBreather({
               animate={controls}
               initial={{ scale: scaleMin, opacity: 1 }}
             />
-            <motion.div
-              key={`${phase}-flower-pulse`}
-              className="absolute rounded-full border border-white/40"
-              style={{ width: `${size * 1.1}px`, height: `${size * 1.1}px` }}
-              initial={{ scale: 0.95, opacity: 0.25 }}
-              animate={{ scale: 1.25, opacity: 0 }}
-              transition={{ duration: 1, ease: 'easeOut' }}
-            />
+            {isActive && (
+              <motion.div
+                key={`${phase}-flower-pulse`}
+                className="absolute rounded-full border border-white/40"
+                style={{ width: `${size * 1.1}px`, height: `${size * 1.1}px` }}
+                initial={{ scale: 0.95, opacity: 0.25 }}
+                animate={{ scale: 1.25, opacity: 0 }}
+                transition={{ duration: 1, ease: 'easeOut' }}
+              />
+            )}
           </>
         )
       }

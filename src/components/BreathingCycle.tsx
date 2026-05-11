@@ -47,7 +47,11 @@ export default function BreathingCycle({
   }, [current.phase, scaleMax, scaleMin])
 
   useEffect(() => {
-    if (!isActive || !animationsEnabled) return
+    if (!isActive || !animationsEnabled) {
+      controls.stop()
+      controls.set({ scale: scaleMin })
+      return
+    }
 
     controls.start({
       scale: targetScale,
@@ -56,7 +60,7 @@ export default function BreathingCycle({
         ease: current.phase === 'exhale' ? 'easeOut' : 'easeInOut',
       },
     })
-  }, [animationsEnabled, controls, current.durationMs, current.phase, isActive, targetScale])
+  }, [animationsEnabled, controls, current.durationMs, current.phase, isActive, scaleMin, targetScale])
 
   const dimension = `${size}px`
 
@@ -77,7 +81,7 @@ export default function BreathingCycle({
         animate={controls}
         initial={{ scale: scaleMin, opacity: 0.35 }}
       >
-        <div className={`w-full h-full rounded-full ${colors.from} ${colors.to} bg-gradient-to-br animate-gradient-shift`} />
+        <div className={`w-full h-full rounded-full ${colors.from} ${colors.to} bg-gradient-to-br ${isActive ? 'animate-gradient-shift' : ''}`} />
       </motion.div>
 
       {/* Animated progress ring synced to current phase */}
@@ -100,20 +104,22 @@ export default function BreathingCycle({
                 strokeWidth={4}
               />
               {/* Progress */}
-              <motion.circle
-                key={`${cycleIndex}-${current.phase}-${current.durationMs}`}
-                cx={cx}
-                cy={cy}
-                r={r}
-                className={`fill-none ${isExhale ? 'stroke-white/70' : 'stroke-white/60'}`}
-                strokeWidth={4}
-                strokeDasharray={circumference}
-                strokeDashoffset={circumference}
-                transform={`rotate(-90 ${cx} ${cy})`}
-                initial={{ strokeDashoffset: circumference }}
-                animate={{ strokeDashoffset: 0 }}
-                transition={{ duration: current.durationMs / 1000, ease: isExhale ? 'easeOut' : 'easeInOut' }}
-              />
+              {isActive && (
+                <motion.circle
+                  key={`${cycleIndex}-${current.phase}-${current.durationMs}`}
+                  cx={cx}
+                  cy={cy}
+                  r={r}
+                  className={`fill-none ${isExhale ? 'stroke-white/70' : 'stroke-white/60'}`}
+                  strokeWidth={4}
+                  strokeDasharray={circumference}
+                  strokeDashoffset={circumference}
+                  transform={`rotate(-90 ${cx} ${cy})`}
+                  initial={{ strokeDashoffset: circumference }}
+                  animate={{ strokeDashoffset: 0 }}
+                  transition={{ duration: current.durationMs / 1000, ease: isExhale ? 'easeOut' : 'easeInOut' }}
+                />
+              )}
             </g>
           )
         })()}
@@ -128,14 +134,16 @@ export default function BreathingCycle({
       />
 
       {/* Gentle inner ripple on phase change */}
-      <motion.div
-        key={`${cycleIndex}`}
-        className="absolute rounded-full border-2 border-white/30"
-        style={{ width: dimension, height: dimension }}
-        initial={{ scale: 0.9, opacity: 0.2 }}
-        animate={{ scale: 1.15, opacity: 0 }}
-        transition={{ duration: 0.8, ease: 'easeOut' }}
-      />
+      {isActive && (
+        <motion.div
+          key={`${cycleIndex}`}
+          className="absolute rounded-full border-2 border-white/30"
+          style={{ width: dimension, height: dimension }}
+          initial={{ scale: 0.9, opacity: 0.2 }}
+          animate={{ scale: 1.15, opacity: 0 }}
+          transition={{ duration: 0.8, ease: 'easeOut' }}
+        />
+      )}
     </div>
   )
 }

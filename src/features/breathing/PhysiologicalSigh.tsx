@@ -36,6 +36,9 @@ function DoublePulseVisual({ phase, progress, isActive }: { phase: BreathingPhas
   const size = 200
   const cx = size / 2
   const cy = size / 2
+  const outerRadius = 80 * outerScale
+  const innerRadius = 50 * innerScale
+  const circleTransition = { duration: isActive ? 0.15 : 0, ease: 'linear' as const }
 
   const isInhaling = phase === 'inhale1' || phase === 'inhale2'
 
@@ -46,34 +49,37 @@ function DoublePulseVisual({ phase, progress, isActive }: { phase: BreathingPhas
         <motion.circle
           cx={cx}
           cy={cy}
-          r={80}
+          r={outerRadius}
           fill="none"
           stroke={phase === 'inhale2' && isActive ? '#3b82f6' : '#93c5fd'}
           strokeWidth={3}
-          animate={{ r: 80 * outerScale }}
-          transition={{ duration: 0.15, ease: 'linear' }}
+          initial={false}
+          animate={{ r: outerRadius }}
+          transition={circleTransition}
           opacity={isActive ? (outerScale > 0.35 ? 0.8 : 0.3) : 0.3}
         />
         <motion.circle
           cx={cx}
           cy={cy}
-          r={80}
+          r={outerRadius}
           fill={`rgba(59, 130, 246, ${isActive ? 0.08 : 0.05})`}
           stroke="none"
-          animate={{ r: 80 * outerScale }}
-          transition={{ duration: 0.15, ease: 'linear' }}
+          initial={false}
+          animate={{ r: outerRadius }}
+          transition={circleTransition}
         />
 
         {/* Inner circle */}
         <motion.circle
           cx={cx}
           cy={cy}
-          r={50}
+          r={innerRadius}
           fill={`rgba(59, 130, 246, ${isActive ? 0.15 : 0.1})`}
           stroke={phase === 'inhale1' && isActive ? '#2563eb' : '#60a5fa'}
           strokeWidth={3}
-          animate={{ r: 50 * innerScale }}
-          transition={{ duration: 0.15, ease: 'linear' }}
+          initial={false}
+          animate={{ r: innerRadius }}
+          transition={circleTransition}
         />
 
         {/* Breath direction arrows */}

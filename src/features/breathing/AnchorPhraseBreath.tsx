@@ -31,14 +31,16 @@ function ExpandingRings({ isActive, phase }: { isActive: boolean; phase: 'inhale
             key={i}
             cx={110}
             cy={110}
+            r={target}
             fill="none"
             stroke="#8b9dc3"
             strokeWidth={1.5}
+            initial={false}
             animate={{
               r: target,
               opacity: isActive ? opacity + 0.1 : opacity,
             }}
-            transition={{ duration: 3.8, ease: 'easeInOut' }}
+            transition={{ duration: isActive ? 3.8 : 0, ease: 'easeInOut' }}
           />
         )
       })}
@@ -46,12 +48,14 @@ function ExpandingRings({ isActive, phase }: { isActive: boolean; phase: 'inhale
       <motion.circle
         cx={110}
         cy={110}
+        r={isActive ? (isInhale ? 35 : 15) : 20}
         fill="rgba(139, 157, 195, 0.15)"
         stroke="none"
+        initial={false}
         animate={{
           r: isActive ? (isInhale ? 35 : 15) : 20,
         }}
-        transition={{ duration: 3.8, ease: 'easeInOut' }}
+        transition={{ duration: isActive ? 3.8 : 0, ease: 'easeInOut' }}
       />
     </svg>
   )
