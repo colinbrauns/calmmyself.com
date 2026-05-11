@@ -79,7 +79,7 @@ export default function CoherentBreathing() {
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="flex flex-col items-center space-y-4">
-          <div className="relative w-32 h-32 flex items-center justify-center">
+          <div className="relative flex items-center justify-center">
             <BreathingCycle
               pattern={PATTERN}
               isActive={isActive}
@@ -89,7 +89,9 @@ export default function CoherentBreathing() {
               scaleMin={1}
               scaleMax={1.5}
             />
-            <div className="absolute text-white font-medium text-sm select-none">{Math.ceil(timeRemaining/1000)}</div>
+            <div className="pointer-events-none absolute inset-0 flex items-center justify-center text-white font-medium text-sm select-none">
+              {Math.ceil(timeRemaining/1000)}
+            </div>
           </div>
           <div className="text-center">
             <div className="text-2xl font-semibold text-calm-800 dark:text-gray-100 mb-2 min-h-[32px]">

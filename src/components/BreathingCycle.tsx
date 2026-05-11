@@ -62,18 +62,20 @@ export default function BreathingCycle({
     })
   }, [animationsEnabled, controls, current.durationMs, current.phase, isActive, scaleMin, targetScale])
 
+  const containerSize = Math.max(size + 16, size * scaleMax)
   const dimension = `${size}px`
+  const containerDimension = `${containerSize}px`
 
   if (!animationsEnabled) {
     return (
-      <div className="flex items-center justify-center" style={{ width: dimension, height: dimension }}>
+      <div className="flex items-center justify-center" style={{ width: containerDimension, height: containerDimension }}>
         <div className={`rounded-full ${colors.from} ${colors.to} bg-gradient-to-br`} style={{ width: dimension, height: dimension }} />
       </div>
     )
   }
 
   return (
-    <div className="relative flex items-center justify-center" style={{ width: dimension, height: dimension }}>
+    <div className="relative flex items-center justify-center" style={{ width: containerDimension, height: containerDimension }}>
       {/* Outer soft glow that subtly brightens on inhale */}
       <motion.div
         className="absolute rounded-full blur-xl opacity-70"
