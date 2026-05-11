@@ -114,9 +114,9 @@ const AuraVisualizer = ({ currentPartIndex, isActive }: { currentPartIndex: numb
   const isWholeBody = currentPartIndex === 13
 
   return (
-    <div className="relative h-64 w-full flex justify-center items-center overflow-hidden rounded-xl bg-gradient-to-b from-slate-900 to-slate-800 mb-6">
+    <div className="relative h-48 sm:h-64 w-full flex justify-center items-center overflow-hidden rounded-xl bg-gradient-to-b from-slate-900 to-slate-800 mb-4 sm:mb-6 px-2">
       {/* Silhouette */}
-      <svg viewBox="0 0 200 400" className="h-5/6 w-auto opacity-20">
+      <svg viewBox="0 0 200 400" className="h-5/6 w-auto max-w-full opacity-20">
         <path d="M100,20 C130,20 160,60 160,120 L180,300 L140,400 L100,350 L60,400 L20,300 L40,120 C40,60 70,20 100,20" fill="white" />
       </svg>
       
@@ -249,14 +249,14 @@ export default function BodyScan() {
         <AuraVisualizer currentPartIndex={currentPart} isActive={isActive} />
 
         {/* Progress */}
-        <div className="flex items-center justify-between text-xs uppercase tracking-wider font-medium text-gray-500">
+        <div className="flex items-center justify-between text-xs uppercase tracking-wider font-medium text-gray-500 dark:text-gray-400">
           <span>{currentBodyPart.name}</span>
           <span>{currentPart + 1} / {BODY_PARTS.length}</span>
         </div>
 
         {/* Progress Bar */}
         <div className="space-y-1">
-          <div className="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
+          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 overflow-hidden">
             <motion.div 
               className="bg-indigo-200 h-full"
               animate={{ width: `${progress}%` }}
@@ -275,7 +275,7 @@ export default function BodyScan() {
         </div>
 
         {/* Instruction Text */}
-        <div className="text-center py-2 min-h-[100px] flex flex-col justify-center items-center">
+        <div className="text-center py-2 min-h-[80px] sm:min-h-[100px] flex flex-col justify-center items-center px-2">
            <AnimatePresence mode="wait">
              <motion.div
                 key={currentBodyPart.id}
@@ -284,10 +284,10 @@ export default function BodyScan() {
                 exit={{ opacity: 0, y: -10 }}
                 className="space-y-2"
              >
-                <h3 className="text-xl font-semibold text-gray-900">
+                <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-gray-100">
                   {currentBodyPart.name}
                 </h3>
-                <p className="text-gray-600 leading-relaxed max-w-xs mx-auto">
+                <p className="text-sm sm:text-base text-gray-600 leading-relaxed max-w-xs mx-auto">
                   {currentBodyPart.instruction}
                 </p>
              </motion.div>
@@ -295,15 +295,15 @@ export default function BodyScan() {
         </div>
 
         {/* Controls */}
-        <div className="flex justify-center gap-4">
+        <div className="flex justify-center gap-3 sm:gap-4">
           <Button
             onClick={() => setIsActive(!isActive)}
             variant="grounding"
             size="lg"
-            className="w-32 gap-2"
+            className="flex-1 sm:w-32 gap-2 touch-manipulation"
           >
             {isActive ? <Pause size={18} /> : <Play size={18} />}
-            <span>{isActive ? 'Pause' : 'Start'}</span>
+            <span className="text-sm sm:text-base">{isActive ? 'Pause' : 'Start'}</span>
           </Button>
           
           <Button
@@ -311,6 +311,7 @@ export default function BodyScan() {
             variant="outline"
             size="icon"
             aria-label="Reset body scan"
+            className="touch-manipulation"
           >
             <RotateCcw size={18} />
           </Button>

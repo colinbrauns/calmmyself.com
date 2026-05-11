@@ -167,7 +167,7 @@ export default function EmergencyGrounding() {
           <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3">
             <Phone className="w-6 h-6 text-red-600" />
           </div>
-          <CardTitle className="text-red-800">Crisis Support Resources</CardTitle>
+          <CardTitle className="text-red-800 dark:text-red-200">Crisis Support Resources</CardTitle>
           <CardDescription>
             Professional help is available 24/7
           </CardDescription>
@@ -175,15 +175,15 @@ export default function EmergencyGrounding() {
         
         <CardContent className="space-y-4">
           {CRISIS_RESOURCES.map((resource, index) => (
-            <div key={index} className="bg-red-50 border border-red-200 rounded-lg p-4">
-              <h3 className="font-semibold text-red-800 mb-1">{resource.name}</h3>
+            <div key={index} className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/50 rounded-xl p-4">
+              <h3 className="font-semibold text-red-800 dark:text-red-200 mb-1">{resource.name}</h3>
               <p className="text-lg font-mono text-red-700 mb-1">{resource.contact}</p>
               <p className="text-sm text-red-600">{resource.description}</p>
             </div>
           ))}
           
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-            <p className="text-sm text-yellow-800">
+          <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
+            <p className="text-sm text-yellow-800 dark:text-yellow-200">
               <strong>Remember:</strong> You are not alone. These feelings will pass. 
               Professional support is just a call or text away.
             </p>
@@ -252,15 +252,15 @@ export default function EmergencyGrounding() {
           <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3">
             <AlertTriangle className="w-6 h-6 text-red-600" />
           </div>
-          <CardTitle className="text-red-800">Emergency Grounding Protocol</CardTitle>
+          <CardTitle className="text-red-800 dark:text-red-200">Emergency Grounding Protocol</CardTitle>
           <CardDescription>
             Quick grounding for overwhelming moments
           </CardDescription>
         </CardHeader>
         
         <CardContent className="space-y-6">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
-            <p className="text-red-800 font-medium mb-2">
+          <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/50 rounded-xl p-4 text-center">
+            <p className="text-red-800 dark:text-red-200 font-medium mb-2">
               If you&rsquo;re feeling overwhelmed, panicked, or disconnected:
             </p>
             <p className="text-red-700 text-sm">
@@ -268,8 +268,8 @@ export default function EmergencyGrounding() {
             </p>
           </div>
 
-          <div className="bg-blue-50 p-4 rounded-lg">
-            <p className="text-sm text-blue-800 font-medium mb-2">What this will do:</p>
+          <div className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-xl">
+            <p className="text-sm text-blue-800 dark:text-blue-200 font-medium mb-2">What this will do:</p>
             <ul className="text-sm text-blue-700 space-y-1">
               <li>• Interrupt the overwhelm cycle</li>
               <li>• Reconnect you to your body and surroundings</li>
@@ -317,15 +317,15 @@ export default function EmergencyGrounding() {
       
       <CardContent className="space-y-6">
         {/* Overall Progress */}
-        <div className="w-full bg-gray-200 rounded-full h-3">
+        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
           <div 
-            className="bg-red-500 h-3 rounded-full transition-all duration-300"
+            className="bg-sky-500 h-1.5 rounded-full transition-all duration-300"
             style={{ width: `${overallProgress}%` }}
           />
         </div>
 
         {/* Current Step */}
-        <div className={`${colors.bg} rounded-lg p-6 text-center`}>
+        <div className={`${colors.bg} rounded-xl p-6 text-center`}>
           <h2 className={`text-2xl font-bold ${colors.text} mb-4`}>
             {currentStepData.title}
           </h2>
@@ -334,7 +334,7 @@ export default function EmergencyGrounding() {
             {currentStepData.instruction}
           </p>
           
-          <div className={`bg-white rounded-lg p-3 ${colors.text} font-medium mb-4`}>
+          <div className={`bg-white rounded-xl p-3 ${colors.text} font-medium mb-4`}>
             {currentStepData.action}
           </div>
           

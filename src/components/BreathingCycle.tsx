@@ -1,7 +1,8 @@
 'use client'
 
 import { useEffect, useMemo } from 'react'
-import { motion, useAnimationControls, useReducedMotion } from 'framer-motion'
+import { motion, useAnimationControls } from 'framer-motion'
+import { useMotionPreferences } from '@/components/MotionPreferences'
 
 export type CyclePhase = 'inhale' | 'inhale1' | 'inhale2' | 'hold' | 'hold1' | 'exhale' | 'hold2'
 
@@ -15,8 +16,6 @@ export interface BreathingCycleProps {
   pattern: BreathingPattern
   isActive: boolean
   cycleIndex: number
-  // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
-  onCycle?: (nextIndex: number) => void
   size?: number
   colors?: { from: string; to: string }
   scaleMin?: number
@@ -27,15 +26,13 @@ export default function BreathingCycle({
   pattern,
   isActive,
   cycleIndex,
-  onCycle,
   size = 96,
   colors = { from: 'from-calm-300', to: 'to-calm-500' },
   scaleMin = 1,
   scaleMax = 1.5,
 }: BreathingCycleProps) {
   const controls = useAnimationControls()
-  const prefersReducedMotion = useReducedMotion()
-  const allowOverride = typeof document !== 'undefined' && document.documentElement.classList.contains('allow-animations')
+  const { animationsEnabled } = useMotionPreferences()
 
   const current = pattern[cycleIndex % pattern.length]
 
@@ -50,7 +47,7 @@ export default function BreathingCycle({
   }, [current.phase, scaleMax, scaleMin])
 
   useEffect(() => {
-    if (!isActive || (prefersReducedMotion && !allowOverride)) return
+    if (!isActive || !animationsEnabled) return
 
     controls.start({
       scale: targetScale,
@@ -59,20 +56,11 @@ export default function BreathingCycle({
         ease: current.phase === 'exhale' ? 'easeOut' : 'easeInOut',
       },
     })
-  }, [allowOverride, controls, current, isActive, prefersReducedMotion, targetScale])
-
-  useEffect(() => {
-    if (!isActive) return
-    const id = setTimeout(() => {
-      onCycle?.((cycleIndex + 1) % pattern.length)
-    }, current.durationMs)
-    return () => clearTimeout(id)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isActive, cycleIndex, current.durationMs, pattern.length])
+  }, [animationsEnabled, controls, current.durationMs, current.phase, isActive, targetScale])
 
   const dimension = `${size}px`
 
-  if (prefersReducedMotion && !allowOverride) {
+  if (!animationsEnabled) {
     return (
       <div className="flex items-center justify-center" style={{ width: dimension, height: dimension }}>
         <div className={`rounded-full ${colors.from} ${colors.to} bg-gradient-to-br`} style={{ width: dimension, height: dimension }} />

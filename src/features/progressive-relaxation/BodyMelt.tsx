@@ -94,7 +94,7 @@ export default function BodyMelt() {
     return (
       <Card className="max-w-md mx-auto">
         <CardContent className="text-center py-8">
-          <h2 className="text-2xl font-semibold text-grounding-700 mb-2">
+          <h2 className="text-2xl font-semibold text-grounding-700 dark:text-gray-100 mb-2">
             Body Melt Complete
           </h2>
           <p className="text-gray-600 mb-6">
@@ -116,26 +116,26 @@ export default function BodyMelt() {
         <CardDescription>Three quick regions to soften before rest</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="flex items-center justify-between text-sm text-gray-600">
+        <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400">
           <span>
             Region {regionIndex + 1} of {REGIONS.length}
           </span>
           <span>{remaining > 0 ? `${Math.ceil(remaining / 1000)}s` : null}</span>
         </div>
 
-        <div className="w-full bg-gray-200 rounded-full h-2">
+        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
           <div
-            className="bg-grounding-500 h-2 rounded-full transition-all duration-300"
+            className="bg-sky-500 h-2 rounded-full transition-all duration-300"
             style={{ width: `${(regionIndex / REGIONS.length) * 100}%` }}
           />
         </div>
 
         <div className="text-center space-y-2">
-          <h3 className="text-xl font-semibold text-grounding-800">{region.name}</h3>
-          <p className="text-sm text-gray-700">{region.instruction}</p>
+          <h3 className="text-xl font-semibold text-grounding-800 dark:text-gray-100">{region.name}</h3>
+          <p className="text-sm text-gray-700 dark:text-gray-400">{region.instruction}</p>
         </div>
 
-        <div className="bg-grounding-50 border border-grounding-100 rounded-md p-3 text-xs text-gray-700">
+        <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-xs text-gray-700 dark:text-gray-400">
           {phase === 'ready' && (
             <p>
               When you&apos;re ready, press Start. You&apos;ll gently tense for about 5 seconds, then
@@ -190,12 +190,12 @@ export default function BodyMelt() {
           </Button>
         </div>
       </CardContent>
-      <div className="px-6 pb-6">
+      <div className="px-6 pb-6 pt-0"><div className="pt-4 mt-2 border-t border-gray-100 dark:border-gray-800">
         <ShareInline
           title="Body Melt"
           text="Try a short Body Melt relaxation sequence on CalmMyself."
         />
-      </div>
+      </div></div>
     </Card>
   )
 }

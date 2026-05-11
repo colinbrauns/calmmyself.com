@@ -24,8 +24,8 @@ const InteractiveBodyMap = ({ activePointIndex }: { activePointIndex: number }) 
   const activePoint = POINTS[activePointIndex]
 
   return (
-    <div className="relative w-full h-64 flex items-center justify-center mb-4">
-      <svg viewBox="0 0 200 300" className="h-full w-auto drop-shadow-sm">
+    <div className="relative w-full h-48 sm:h-64 flex items-center justify-center mb-4 px-2">
+      <svg viewBox="0 0 200 300" className="h-full w-auto max-w-full drop-shadow-sm">
         {/* Simplified Body Outline */}
         <path
           d="M100,20 C130,20 150,100 150,100 L180,280 M100,20 C70,20 50,100 50,100 L20,280 M75,140 L75,300 M125,140 L125,300"
@@ -91,18 +91,18 @@ export default function EFTTapping() {
         {/* Interactive Map */}
         <InteractiveBodyMap activePointIndex={index} />
 
-        <div className="text-center">
-          <div className="text-lg font-semibold text-grounding-800 mb-1">
+        <div className="text-center px-2">
+          <div className="text-base sm:text-lg font-semibold text-grounding-800 dark:text-gray-100 mb-1">
             <AnimatePresence mode="wait">
               <motion.span key={current.id} initial={{opacity:0,y:6}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-6}} transition={{duration:0.25}}>
                 {index + 1}. {current.name}
               </motion.span>
             </AnimatePresence>
           </div>
-          <p className="text-sm text-gray-600">{current.tip}</p>
+          <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">{current.tip}</p>
         </div>
 
-        <div className="bg-grounding-50 border border-grounding-100 rounded-md p-3 text-sm text-grounding-800">
+        <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-sm text-grounding-800 dark:text-gray-100">
           Tap lightly ~7–10 times at each point while breathing slowly. You can repeat a calming phrase like “I am safe” or “I can handle this.”
         </div>
 
@@ -114,14 +114,14 @@ export default function EFTTapping() {
           <Button onClick={reset} variant="ghost" size="sm">Start Over</Button>
         </div>
       </CardContent>
-      <div className="px-6 pb-6 space-y-3">
-        <div className="text-xs text-gray-600 bg-grounding-50 border border-grounding-100 p-3 rounded-md">
+      <div className="px-6 pb-6 pt-0"><div className="pt-4 mt-2 border-t border-gray-100 dark:border-gray-800 space-y-3">
+        <div className="text-xs text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 p-3 rounded-xl">
           About: Emotional Freedom Technique (EFT) combines gentle tapping and focused phrases; some studies show reductions in anxiety for certain groups.
           <br/>
           Evidence: Search scholarly databases for “EFT tapping randomized trial anxiety”.
         </div>
         <ShareInline title="EFT Tapping" text="Follow the EFT tapping sequence on CalmMyself" />
-      </div>
+      </div></div>
     </Card>
   )
 }

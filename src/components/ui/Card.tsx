@@ -4,7 +4,7 @@ const Card = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
     <div
       ref={ref}
-      className={`rounded-lg border border-calm-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md ${className || ''}`}
+      className={`rounded-2xl border border-gray-100 bg-white/80 backdrop-blur-sm shadow-sm transition-all duration-300 hover:shadow-md hover:border-gray-200 dark:border-gray-800 dark:bg-gray-900/80 dark:hover:border-gray-700 ${className || ''}`}
       {...props}
     />
   )
@@ -15,7 +15,7 @@ const CardHeader = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
     <div
       ref={ref}
-      className={`flex flex-col space-y-1.5 pb-4 ${className || ''}`}
+      className={`flex flex-col space-y-1.5 p-4 pb-2 ${className || ''}`}
       {...props}
     />
   )
@@ -26,7 +26,7 @@ const CardTitle = forwardRef<HTMLParagraphElement, HTMLAttributes<HTMLHeadingEle
   ({ className, ...props }, ref) => (
     <h3
       ref={ref}
-      className={`text-xl font-semibold leading-none tracking-tight text-calm-800 ${className || ''}`}
+      className={`text-sm font-semibold leading-tight tracking-tight text-gray-900 dark:text-gray-100 ${className || ''}`}
       {...props}
     />
   )
@@ -37,7 +37,7 @@ const CardDescription = forwardRef<HTMLParagraphElement, HTMLAttributes<HTMLPara
   ({ className, ...props }, ref) => (
     <p
       ref={ref}
-      className={`text-sm text-gray-600 ${className || ''}`}
+      className={`text-xs text-gray-500 dark:text-gray-400 ${className || ''}`}
       {...props}
     />
   )
@@ -46,7 +46,7 @@ CardDescription.displayName = 'CardDescription'
 
 const CardContent = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
-    <div ref={ref} className={className} {...props} />
+    <div ref={ref} className={`px-4 pb-4 ${className || ''}`} {...props} />
   )
 )
 CardContent.displayName = 'CardContent'
@@ -55,7 +55,7 @@ const CardFooter = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
     <div
       ref={ref}
-      className={`flex items-center pt-4 ${className || ''}`}
+      className={`flex items-center p-4 pt-2 ${className || ''}`}
       {...props}
     />
   )

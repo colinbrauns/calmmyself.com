@@ -82,11 +82,11 @@ export default function TriangleBreathing() {
 
   const phaseStartEnd = () => {
     // Fractions of total triangle perimeter to draw
-    // Inhale: 0 -> 1/3, Hold: 1/3 -> 1/3 (no change), Exhale: 1/3 -> 1
+    // Each phase traces one edge: Inhale 0->1/3, Hold 1/3->2/3, Exhale 2/3->1
     switch (currentPhase) {
       case 'inhale': return [0, 1 / 3] as const
-      case 'hold': return [1 / 3, 1 / 3] as const
-      case 'exhale': return [1 / 3, 1] as const
+      case 'hold': return [1 / 3, 2 / 3] as const
+      case 'exhale': return [2 / 3, 1] as const
       default: return [0, 0] as const
     }
   }
@@ -152,7 +152,7 @@ export default function TriangleBreathing() {
           
           {/* Phase Indicator */}
           <div className="text-center">
-            <div className="text-2xl font-semibold text-grounding-800 mb-2 min-h-[32px]">
+            <div className="text-2xl font-semibold text-grounding-800 dark:text-gray-100 mb-2 min-h-[32px]">
               <AnimatePresence mode="wait">
                 <motion.span
                   key={currentPhase}
@@ -165,22 +165,22 @@ export default function TriangleBreathing() {
                 </motion.span>
               </AnimatePresence>
             </div>
-            <div className="text-sm text-gray-600">
+            <div className="text-sm text-gray-600 dark:text-gray-400">
               Cycle {cycleCount + 1}
             </div>
           </div>
 
           {/* Progress Bar */}
-          <div className="w-full bg-grounding-100 rounded-full h-2">
+          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
             <div 
-              className="bg-grounding-500 h-2 rounded-full transition-all duration-100 ease-linear"
+              className="bg-sky-500 h-2 rounded-full transition-all duration-100 ease-linear"
               style={{ width: `${progress}%` }}
             />
           </div>
         </div>
 
         {/* Instructions */}
-        <div className="text-sm text-gray-600 text-center bg-grounding-50 p-3 rounded-md">
+        <div className="text-sm text-gray-600 text-center bg-grounding-50 dark:bg-gray-800/50 p-3 rounded-xl">
           <p className="mb-2">Follow the triangle pattern:</p>
           <ul className="space-y-1">
             <li>• Inhale for 4 seconds</li>
@@ -217,14 +217,14 @@ export default function TriangleBreathing() {
           </Button>
         </div>
       </CardContent>
-      <div className="px-6 pb-6 space-y-3">
-        <div className="text-xs text-gray-600 bg-grounding-50 border border-grounding-100 p-3 rounded-md">
+      <div className="px-6 pb-6 pt-0"><div className="pt-4 mt-2 border-t border-gray-100 dark:border-gray-800 space-y-3">
+        <div className="text-xs text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 p-3 rounded-xl">
           About: Triangle breathing emphasizes a slightly longer exhale, which can support parasympathetic activation.
           <br/>
           Evidence: Controlled breathing with extended exhalation is commonly used to reduce physiological arousal.
         </div>
         <ShareInline title="Triangle Breathing" text="Practice Triangle Breathing on CalmMyself" />
-      </div>
+      </div></div>
     </Card>
   )
 }

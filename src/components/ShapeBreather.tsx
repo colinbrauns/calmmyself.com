@@ -1,8 +1,9 @@
 "use client"
 
 import { useEffect, useMemo } from 'react'
-import { motion, useAnimationControls, useReducedMotion } from 'framer-motion'
+import { motion, useAnimationControls } from 'framer-motion'
 import type { CyclePhase } from '@/components/BreathingCycle'
+import { useMotionPreferences } from '@/components/MotionPreferences'
 
 interface ShapeBreatherProps {
   shape: 'square' | 'triangle' | 'circle' | 'flower'
@@ -30,8 +31,7 @@ export default function ShapeBreather({
   strokeClass = 'text-calm-500',
 }: ShapeBreatherProps) {
   const controls = useAnimationControls()
-  const prefersReducedMotion = useReducedMotion()
-  const allowOverride = typeof document !== 'undefined' && document.documentElement.classList.contains('allow-animations')
+  const { animationsEnabled } = useMotionPreferences()
 
   const targetScale = useMemo(() => {
     if (phase === 'inhale' || phase === 'inhale1') return scaleMax
@@ -44,7 +44,7 @@ export default function ShapeBreather({
   }, [phase, scaleMax, scaleMin])
 
   useEffect(() => {
-    if (!isActive || (prefersReducedMotion && !allowOverride)) return
+    if (!isActive || !animationsEnabled) return
     controls.start({
       scale: targetScale,
       transition: {
@@ -52,7 +52,7 @@ export default function ShapeBreather({
         ease: phase === 'exhale' ? 'easeOut' : 'easeInOut',
       },
     })
-  }, [controls, durationMs, isActive, prefersReducedMotion, allowOverride, phase, targetScale])
+  }, [animationsEnabled, controls, durationMs, isActive, phase, targetScale])
 
   const containerDim = size * (shape === 'flower' ? scaleMax * 1.6 : scaleMax)
   const dimension = `${size}px`
@@ -216,7 +216,7 @@ export default function ShapeBreather({
     }
   })()
 
-  if (prefersReducedMotion && !allowOverride) {
+  if (!animationsEnabled) {
     return (
       <div className="relative flex items-center justify-center" style={{ width: containerDim, height: containerDim }}>
         {(() => {

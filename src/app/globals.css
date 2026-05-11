@@ -4,14 +4,14 @@
 
 @layer base {
   :root {
-    --background: #ffffff;
-    --foreground: #0c4a6e; /* calm-900 */
-    --border: #e5e7eb; /* neutral-200 */
+    --background: 0 0% 100%;
+    --foreground: 203 80% 24%;
+    --border: 220 13% 91%;
   }
   .dark {
-    --background: #0b1220;
-    --foreground: #e5f2fb;
-    --border: #1f2937; /* neutral-800 */
+    --background: 215 40% 9%;
+    --foreground: 203 80% 94%;
+    --border: 217 19% 17%;
   }
   * {
     @apply border-border;
@@ -29,9 +29,9 @@
   
   /* Reduced motion preferences */
   @media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
+    html:not(.allow-animations) *,
+    html:not(.allow-animations) *::before,
+    html:not(.allow-animations) *::after {
       animation-duration: 0.01ms !important;
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
@@ -46,6 +46,81 @@
     100% { filter: hue-rotate(0deg); }
   }
   .animate-gradient-shift {
+    animation: none;
+  }
+  .allow-animations .animate-gradient-shift {
     animation: gradient-shift 10s ease-in-out infinite;
   }
+}
+
+/* Ambient background blobs */
+.ambient-blob {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.12;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.ambient-blob-1 {
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, #7dd3fc 0%, transparent 70%);
+  top: -100px;
+  right: -50px;
+}
+
+.allow-animations .ambient-blob-1 {
+  animation: blob-drift 30s ease-in-out infinite;
+}
+
+.ambient-blob-2 {
+  width: 350px;
+  height: 350px;
+  background: radial-gradient(circle, #f4ada6 0%, transparent 70%);
+  bottom: 10%;
+  left: -80px;
+}
+
+.allow-animations .ambient-blob-2 {
+  animation: blob-drift-reverse 35s ease-in-out infinite;
+}
+
+.ambient-blob-3 {
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, #c4b5fd 0%, transparent 70%);
+  top: 40%;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.allow-animations .ambient-blob-3 {
+  animation: blob-drift-slow 40s ease-in-out infinite;
+}
+
+@keyframes blob-drift {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  25% { transform: translate(20px, -30px) scale(1.05); }
+  50% { transform: translate(-10px, 20px) scale(0.95); }
+  75% { transform: translate(30px, 10px) scale(1.02); }
+}
+
+@keyframes blob-drift-reverse {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  25% { transform: translate(-25px, 15px) scale(0.97); }
+  50% { transform: translate(15px, -25px) scale(1.04); }
+  75% { transform: translate(-20px, -10px) scale(0.98); }
+}
+
+@keyframes blob-drift-slow {
+  0%, 100% { transform: translateX(-50%) translate(0, 0) scale(1); }
+  33% { transform: translateX(-50%) translate(10px, -20px) scale(1.03); }
+  66% { transform: translateX(-50%) translate(-15px, 10px) scale(0.97); }
+}
+
+/* Dark mode blob adjustments */
+.dark .ambient-blob {
+  opacity: 0.06;
 }

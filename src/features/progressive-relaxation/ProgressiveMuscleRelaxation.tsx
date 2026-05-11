@@ -171,21 +171,21 @@ export default function ProgressiveMuscleRelaxation() {
       
       <CardContent className="space-y-6">
         {/* Progress */}
-        <div className="flex items-center justify-between text-sm text-gray-600">
+        <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400">
           <span>Muscle Group {currentGroup + 1} of {MUSCLE_GROUPS.length}</span>
           <span>{completedGroups.length} completed</span>
         </div>
 
-        <div className="w-full bg-gray-200 rounded-full h-2">
+        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
           <div 
-            className="bg-grounding-500 h-2 rounded-full transition-all duration-300"
+            className="bg-sky-500 h-2 rounded-full transition-all duration-300"
             style={{ width: `${(completedGroups.length / MUSCLE_GROUPS.length) * 100}%` }}
           />
         </div>
 
         {/* Current Muscle Group */}
         <div className="text-center">
-          <h3 className="text-xl font-semibold text-grounding-800 mb-2">
+          <h3 className="text-xl font-semibold text-grounding-800 dark:text-gray-100 mb-2">
             {currentMuscleGroup.name}
           </h3>
           <p className="text-gray-600 mb-4">
@@ -194,11 +194,11 @@ export default function ProgressiveMuscleRelaxation() {
         </div>
 
         {/* Phase Display */}
-        <div className="bg-grounding-50 rounded-lg p-4 text-center">
+        <div className="bg-grounding-50 dark:bg-gray-800/50 rounded-xl p-4 text-center">
           {phase === 'ready' && (
             <>
               <p className="text-grounding-700 font-medium mb-2">Ready to begin</p>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
                 Get comfortable and prepare to tense your {currentMuscleGroup.name.toLowerCase()}
               </p>
             </>
@@ -230,7 +230,7 @@ export default function ProgressiveMuscleRelaxation() {
         </div>
 
         {/* Instructions */}
-        <div className="text-xs text-gray-500 text-center bg-blue-50 p-3 rounded-md">
+        <div className="text-xs text-gray-500 text-center bg-gray-50 dark:bg-gray-800/50 p-3 rounded-xl">
           <p className="font-medium mb-1">How it works:</p>
           <p>Tense each muscle group for 5 seconds, then relax for 10 seconds. 
           Pay attention to the contrast between tension and relaxation.</p>

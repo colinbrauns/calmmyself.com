@@ -29,7 +29,7 @@ export default function DiveReflex() {
         <CardDescription>Cool face/neck for ~30s to trigger calming reflex</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="relative h-24 rounded-md overflow-hidden bg-gradient-to-r from-calm-50 to-blue-50">
+        <div className="relative h-24 rounded-xl overflow-hidden bg-gradient-to-r from-calm-50 to-blue-50">
           <motion.div
             className="absolute inset-0"
             initial={{ backgroundPositionX: 0 }}
@@ -37,11 +37,11 @@ export default function DiveReflex() {
             transition={{ duration: 6, repeat: Infinity, ease: 'linear' }}
             style={{ backgroundImage: 'radial-gradient(60px 12px at 30% 50%, rgba(14,165,233,0.25), transparent 60%)' }}
           />
-          <div className="absolute inset-0 flex items-center justify-center text-2xl font-semibold text-calm-800">
+          <div className="absolute inset-0 flex items-center justify-center text-2xl font-semibold text-calm-800 dark:text-gray-100">
             {remaining}s
           </div>
         </div>
-        <div className="text-sm text-gray-700 bg-calm-50 border border-calm-100 p-3 rounded-md">
+        <div className="text-sm text-gray-700 text-xs text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 p-3 rounded-xl">
           Press a cool pack or cold water cloth to your face (esp. around eyes/upper cheeks) and lean forward if comfortable. Breathe slowly while the timer runs.
         </div>
         <div className="flex justify-center gap-3">
@@ -51,8 +51,8 @@ export default function DiveReflex() {
           <Button onClick={reset} variant="outline" size="lg" className="flex items-center gap-2"><RotateCcw size={18}/>Reset</Button>
         </div>
       </CardContent>
-      <div className="px-6 pb-6 space-y-3">
-        <div className="text-xs text-gray-600 bg-calm-50 border border-calm-100 p-3 rounded-md">
+      <div className="px-6 pb-6 pt-0"><div className="pt-4 mt-2 border-t border-gray-100 dark:border-gray-800 space-y-3">
+        <div className="text-xs text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 p-3 rounded-xl">
           About: Cooling the face can stimulate the mammalian dive reflex, increasing vagal tone and slowing heart rate. Stop if you feel unwell.
           <br/>
           If you have serious heart or blood pressure conditions, check with a clinician before using cold‑water practices.
@@ -60,7 +60,7 @@ export default function DiveReflex() {
           Evidence: See physiology texts on the “mammalian dive reflex” and trigeminal stimulation.
         </div>
         <ShareInline title="Dive Reflex Activation" text="Activate the dive reflex timer on CalmMyself" />
-      </div>
+      </div></div>
     </Card>
   )
 }

@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Share2, Link2 } from 'lucide-react'
 
@@ -14,12 +14,17 @@ interface ShareInlineProps {
 }
 
 export default function ShareInline({ title = 'CalmMyself', text = 'A free, evidence‑informed calming toolbox.' }: ShareInlineProps) {
-  const url = useMemo(() => (typeof window !== 'undefined' ? window.location.href : 'https://calmmyself.com'), [])
-  const navigatorWithShare = typeof navigator !== 'undefined' ? (navigator as WebShareNavigator) : undefined
-  const shareFn = navigatorWithShare?.share
-  const canWebShare = Boolean(shareFn)
+  const [url, setUrl] = useState('https://calmmyself.com')
+  const [canWebShare, setCanWebShare] = useState(false)
+
+  useEffect(() => {
+    const navigatorWithShare = navigator as WebShareNavigator
+    setUrl(window.location.href)
+    setCanWebShare(Boolean(navigatorWithShare.share))
+  }, [])
 
   const handleShare = useCallback(async () => {
+    const shareFn = (navigator as WebShareNavigator).share
     try {
       if (shareFn) {
         await shareFn({ title, text, url })
@@ -27,11 +32,11 @@ export default function ShareInline({ title = 'CalmMyself', text = 'A free, evid
         await navigator.clipboard?.writeText(url)
       }
     } catch {}
-  }, [shareFn, text, title, url])
+  }, [text, title, url])
 
   return (
-    <div className="flex items-center justify-between bg-white/60 border border-calm-100 rounded-md p-2">
-      <span className="text-xs text-gray-600">Share this practice</span>
+    <div className="flex items-center justify-between bg-white/60 dark:bg-gray-800/60 border border-calm-100 dark:border-gray-700 rounded-md p-2">
+      <span className="text-xs text-gray-600 dark:text-gray-400">Share this practice</span>
       <Button onClick={handleShare} variant="outline" size="sm" className="flex items-center gap-2">
         {canWebShare ? <Share2 size={16}/> : <Link2 size={16}/>} Share
       </Button>

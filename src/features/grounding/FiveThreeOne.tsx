@@ -121,22 +121,22 @@ export default function FiveThreeOne() {
       
       <CardContent className="space-y-8 relative z-10">
         {/* Dynamic Progress Header */}
-        <div className="text-center space-y-2">
+        <div className="text-center space-y-2 px-2">
           <motion.div
             key={currentStepData.sense}
             initial={{ y: 10, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            className="text-2xl font-bold text-gray-800"
+            className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-gray-100"
           >
             {currentStepData.prompt}
           </motion.div>
-          <div className="text-sm text-gray-500 font-medium">
+          <div className="text-xs sm:text-sm text-gray-500 font-medium">
             {completedCounts[currentStep]} / {currentStepData.count} Found
           </div>
         </div>
 
         {/* Sensory Collector Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 justify-items-center min-h-[180px]">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 justify-items-center min-h-[160px] sm:min-h-[180px] px-2">
           <AnimatePresence mode="popLayout">
             {Array.from({ length: currentStepData.count }).map((_, i) => {
               const isFound = i < completedCounts[currentStep]
@@ -150,11 +150,11 @@ export default function FiveThreeOne() {
                   onClick={() => !isFound && handleTap()}
                   disabled={isFound}
                   className={`
-                    relative w-20 h-20 rounded-2xl flex items-center justify-center
-                    transition-all duration-300
+                    relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl sm:rounded-2xl flex items-center justify-center
+                    transition-all duration-300 touch-manipulation
                     ${isFound 
                       ? 'bg-grounding-100 shadow-inner ring-2 ring-grounding-200' 
-                      : 'bg-white shadow-md hover:shadow-lg border-2 border-dashed border-gray-200 cursor-pointer hover:border-grounding-300 hover:bg-gray-50'
+                      : 'bg-white dark:bg-gray-800 shadow-md active:shadow-lg border-2 border-dashed border-gray-200 dark:border-gray-700 cursor-pointer active:border-grounding-300 active:bg-gray-50 dark:active:bg-gray-700'
                     }
                   `}
                 >
@@ -164,10 +164,10 @@ export default function FiveThreeOne() {
                       animate={{ scale: 1, rotate: 0 }}
                       className={currentStepData.color}
                     >
-                      <Icon className="w-8 h-8" />
+                      <Icon className="w-6 h-6 sm:w-8 sm:h-8" />
                     </motion.div>
                   ) : (
-                    <Icon className="w-6 h-6 text-gray-300" />
+                    <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-gray-300" />
                   )}
                   
                   {/* Checkmark badge */}
@@ -225,7 +225,7 @@ export default function FiveThreeOne() {
                   onClick={reset}
                   variant="ghost"
                   size="sm"
-                  className="w-full text-gray-400 hover:text-gray-600"
+                  className="w-full text-gray-400 hover:text-gray-600 dark:text-gray-400"
                 >
                   Start Over
                 </Button>
@@ -237,8 +237,8 @@ export default function FiveThreeOne() {
 
       {/* Background Blobs */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
-        <div className="absolute -top-20 -right-20 w-64 h-64 bg-grounding-50 rounded-full blur-3xl opacity-50" />
-        <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-blue-50 rounded-full blur-3xl opacity-50" />
+        <div className="absolute -top-20 -right-20 w-64 h-64 bg-grounding-50 dark:bg-grounding-950/30 rounded-full blur-3xl opacity-50" />
+        <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-blue-50 dark:bg-blue-950/30 rounded-full blur-3xl opacity-50" />
       </div>
     </Card>
   )

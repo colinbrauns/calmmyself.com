@@ -15,8 +15,18 @@ export default function PWAInstallPrompt() {
   const [isInstalled, setIsInstalled] = useState(false)
 
   useEffect(() => {
-    // Register service worker
-    if ('serviceWorker' in navigator) {
+    const isLocalPreview =
+      window.location.hostname === 'localhost' ||
+      window.location.hostname === '127.0.0.1' ||
+      window.location.hostname === '::1'
+
+    // Register the service worker only for production-like hosts. Local previews
+    // need fresh bundles while animation work is being tested.
+    if (
+      process.env.NODE_ENV === 'production' &&
+      !isLocalPreview &&
+      'serviceWorker' in navigator
+    ) {
       navigator.serviceWorker.register('/sw.js')
         .then((registration) => {
           console.log('SW registered: ', registration)

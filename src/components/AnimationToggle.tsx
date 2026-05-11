@@ -1,37 +1,22 @@
 "use client"
 
-import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/Button'
+import { useMotionPreferences } from '@/components/MotionPreferences'
 
 export default function AnimationToggle() {
-  const [enabled, setEnabled] = useState(false)
-  const [supported, setSupported] = useState(false)
+  const { animationsEnabled, toggleAnimations, isReady } = useMotionPreferences()
 
-  useEffect(() => {
-    setSupported(typeof window !== 'undefined')
-    const initial = typeof document !== 'undefined' && document.documentElement.classList.contains('allow-animations')
-    setEnabled(initial)
-  }, [])
-
-  useEffect(() => {
-    if (!supported) return
-    const root = document.documentElement
-    if (enabled) root.classList.add('allow-animations')
-    else root.classList.remove('allow-animations')
-  }, [enabled, supported])
-
-  if (!supported) return null
+  if (!isReady) return null
 
   return (
     <Button
-      onClick={() => setEnabled((v) => !v)}
+      onClick={toggleAnimations}
       variant="outline"
       size="sm"
       className="ml-2"
-      aria-pressed={enabled}
+      aria-pressed={animationsEnabled}
     >
-      {enabled ? 'Animations: On' : 'Animations: Off'}
+      {animationsEnabled ? 'Animations: On' : 'Animations: Off'}
     </Button>
   )
 }
-

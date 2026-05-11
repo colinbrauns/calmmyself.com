@@ -1,8 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import BreathingCycle, { type BreathingPattern } from '@/components/BreathingCycle'
+import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/Button'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card'
 import { Play, Pause, RotateCcw } from 'lucide-react'
@@ -11,19 +10,127 @@ import ShareInline from '@/components/ShareInline'
 type BreathingPhase = 'inhale1' | 'inhale2' | 'exhale'
 
 const PHASE_DURATION = { inhale1: 2000, inhale2: 1000, exhale: 6000 }
-const PHASE_LABELS = {
-  inhale1: 'First Inhale',
-  inhale2: 'Second Inhale',
-  exhale: 'Long Exhale'
-}
 
 const PHASES: BreathingPhase[] = ['inhale1', 'inhale2', 'exhale']
 
-const PATTERN: BreathingPattern = [
-  { phase: 'inhale1', label: 'First Inhale', durationMs: 2000 },
-  { phase: 'inhale2', label: 'Second Inhale', durationMs: 1000 },
-  { phase: 'exhale', label: 'Long Exhale', durationMs: 6000 },
-]
+function DoublePulseVisual({ phase, progress, isActive }: { phase: BreathingPhase; progress: number; isActive: boolean }) {
+  // Inner circle: expands on inhale1, stays on inhale2, shrinks on exhale
+  // Outer circle: stays small on inhale1, expands on inhale2, shrinks on exhale
+  let innerScale = 0.4
+  let outerScale = 0.3
+
+  if (isActive) {
+    if (phase === 'inhale1') {
+      innerScale = 0.4 + (progress / 100) * 0.35
+      outerScale = 0.3
+    } else if (phase === 'inhale2') {
+      innerScale = 0.75
+      outerScale = 0.3 + (progress / 100) * 0.7
+    } else {
+      // exhale: both shrink
+      innerScale = 0.75 - (progress / 100) * 0.35
+      outerScale = 1.0 - (progress / 100) * 0.7
+    }
+  }
+
+  const size = 200
+  const cx = size / 2
+  const cy = size / 2
+
+  const isInhaling = phase === 'inhale1' || phase === 'inhale2'
+
+  return (
+    <div className="relative" style={{ width: size, height: size }}>
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+        {/* Outer circle */}
+        <motion.circle
+          cx={cx}
+          cy={cy}
+          r={80}
+          fill="none"
+          stroke={phase === 'inhale2' && isActive ? '#3b82f6' : '#93c5fd'}
+          strokeWidth={3}
+          animate={{ r: 80 * outerScale }}
+          transition={{ duration: 0.15, ease: 'linear' }}
+          opacity={isActive ? (outerScale > 0.35 ? 0.8 : 0.3) : 0.3}
+        />
+        <motion.circle
+          cx={cx}
+          cy={cy}
+          r={80}
+          fill={`rgba(59, 130, 246, ${isActive ? 0.08 : 0.05})`}
+          stroke="none"
+          animate={{ r: 80 * outerScale }}
+          transition={{ duration: 0.15, ease: 'linear' }}
+        />
+
+        {/* Inner circle */}
+        <motion.circle
+          cx={cx}
+          cy={cy}
+          r={50}
+          fill={`rgba(59, 130, 246, ${isActive ? 0.15 : 0.1})`}
+          stroke={phase === 'inhale1' && isActive ? '#2563eb' : '#60a5fa'}
+          strokeWidth={3}
+          animate={{ r: 50 * innerScale }}
+          transition={{ duration: 0.15, ease: 'linear' }}
+        />
+
+        {/* Breath direction arrows */}
+        {isActive && isInhaling && (
+          <>
+            <motion.path
+              d={`M ${cx} ${cy - 55 * innerScale} L ${cx - 6} ${cy - 55 * innerScale + 10} M ${cx} ${cy - 55 * innerScale} L ${cx + 6} ${cy - 55 * innerScale + 10}`}
+              stroke="#2563eb"
+              strokeWidth={2}
+              fill="none"
+              animate={{ opacity: [0.3, 0.8, 0.3] }}
+              transition={{ duration: 1, repeat: Infinity }}
+            />
+            <motion.path
+              d={`M ${cx} ${cy + 55 * innerScale} L ${cx - 6} ${cy + 55 * innerScale - 10} M ${cx} ${cy + 55 * innerScale} L ${cx + 6} ${cy + 55 * innerScale - 10}`}
+              stroke="#2563eb"
+              strokeWidth={2}
+              fill="none"
+              animate={{ opacity: [0.3, 0.8, 0.3] }}
+              transition={{ duration: 1, repeat: Infinity }}
+            />
+          </>
+        )}
+        {isActive && phase === 'exhale' && (
+          <>
+            <motion.path
+              d={`M ${cx} ${cy - 55 * innerScale} L ${cx - 6} ${cy - 55 * innerScale - 10} M ${cx} ${cy - 55 * innerScale} L ${cx + 6} ${cy - 55 * innerScale - 10}`}
+              stroke="#60a5fa"
+              strokeWidth={2}
+              fill="none"
+              animate={{ opacity: [0.3, 0.8, 0.3] }}
+              transition={{ duration: 1.5, repeat: Infinity }}
+            />
+            <motion.path
+              d={`M ${cx} ${cy + 55 * innerScale} L ${cx - 6} ${cy + 55 * innerScale + 10} M ${cx} ${cy + 55 * innerScale} L ${cx + 6} ${cy + 55 * innerScale + 10}`}
+              stroke="#60a5fa"
+              strokeWidth={2}
+              fill="none"
+              animate={{ opacity: [0.3, 0.8, 0.3] }}
+              transition={{ duration: 1.5, repeat: Infinity }}
+            />
+          </>
+        )}
+      </svg>
+
+      {/* Inhale dots indicator */}
+      <div className="absolute top-2 left-1/2 -translate-x-1/2 flex gap-2">
+        <div className={`w-3 h-3 rounded-full border-2 transition-all duration-300 ${
+          isActive && (phase === 'inhale1' || phase === 'inhale2' || phase === 'exhale') ? 'bg-blue-500 border-blue-500' : 'bg-transparent border-blue-300'
+        }`} />
+        <div className={`w-3 h-3 rounded-full border-2 transition-all duration-300 ${
+          isActive && (phase === 'inhale2' || phase === 'exhale') ? 'bg-blue-500 border-blue-500' : 'bg-transparent border-blue-300'
+        }`} />
+      </div>
+    </div>
+  )
+}
 
 export default function PhysiologicalSigh() {
   const [isActive, setIsActive] = useState(false)
@@ -52,103 +159,43 @@ export default function PhysiologicalSigh() {
   }, [])
 
   useEffect(() => {
-    let interval: NodeJS.Timeout | null = null
-    
-    if (isActive) {
-      interval = setInterval(() => {
-        setTimeRemaining((time) => {
-          if (time <= 100) {
-            nextPhase()
-            return PHASE_DURATION[PHASES[(phaseIndex + 1) % PHASES.length]]
-          }
-          return time - 100
-        })
-      }, 100)
-    }
-
-    return () => {
-      if (interval) clearInterval(interval)
-    }
+    if (!isActive) return
+    const interval = setInterval(() => {
+      setTimeRemaining((time) => {
+        if (time <= 100) {
+          nextPhase()
+          return PHASE_DURATION[PHASES[(phaseIndex + 1) % PHASES.length]]
+        }
+        return time - 100
+      })
+    }, 100)
+    return () => clearInterval(interval)
   }, [isActive, nextPhase, phaseIndex])
 
   const currentPhaseDuration = PHASE_DURATION[currentPhase]
   const progress = ((currentPhaseDuration - timeRemaining) / currentPhaseDuration) * 100
 
-
-
   return (
     <Card className="max-w-md mx-auto">
       <CardHeader className="text-center">
         <CardTitle>Physiological Sigh</CardTitle>
-        <CardDescription>
-          Double inhale + long exhale for rapid calm
-        </CardDescription>
+        <CardDescription>Double inhale + long exhale for rapid calm</CardDescription>
       </CardHeader>
       
       <CardContent className="space-y-6 pb-6">
-        {/* Breathing Visual */}
         <div className="flex flex-col items-center space-y-4">
-          {(() => {
-            const visualSize = 112
-            const visualScaleMax = 1.5
-            const containerDim = visualSize * visualScaleMax
-            const topPadding = 24 // Extra space at top for dots
-            return (
-              <div className="relative flex items-center justify-center" style={{ width: containerDim, height: containerDim + topPadding }}>
-                <div className="relative" style={{ marginTop: topPadding }}>
-                  <BreathingCycle
-                    pattern={PATTERN}
-                    isActive={isActive}
-                    cycleIndex={phaseIndex}
-                    onCycle={(next) => setPhaseIndex(next)}
-                    size={visualSize}
-                    colors={{ from: 'from-blue-300', to: 'to-blue-600' }}
-                    scaleMin={1}
-                    scaleMax={visualScaleMax}
-                  />
-                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <div className="text-white font-medium text-sm text-center select-none">
-                      {Math.ceil(timeRemaining / 1000)}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Double inhale indicator */}
-                {(currentPhase === 'inhale1' || currentPhase === 'inhale2') && (
-                  <div className="absolute top-0 left-1/2 transform -translate-x-1/2 z-10">
-                    <div className="flex space-x-1">
-                      <div className={`w-2 h-2 rounded-full ${currentPhase === 'inhale1' ? 'bg-blue-500' : 'bg-blue-300'}`} />
-                      <div className={`w-2 h-2 rounded-full ${currentPhase === 'inhale2' ? 'bg-blue-500' : 'bg-blue-300'}`} />
-                    </div>
-                  </div>
-                )}
-              </div>
-            )
-          })()}
+          {/* Double Pulse Visualization */}
+          <DoublePulseVisual phase={currentPhase} progress={progress} isActive={isActive} />
           
-          
-          {/* Phase Indicator */}
+          {/* Cycle Indicator */}
           <div className="text-center">
-            <div className="text-2xl font-semibold text-calm-800 mb-2 min-h-[32px]">
-              <AnimatePresence mode="wait">
-                <motion.span
-                  key={currentPhase}
-                  initial={{ opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -6 }}
-                  transition={{ duration: 0.25, ease: 'easeOut' }}
-                >
-                  {PHASE_LABELS[currentPhase]}
-                </motion.span>
-              </AnimatePresence>
-            </div>
-            <div className="text-sm text-gray-600">
+            <div className="text-sm text-gray-600 dark:text-gray-400 min-h-[20px]">
               Cycle {cycleCount + 1}
             </div>
           </div>
 
           {/* Progress Bar */}
-          <div className="w-full bg-gray-200 rounded-full h-2">
+          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
             <div 
               className="bg-blue-500 h-2 rounded-full transition-all duration-100 ease-linear"
               style={{ width: `${progress}%` }}
@@ -157,59 +204,40 @@ export default function PhysiologicalSigh() {
         </div>
 
         {/* Instructions */}
-        <div className="text-sm text-gray-600 text-center bg-blue-50 p-3 rounded-md">
+        <div className="text-sm text-gray-600 text-center bg-gray-50 dark:bg-gray-800/50 p-3 rounded-xl">
           <p className="mb-2">The most effective calming breath:</p>
           <ul className="space-y-1">
             <li>• <strong>First inhale:</strong> Fill lower lungs (2s)</li>
             <li>• <strong>Second inhale:</strong> Top up upper lungs (1s)</li>
             <li>• <strong>Long exhale:</strong> Release slowly (6s)</li>
           </ul>
-          <p className="text-xs text-gray-500 mt-2">
-            Based on neuroscience research - just 1-3 cycles can reduce stress
-          </p>
+          <p className="text-xs text-gray-500 mt-2">Based on neuroscience research - just 1-3 cycles can reduce stress</p>
         </div>
 
-        {/* Quick Action */}
-        <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3">
-          <p className="text-sm text-yellow-800 font-medium mb-2">⚡ Quick Relief</p>
-          <p className="text-xs text-yellow-700">
-            This technique works in just 1-3 breaths! Perfect for immediate stress relief.
-          </p>
+        <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl p-3">
+          <p className="text-sm text-yellow-800 dark:text-yellow-200 font-medium mb-2">⚡ Quick Relief</p>
+          <p className="text-xs text-yellow-700">This technique works in just 1-3 breaths! Perfect for immediate stress relief.</p>
         </div>
 
-        {/* Controls */}
         <div className="flex justify-center space-x-3">
-          <Button
-            onClick={() => setIsActive(!isActive)}
-            variant="calm"
-            size="lg"
-            className="flex items-center space-x-2"
-            aria-label={isActive ? 'Pause breathing exercise' : 'Start breathing exercise'}
-          >
+          <Button onClick={() => setIsActive(!isActive)} variant="calm" size="lg" className="flex items-center space-x-2">
             {isActive ? <Pause size={20} /> : <Play size={20} />}
             <span>{isActive ? 'Pause' : 'Start'}</span>
           </Button>
-          
-          <Button
-            onClick={reset}
-            variant="outline"
-            size="lg"
-            className="flex items-center space-x-2"
-            aria-label="Reset breathing exercise"
-          >
+          <Button onClick={reset} variant="outline" size="lg" className="flex items-center space-x-2">
             <RotateCcw size={20} />
             <span>Reset</span>
           </Button>
         </div>
       </CardContent>
-      <div className="px-6 pb-6 space-y-3">
-        <div className="text-xs text-gray-600 bg-blue-50 border border-blue-100 p-3 rounded-md">
-          About: The “physiological sigh” (double inhale, long exhale) has been shown to rapidly reduce autonomic arousal in lab settings.
+      <div className="px-6 pb-6 pt-0"><div className="pt-4 mt-2 border-t border-gray-100 dark:border-gray-800 space-y-3">
+        <div className="text-xs text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 p-3 rounded-xl">
+          About: The "physiological sigh" (double inhale, long exhale) has been shown to rapidly reduce autonomic arousal in lab settings.
           <br/>
           Evidence: <a className="underline text-blue-700" href="https://www.cell.com/cell-reports-medicine/fulltext/S2666-3791(22)00434-3" target="_blank" rel="noopener noreferrer">Cell Reports Medicine (2023) — Brief structured respiration practices vs. mindfulness</a>.
         </div>
         <ShareInline title="Physiological Sigh" text="Use the physiological sigh on CalmMyself" />
-      </div>
+      </div></div>
     </Card>
   )
 }

@@ -146,13 +146,13 @@ export default function LovingKindness() {
     return (
       <Card className="max-w-md mx-auto">
         <CardContent className="text-center py-8">
-          <div className="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <div className="w-16 h-16 bg-pink-100 dark:bg-pink-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
             <Heart className="w-8 h-8 text-pink-500" fill="currentColor" />
           </div>
-          <h2 className="text-2xl font-semibold text-pink-700 mb-2">
+          <h2 className="text-2xl font-semibold text-pink-700 dark:text-pink-300 mb-2">
             Loving Kindness Complete
           </h2>
-          <p className="text-gray-600 mb-6">
+          <p className="text-gray-600 dark:text-gray-400 mb-6">
             You&rsquo;ve sent loving kindness to yourself, a loved one, and all beings. 
             Notice how your heart feels now - perhaps softer, warmer, more open.
           </p>
@@ -175,12 +175,12 @@ export default function LovingKindness() {
       
       <CardContent className="space-y-6">
         {/* Progress */}
-        <div className="flex items-center justify-between text-sm text-gray-600">
+        <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400">
           <span>{currentPhase?.name} ({currentPhrase + 1}/{LOVING_KINDNESS_PHRASES.length})</span>
           <span>{Math.round(overallProgress)}% complete</span>
         </div>
 
-        <div className="w-full bg-gray-200 rounded-full h-2">
+        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
           <div 
             className="bg-pink-500 h-2 rounded-full transition-all duration-300"
             style={{ width: `${overallProgress}%` }}
@@ -198,24 +198,24 @@ export default function LovingKindness() {
         )}
 
         {/* Current Phrase */}
-        <div className="bg-gradient-to-r from-pink-50 to-purple-50 rounded-lg p-8 text-center">
+        <div className="bg-gradient-to-r from-pink-50 to-purple-50 dark:from-pink-950/30 dark:to-purple-950/30 rounded-xl p-8 text-center">
           <div className="mb-4">
             <Heart className="w-12 h-12 text-pink-500 mx-auto mb-3" fill="currentColor" />
           </div>
           
-          <p className="text-2xl font-medium text-gray-800 leading-relaxed mb-4">
+          <p className="text-2xl font-medium text-gray-800 dark:text-gray-100 leading-relaxed mb-4">
             {currentPhraseData.text}
           </p>
           
           {isActive && (
-            <div className="text-xl font-mono text-pink-600">
+            <div className="text-xl font-mono text-pink-600 dark:text-pink-400">
               {Math.ceil(timeRemaining / 1000)}s
             </div>
           )}
         </div>
 
         {/* Current Phrase Progress */}
-        <div className="w-full bg-pink-100 rounded-full h-2">
+        <div className="w-full bg-pink-100 dark:bg-pink-900/30 rounded-full h-2">
           <div 
             className="bg-pink-500 h-2 rounded-full transition-all duration-100 ease-linear"
             style={{ width: `${progress}%` }}
@@ -223,7 +223,7 @@ export default function LovingKindness() {
         </div>
 
         {/* Instructions */}
-        <div className="text-sm text-gray-600 text-center bg-pink-50 p-3 rounded-md">
+        <div className="text-sm text-gray-600 text-center bg-gray-50 dark:bg-gray-800/50 p-3 rounded-xl">
           <p className="mb-2">Loving-kindness meditation:</p>
           <ul className="space-y-1">
             <li>• Repeat each phrase silently or aloud</li>
@@ -246,7 +246,7 @@ export default function LovingKindness() {
               }`}>
                 {index + 1}
               </div>
-              <p className="text-xs text-gray-600 mt-1">{phase.name}</p>
+              <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">{phase.name}</p>
             </div>
           ))}
         </div>

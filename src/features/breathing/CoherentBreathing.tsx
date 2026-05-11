@@ -15,6 +15,7 @@ const PATTERN: BreathingPattern = [
 
 const MAX_CYCLES = 6
 
+
 export default function CoherentBreathing() {
   const [isActive, setIsActive] = useState(false)
   const [phaseIndex, setPhaseIndex] = useState(0)
@@ -26,22 +27,16 @@ export default function CoherentBreathing() {
   const next = useCallback(() => {
     setPhaseIndex((prev) => {
       const nextPhase = (prev + 1) % PATTERN.length
-      
-      // Check if we're completing a cycle (returning to phase 0)
       if (nextPhase === 0) {
         cycleCountRef.current += 1
         const newCycleCount = cycleCountRef.current
-        
         setCycleCount(newCycleCount)
-        
-        // Stop after completing 6 cycles
         if (newCycleCount >= MAX_CYCLES) {
           setIsActive(false)
           setIsComplete(true)
-          return prev // Don't advance phase
+          return prev
         }
       }
-      
       setTimeRemaining(PATTERN[nextPhase].durationMs)
       return nextPhase
     })
@@ -89,7 +84,6 @@ export default function CoherentBreathing() {
               pattern={PATTERN}
               isActive={isActive}
               cycleIndex={phaseIndex}
-              onCycle={(n) => setPhaseIndex(n)}
               size={112}
               colors={{ from: 'from-calm-300', to: 'to-calm-500' }}
               scaleMin={1}
@@ -98,14 +92,14 @@ export default function CoherentBreathing() {
             <div className="absolute text-white font-medium text-sm select-none">{Math.ceil(timeRemaining/1000)}</div>
           </div>
           <div className="text-center">
-            <div className="text-2xl font-semibold text-calm-800 mb-2 min-h-[32px]">
+            <div className="text-2xl font-semibold text-calm-800 dark:text-gray-100 mb-2 min-h-[32px]">
               <AnimatePresence mode="wait">
                 <motion.span key={currentLabel} initial={{opacity:0,y:6}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-6}} transition={{duration:0.25}}>
                   {currentLabel}
                 </motion.span>
               </AnimatePresence>
             </div>
-            <div className="text-sm text-gray-600">
+            <div className="text-sm text-gray-600 dark:text-gray-400">
               {isComplete ? (
                 <span className="text-green-600 font-semibold">✨ Complete! {MAX_CYCLES} cycles finished</span>
               ) : (
@@ -113,8 +107,8 @@ export default function CoherentBreathing() {
               )}
             </div>
           </div>
-          <div className="w-full bg-calm-100 rounded-full h-2">
-            <div className="bg-calm-500 h-2 rounded-full transition-all duration-100 ease-linear" style={{ width: `${progress}%` }} />
+          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+            <div className="bg-sky-500 h-2 rounded-full transition-all duration-100 ease-linear" style={{ width: `${progress}%` }} />
           </div>
         </div>
         <div className="flex justify-center gap-3">
@@ -124,14 +118,14 @@ export default function CoherentBreathing() {
           <Button onClick={reset} variant="outline" size="lg" className="flex items-center gap-2"><RotateCcw size={18}/>Reset</Button>
         </div>
       </CardContent>
-      <div className="px-6 pb-6 space-y-3">
-        <div className="text-xs text-gray-600 bg-calm-50 border border-calm-100 p-3 rounded-md">
+      <div className="px-6 pb-6 pt-0"><div className="pt-4 mt-2 border-t border-gray-100 dark:border-gray-800 space-y-3">
+        <div className="text-xs text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 p-3 rounded-xl">
           About: Coherent breathing (around 5–6 breaths per minute) can help balance autonomic tone and improve HRV. Breathe softly without strain.
           <br/>
-          Evidence: Search for “hrv biofeedback coherent breathing randomized controlled trial”.
+          Evidence: Search for "hrv biofeedback coherent breathing randomized controlled trial".
         </div>
         <ShareInline title="Coherent Breathing" text="Try coherent breathing (6 bpm) on CalmMyself" />
-      </div>
+      </div></div>
     </Card>
   )
 }

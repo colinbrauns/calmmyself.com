@@ -141,7 +141,7 @@ export default function BoxBreathing() {
           
           {/* Phase Indicator */}
           <div className="text-center">
-            <div className="text-2xl font-semibold text-calm-800 mb-2 min-h-[32px]">
+            <div className="text-2xl font-semibold text-calm-800 dark:text-gray-100 mb-2 min-h-[32px]">
               <AnimatePresence mode="wait">
                 <motion.span
                   key={currentPhase}
@@ -154,7 +154,7 @@ export default function BoxBreathing() {
                 </motion.span>
               </AnimatePresence>
             </div>
-            <div className="text-sm text-gray-600">
+            <div className="text-sm text-gray-600 dark:text-gray-400">
               Cycle {cycleCount + 1}
               {cycleCount >= 3 && (
                 <span className="ml-2 text-green-600">✨ Great job!</span>
@@ -163,16 +163,16 @@ export default function BoxBreathing() {
           </div>
 
           {/* Progress Bar */}
-          <div className="w-full bg-calm-100 rounded-full h-2">
+          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
             <div 
-              className="bg-calm-500 h-2 rounded-full transition-all duration-100 ease-linear"
+              className="bg-sky-500 h-2 rounded-full transition-all duration-100 ease-linear"
               style={{ width: `${progress}%` }}
             />
           </div>
         </div>
 
         {/* Instructions */}
-        <div className="text-sm text-gray-600 text-center bg-calm-50 p-3 rounded-md">
+        <div className="text-sm text-gray-600 text-center bg-calm-50 dark:bg-gray-800/50 p-3 rounded-xl">
           <p className="mb-2">Follow the square sides:</p>
           <ul className="space-y-1">
             <li>• Inhale: top side (4s)</li>
@@ -207,14 +207,14 @@ export default function BoxBreathing() {
           </Button>
         </div>
       </CardContent>
-      <div className="px-6 pb-6 space-y-3">
-        <div className="text-xs text-gray-600 bg-calm-50 border border-calm-100 p-3 rounded-md">
+      <div className="px-6 pb-6 pt-0"><div className="pt-4 mt-2 border-t border-gray-100 dark:border-gray-800 space-y-3">
+        <div className="text-xs text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 p-3 rounded-xl">
           About: Box breathing (equal inhale/hold/exhale/hold) can aid attention and reduce arousal when practiced gently.
           <br/>
           Evidence: Variants of paced breathing are used across clinical settings to support regulation.
         </div>
         <ShareInline title="Box Breathing" text="Use Box Breathing on CalmMyself" />
-      </div>
+      </div></div>
     </Card>
   )
 }

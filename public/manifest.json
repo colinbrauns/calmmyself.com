@@ -1,15 +1,25 @@
 {
-  "name": "CalmMyself - Personal Calm Toolbox",
+  "name": "CalmMyself",
   "short_name": "CalmMyself",
-  "description": "Your personal toolbox for nervous system regulation with 12 evidence-based calming techniques",
+  "description": "Free tools for calm and anxiety relief",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#f0f9ff",
   "theme_color": "#0ea5e9",
   "orientation": "portrait-primary",
-  "categories": ["health", "medical", "wellness", "lifestyle"],
+  "categories": [
+    "health",
+    "medical",
+    "wellness",
+    "lifestyle"
+  ],
   "lang": "en",
   "icons": [
+    {
+      "src": "/favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any"
+    },
     {
       "src": "/icons/icon-72x72.png",
       "sizes": "72x72",
@@ -65,21 +75,36 @@
       "short_name": "Emergency",
       "description": "Quick access to emergency grounding protocol",
       "url": "/?tool=emergency-grounding",
-      "icons": [{ "src": "/icons/icon-96x96.png", "sizes": "96x96" }]
+      "icons": [
+        {
+          "src": "/icons/icon-96x96.png",
+          "sizes": "96x96"
+        }
+      ]
     },
     {
       "name": "Physiological Sigh",
       "short_name": "Quick Calm",
       "description": "30-second rapid calming technique",
       "url": "/?tool=physiological-sigh",
-      "icons": [{ "src": "/icons/icon-96x96.png", "sizes": "96x96" }]
+      "icons": [
+        {
+          "src": "/icons/icon-96x96.png",
+          "sizes": "96x96"
+        }
+      ]
     },
     {
       "name": "Box Breathing",
       "short_name": "Breathe",
       "description": "4-4-4-4 breathing for focus",
       "url": "/?tool=box-breathing",
-      "icons": [{ "src": "/icons/icon-96x96.png", "sizes": "96x96" }]
+      "icons": [
+        {
+          "src": "/icons/icon-96x96.png",
+          "sizes": "96x96"
+        }
+      ]
     }
   ]
 }

@@ -280,66 +280,709 @@ const SCENE_SHAPES: Record<NatureScene['id'], 'flower' | 'circle' | 'triangle' |
   meadow: 'flower',
 }
 
-function SceneBackground({
-  scene,
-  breathingScale,
-}: {
-  scene: NatureScene
-  breathingScale: number
-}) {
-  const particles = useMemo(
-    () =>
-      Array.from({ length: 10 }).map((_, index) => ({
-        id: `${scene.id}-particle-${index}`,
-        size: 160 + Math.random() * 180,
-        duration: 16 + Math.random() * 12,
-        delay: Math.random() * 6,
-        x: Math.random() * 100,
-        y: Math.random() * 100,
-      })),
-    [scene.id]
-  )
+/* ────────────────────────────────────────────
+   Canvas Drawing Functions
+   ──────────────────────────────────────────── */
 
-  return (
-    <div className="absolute inset-0 -z-10 overflow-hidden rounded-3xl">
-      <motion.div
-        className="absolute inset-0"
-        style={{
-          backgroundImage: scene.background.gradient,
-        }}
-        animate={{ scale: breathingScale }}
-        transition={{ duration: scene.breathing.durationMs / 1000, ease: 'easeInOut' }}
-      />
-      {particles.map((particle) => (
-        <motion.span
-          key={particle.id}
-          className="absolute rounded-full blur-3xl"
-          style={{
-            width: particle.size,
-            height: particle.size,
-            top: `${particle.y}%`,
-            left: `${particle.x}%`,
-            backgroundColor: scene.background.particle,
-          }}
-          animate={{ y: ['0%', '-8%', '0%'], opacity: [0.12, 0.35, 0.1] }}
-          transition={{
-            duration: particle.duration,
-            repeat: Infinity,
-            ease: 'easeInOut',
-            delay: particle.delay,
-          }}
-        />
-      ))}
-      <motion.div
-        className={`absolute inset-0 mix-blend-screen`}
-        animate={{ opacity: breathingScale > 1 ? 0.55 : 0.35 }}
-        transition={{ duration: scene.breathing.durationMs / 1000 }}
-        style={{ backgroundImage: `linear-gradient(135deg, rgba(255,255,255,0.12), rgba(255,255,255,0.02))` }}
-      />
-      <div className={`absolute inset-0 ${scene.background.overlay}`} />
-    </div>
-  )
+interface Particle {
+  x: number
+  y: number
+  vx: number
+  vy: number
+  size: number
+  phase: number
+  speed: number
+  color?: string
+  life?: number
 }
+
+function seededParticles(count: number, w: number, h: number, opts?: { colors?: string[] }): Particle[] {
+  const arr: Particle[] = []
+  for (let i = 0; i < count; i++) {
+    arr.push({
+      x: Math.random() * w,
+      y: Math.random() * h,
+      vx: (Math.random() - 0.5) * 0.5,
+      vy: (Math.random() - 0.5) * 0.3,
+      size: 2 + Math.random() * 3,
+      phase: Math.random() * Math.PI * 2,
+      speed: 0.3 + Math.random() * 0.7,
+      color: opts?.colors ? opts.colors[Math.floor(Math.random() * opts.colors.length)] : undefined,
+    })
+  }
+  return arr
+}
+
+function drawForest(ctx: CanvasRenderingContext2D, w: number, h: number, t: number, bs: number, particles: React.MutableRefObject<Particle[] | null>) {
+  // Sky
+  const sky = ctx.createLinearGradient(0, 0, 0, h * 0.6)
+  sky.addColorStop(0, '#87CEEB')
+  sky.addColorStop(0.7, '#c8e6c9')
+  sky.addColorStop(1, '#e8f5e9')
+  ctx.fillStyle = sky
+  ctx.fillRect(0, 0, w, h)
+
+  // Light rays
+  ctx.save()
+  ctx.globalAlpha = 0.06 + 0.02 * Math.sin(t * 0.3)
+  for (let i = 0; i < 5; i++) {
+    const rx = w * 0.15 + i * w * 0.18
+    ctx.fillStyle = 'rgba(255,255,200,0.5)'
+    ctx.beginPath()
+    ctx.moveTo(rx, 0)
+    ctx.lineTo(rx - 30 + Math.sin(t * 0.2 + i) * 10, h * 0.7)
+    ctx.lineTo(rx + 50 + Math.sin(t * 0.2 + i) * 10, h * 0.7)
+    ctx.closePath()
+    ctx.fill()
+  }
+  ctx.restore()
+
+  // Mountain/hill layers
+  const hillColors = ['#1b5e20', '#2e7d32', '#388e3c', '#4caf50']
+  for (let layer = 0; layer < 4; layer++) {
+    const ly = h * (0.35 + layer * 0.1)
+    const amp = 30 + layer * 15
+    ctx.fillStyle = hillColors[layer]
+    ctx.beginPath()
+    ctx.moveTo(0, h)
+    for (let x = 0; x <= w; x += 4) {
+      const yy = ly + Math.sin(x * 0.005 + layer * 2 + t * 0.05 * (0.5 - layer * 0.1)) * amp
+        + Math.sin(x * 0.012 + layer) * amp * 0.4
+      ctx.lineTo(x, yy)
+    }
+    ctx.lineTo(w, h)
+    ctx.closePath()
+    ctx.fill()
+  }
+
+  // Trees
+  const treePositions = [0.08, 0.18, 0.3, 0.42, 0.55, 0.65, 0.78, 0.9]
+  for (const tx of treePositions) {
+    const bx = tx * w
+    const by = h * 0.62 + Math.sin(tx * 10) * 20
+    const sway = Math.sin(t * 0.5 + tx * 5) * 3
+    // Trunk
+    ctx.fillStyle = '#5D4037'
+    ctx.fillRect(bx - 4, by - 60, 8, 70)
+    // Canopy layers
+    const greens = ['#2e7d32', '#388e3c', '#43a047', '#66bb6a']
+    for (let c = 0; c < 3; c++) {
+      ctx.fillStyle = greens[c]
+      ctx.beginPath()
+      ctx.arc(bx + sway * (1 + c * 0.3), by - 60 - c * 18, 22 - c * 3, 0, Math.PI * 2)
+      ctx.fill()
+    }
+  }
+
+  // Ground
+  const ground = ctx.createLinearGradient(0, h * 0.75, 0, h)
+  ground.addColorStop(0, '#33691e')
+  ground.addColorStop(1, '#1b5e20')
+  ctx.fillStyle = ground
+  ctx.fillRect(0, h * 0.75, w, h * 0.25)
+
+  // Grass tufts
+  ctx.strokeStyle = '#4caf50'
+  ctx.lineWidth = 1.5
+  for (let i = 0; i < 60; i++) {
+    const gx = (i / 60) * w + Math.sin(i * 3) * 10
+    const gy = h * 0.75 + Math.random() * h * 0.2
+    const sway = Math.sin(t * 1.2 + i * 0.5) * 4
+    ctx.beginPath()
+    ctx.moveTo(gx, gy)
+    ctx.quadraticCurveTo(gx + sway, gy - 12, gx + sway * 1.5, gy - 18)
+    ctx.stroke()
+  }
+
+  // Fog
+  ctx.save()
+  const fogAlpha = 0.08 + 0.04 * Math.sin(t * 0.2) * bs
+  ctx.globalAlpha = fogAlpha
+  const fog = ctx.createLinearGradient(0, h * 0.65, 0, h * 0.85)
+  fog.addColorStop(0, 'transparent')
+  fog.addColorStop(0.5, 'rgba(255,255,255,0.6)')
+  fog.addColorStop(1, 'transparent')
+  ctx.fillStyle = fog
+  ctx.fillRect(0, h * 0.65, w, h * 0.2)
+  ctx.restore()
+
+  // Fireflies
+  if (!particles.current) particles.current = seededParticles(35, w, h * 0.7)
+  const ff = particles.current
+  for (const p of ff) {
+    p.x += Math.sin(t * p.speed + p.phase) * 0.4
+    p.y += Math.cos(t * p.speed * 0.7 + p.phase) * 0.3
+    if (p.x < 0) p.x = w
+    if (p.x > w) p.x = 0
+    if (p.y < 0) p.y = h * 0.7
+    if (p.y > h * 0.7) p.y = 0
+    const glow = 0.3 + 0.7 * Math.abs(Math.sin(t * 1.5 + p.phase))
+    ctx.save()
+    ctx.globalAlpha = glow * 0.8
+    ctx.shadowBlur = 12
+    ctx.shadowColor = 'rgba(200,255,100,0.9)'
+    ctx.fillStyle = 'rgba(200,255,100,0.9)'
+    ctx.beginPath()
+    ctx.arc(p.x, p.y, p.size * 0.7, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.restore()
+  }
+
+  // Floating leaves
+  ctx.save()
+  for (let i = 0; i < 8; i++) {
+    const lx = ((t * 15 + i * 130) % (w + 40)) - 20
+    const ly = h * 0.2 + Math.sin(t * 0.8 + i * 2) * 40 + i * 30
+    ctx.globalAlpha = 0.6
+    ctx.fillStyle = i % 2 === 0 ? '#8bc34a' : '#ff8f00'
+    ctx.save()
+    ctx.translate(lx, ly)
+    ctx.rotate(Math.sin(t + i) * 0.5)
+    ctx.beginPath()
+    ctx.ellipse(0, 0, 5, 3, 0, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.restore()
+  }
+  ctx.restore()
+}
+
+function drawOcean(ctx: CanvasRenderingContext2D, w: number, h: number, t: number, bs: number, particles: React.MutableRefObject<Particle[] | null>) {
+  // Sky gradient - sunset feel
+  const sky = ctx.createLinearGradient(0, 0, 0, h * 0.5)
+  sky.addColorStop(0, '#4a90d9')
+  sky.addColorStop(0.5, '#87CEEB')
+  sky.addColorStop(0.8, '#ffd4a2')
+  sky.addColorStop(1, '#ff9a56')
+  ctx.fillStyle = sky
+  ctx.fillRect(0, 0, w, h * 0.5)
+
+  // Clouds
+  ctx.save()
+  ctx.globalAlpha = 0.4
+  for (let i = 0; i < 5; i++) {
+    const cx = ((t * 5 + i * 200) % (w + 200)) - 100
+    const cy = 40 + i * 30
+    ctx.fillStyle = 'rgba(255,255,255,0.6)'
+    ctx.beginPath()
+    ctx.ellipse(cx, cy, 60 + i * 10, 18 + i * 3, 0, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.beginPath()
+    ctx.ellipse(cx + 40, cy - 5, 40, 14, 0, 0, Math.PI * 2)
+    ctx.fill()
+  }
+  ctx.restore()
+
+  // Sun
+  const sunX = w * 0.7
+  const sunY = h * 0.38
+  ctx.save()
+  const sunGlow = ctx.createRadialGradient(sunX, sunY, 10, sunX, sunY, 80)
+  sunGlow.addColorStop(0, 'rgba(255,200,50,0.9)')
+  sunGlow.addColorStop(0.3, 'rgba(255,180,50,0.4)')
+  sunGlow.addColorStop(1, 'transparent')
+  ctx.fillStyle = sunGlow
+  ctx.fillRect(sunX - 80, sunY - 80, 160, 160)
+  ctx.fillStyle = '#ffe082'
+  ctx.shadowBlur = 30
+  ctx.shadowColor = 'rgba(255,200,50,0.8)'
+  ctx.beginPath()
+  ctx.arc(sunX, sunY, 22 + Math.sin(t * 0.5) * 2 * bs, 0, Math.PI * 2)
+  ctx.fill()
+  ctx.restore()
+
+  // Water
+  const waterTop = h * 0.48
+  const waterGrad = ctx.createLinearGradient(0, waterTop, 0, h)
+  waterGrad.addColorStop(0, '#4db6e0')
+  waterGrad.addColorStop(0.3, '#2196F3')
+  waterGrad.addColorStop(0.7, '#1565C0')
+  waterGrad.addColorStop(1, '#0d47a1')
+  ctx.fillStyle = waterGrad
+  ctx.fillRect(0, waterTop, w, h - waterTop)
+
+  // Wave lines
+  ctx.save()
+  for (let wl = 0; wl < 15; wl++) {
+    const wy = waterTop + 10 + wl * ((h - waterTop) / 15)
+    ctx.strokeStyle = `rgba(255,255,255,${0.12 - wl * 0.006})`
+    ctx.lineWidth = 1.5
+    ctx.beginPath()
+    for (let x = 0; x <= w; x += 3) {
+      const yy = wy + Math.sin(x * 0.02 + t * (1.2 - wl * 0.05) + wl) * (4 + wl * 0.5)
+      if (x === 0) ctx.moveTo(x, yy)
+      else ctx.lineTo(x, yy)
+    }
+    ctx.stroke()
+  }
+  ctx.restore()
+
+  // Sun reflection on water
+  ctx.save()
+  ctx.globalAlpha = 0.15 + 0.05 * Math.sin(t * 0.8)
+  for (let r = 0; r < 12; r++) {
+    const rx = sunX + Math.sin(t * 0.5 + r * 0.8) * 8
+    const ry = waterTop + 5 + r * 15
+    const rw = 3 + Math.sin(t * 1.5 + r) * 2
+    ctx.fillStyle = 'rgba(255,220,100,0.5)'
+    ctx.fillRect(rx - rw, ry, rw * 2, 6)
+  }
+  ctx.restore()
+
+  // Shore / foam
+  ctx.save()
+  const shoreY = h * 0.82
+  ctx.globalAlpha = 0.5
+  ctx.fillStyle = '#e0d8b0'
+  ctx.fillRect(0, shoreY, w, h - shoreY)
+  // Foam line
+  ctx.strokeStyle = 'rgba(255,255,255,0.7)'
+  ctx.lineWidth = 3
+  ctx.beginPath()
+  for (let x = 0; x <= w; x += 3) {
+    const fy = shoreY + Math.sin(x * 0.03 + t * 1.5) * 5
+    if (x === 0) ctx.moveTo(x, fy)
+    else ctx.lineTo(x, fy)
+  }
+  ctx.stroke()
+  ctx.restore()
+
+  // Foam particles
+  if (!particles.current) particles.current = seededParticles(25, w, 30)
+  for (const p of particles.current) {
+    p.x += Math.sin(t * 0.5 + p.phase) * 0.3
+    const py = shoreY - 5 + p.y % 30 + Math.sin(t + p.phase) * 3
+    ctx.save()
+    ctx.globalAlpha = 0.4 + 0.3 * Math.sin(t + p.phase)
+    ctx.fillStyle = 'white'
+    ctx.beginPath()
+    ctx.arc(p.x % w, py, p.size * 0.5, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.restore()
+  }
+
+  // Sailboat
+  const boatX = ((t * 8) % (w + 100)) - 50
+  const boatY = h * 0.52 + Math.sin(t * 0.8) * 3
+  ctx.save()
+  ctx.globalAlpha = 0.6
+  ctx.fillStyle = '#37474f'
+  // Hull
+  ctx.beginPath()
+  ctx.moveTo(boatX - 12, boatY)
+  ctx.lineTo(boatX + 12, boatY)
+  ctx.lineTo(boatX + 8, boatY + 6)
+  ctx.lineTo(boatX - 8, boatY + 6)
+  ctx.closePath()
+  ctx.fill()
+  // Sail
+  ctx.beginPath()
+  ctx.moveTo(boatX, boatY)
+  ctx.lineTo(boatX, boatY - 18)
+  ctx.lineTo(boatX + 10, boatY - 4)
+  ctx.closePath()
+  ctx.fill()
+  ctx.restore()
+
+  // Seagulls
+  ctx.save()
+  ctx.strokeStyle = '#37474f'
+  ctx.lineWidth = 1.5
+  for (let i = 0; i < 4; i++) {
+    const gx = ((t * 20 + i * 180) % (w + 100)) - 50
+    const gy = 60 + i * 25 + Math.sin(t * 1.2 + i * 3) * 8
+    const wingAmp = Math.sin(t * 3 + i * 2) * 4
+    ctx.beginPath()
+    ctx.moveTo(gx - 8, gy + wingAmp)
+    ctx.quadraticCurveTo(gx - 3, gy - 3, gx, gy)
+    ctx.quadraticCurveTo(gx + 3, gy - 3, gx + 8, gy + wingAmp)
+    ctx.stroke()
+  }
+  ctx.restore()
+}
+
+function drawMountain(ctx: CanvasRenderingContext2D, w: number, h: number, t: number, bs: number, particles: React.MutableRefObject<Particle[] | null>) {
+  // Sky
+  const sky = ctx.createLinearGradient(0, 0, 0, h * 0.6)
+  sky.addColorStop(0, '#1a237e')
+  sky.addColorStop(0.4, '#3949ab')
+  sky.addColorStop(0.8, '#7986cb')
+  sky.addColorStop(1, '#c5cae9')
+  ctx.fillStyle = sky
+  ctx.fillRect(0, 0, w, h)
+
+  // Sun rays from behind peaks
+  ctx.save()
+  const sunCx = w * 0.45
+  const sunCy = h * 0.35
+  ctx.globalAlpha = 0.08 + 0.03 * Math.sin(t * 0.4) * bs
+  for (let r = 0; r < 8; r++) {
+    const angle = (r / 8) * Math.PI * 2 + t * 0.05
+    ctx.fillStyle = 'rgba(255,235,180,0.4)'
+    ctx.beginPath()
+    ctx.moveTo(sunCx, sunCy)
+    ctx.lineTo(sunCx + Math.cos(angle) * 300, sunCy + Math.sin(angle) * 300)
+    ctx.lineTo(sunCx + Math.cos(angle + 0.15) * 300, sunCy + Math.sin(angle + 0.15) * 300)
+    ctx.closePath()
+    ctx.fill()
+  }
+  // Sun glow
+  const sg = ctx.createRadialGradient(sunCx, sunCy, 5, sunCx, sunCy, 60)
+  sg.addColorStop(0, 'rgba(255,235,180,0.6)')
+  sg.addColorStop(1, 'transparent')
+  ctx.fillStyle = sg
+  ctx.globalAlpha = 0.5
+  ctx.fillRect(sunCx - 60, sunCy - 60, 120, 120)
+  ctx.restore()
+
+  // Wispy clouds
+  ctx.save()
+  ctx.globalAlpha = 0.2
+  for (let i = 0; i < 4; i++) {
+    const cx = ((t * 4 + i * 250) % (w + 200)) - 100
+    const cy = 50 + i * 35
+    ctx.fillStyle = 'rgba(200,210,240,0.5)'
+    ctx.beginPath()
+    ctx.ellipse(cx, cy, 70, 12, 0.1, 0, Math.PI * 2)
+    ctx.fill()
+  }
+  ctx.restore()
+
+  // Mountain layers (5 layers, back to front)
+  const mtColors = ['#283593', '#3949ab', '#5c6bc0', '#7986cb', '#9fa8da']
+  const mtSnow = [false, false, false, true, true]
+  for (let layer = 0; layer < 5; layer++) {
+    const baseY = h * (0.3 + layer * 0.1)
+    ctx.fillStyle = mtColors[layer]
+    ctx.beginPath()
+    ctx.moveTo(0, h)
+    const peaks: { x: number; y: number }[] = []
+    for (let x = 0; x <= w; x += 2) {
+      const yy = baseY
+        + Math.sin(x * 0.008 + layer * 1.5) * (50 - layer * 5)
+        + Math.sin(x * 0.02 + layer * 3) * (25 - layer * 3)
+        + Math.sin(x * 0.003 + t * 0.02 * (0.3 - layer * 0.05)) * 15
+      peaks.push({ x, y: yy })
+      ctx.lineTo(x, yy)
+    }
+    ctx.lineTo(w, h)
+    ctx.closePath()
+    ctx.fill()
+
+    // Snow caps on nearer peaks
+    if (mtSnow[layer]) {
+      ctx.save()
+      ctx.fillStyle = 'rgba(255,255,255,0.7)'
+      // Find local minima (peaks)
+      for (let i = 10; i < peaks.length - 10; i += 20) {
+        let isMin = true
+        for (let j = -5; j <= 5; j++) {
+          if (peaks[i + j] && peaks[i + j].y < peaks[i].y - 2) { isMin = false; break }
+        }
+        if (isMin && peaks[i].y < baseY) {
+          ctx.beginPath()
+          ctx.moveTo(peaks[i].x - 12, peaks[i].y + 8)
+          ctx.lineTo(peaks[i].x, peaks[i].y - 2)
+          ctx.lineTo(peaks[i].x + 12, peaks[i].y + 8)
+          ctx.closePath()
+          ctx.fill()
+        }
+      }
+      ctx.restore()
+    }
+  }
+
+  // Ground
+  ctx.fillStyle = '#4a5568'
+  ctx.fillRect(0, h * 0.82, w, h * 0.18)
+
+  // Eagles
+  ctx.save()
+  ctx.fillStyle = '#1a1a2e'
+  for (let i = 0; i < 3; i++) {
+    const angle = t * 0.15 + i * 2.1
+    const ex = w * 0.4 + Math.cos(angle) * (80 + i * 40)
+    const ey = h * 0.2 + Math.sin(angle) * (30 + i * 15) + i * 20
+    const wingUp = Math.sin(t * 2 + i * 3) * 3
+    ctx.beginPath()
+    ctx.moveTo(ex - 10, ey + wingUp)
+    ctx.quadraticCurveTo(ex - 4, ey - 4, ex, ey)
+    ctx.quadraticCurveTo(ex + 4, ey - 4, ex + 10, ey + wingUp)
+    ctx.lineWidth = 2
+    ctx.strokeStyle = '#1a1a2e'
+    ctx.stroke()
+  }
+  ctx.restore()
+
+  // Wind streaks
+  if (!particles.current) particles.current = seededParticles(20, w, h * 0.5)
+  ctx.save()
+  ctx.globalAlpha = 0.15
+  ctx.strokeStyle = 'rgba(200,210,240,0.5)'
+  ctx.lineWidth = 1
+  for (const p of particles.current) {
+    p.x += 1.5 * p.speed
+    if (p.x > w + 20) { p.x = -20; p.y = Math.random() * h * 0.5 }
+    ctx.beginPath()
+    ctx.moveTo(p.x, p.y)
+    ctx.lineTo(p.x + 20 + p.speed * 10, p.y)
+    ctx.stroke()
+  }
+  ctx.restore()
+}
+
+function drawMeadow(ctx: CanvasRenderingContext2D, w: number, h: number, t: number, bs: number, particles: React.MutableRefObject<Particle[] | null>) {
+  // Sky
+  const sky = ctx.createLinearGradient(0, 0, 0, h * 0.55)
+  sky.addColorStop(0, '#64b5f6')
+  sky.addColorStop(1, '#bbdefb')
+  ctx.fillStyle = sky
+  ctx.fillRect(0, 0, w, h)
+
+  // Sun with glow
+  const sunX = w * 0.8
+  const sunY = h * 0.15
+  ctx.save()
+  ctx.shadowBlur = 40
+  ctx.shadowColor = 'rgba(255,200,50,0.6)'
+  const sunG = ctx.createRadialGradient(sunX, sunY, 15, sunX, sunY, 60)
+  sunG.addColorStop(0, 'rgba(255,235,59,1)')
+  sunG.addColorStop(0.4, 'rgba(255,235,59,0.3)')
+  sunG.addColorStop(1, 'transparent')
+  ctx.fillStyle = sunG
+  ctx.beginPath()
+  ctx.arc(sunX, sunY, 60, 0, Math.PI * 2)
+  ctx.fill()
+  ctx.fillStyle = '#fff9c4'
+  ctx.beginPath()
+  ctx.arc(sunX, sunY, 18 + Math.sin(t * 0.4) * 1.5 * bs, 0, Math.PI * 2)
+  ctx.fill()
+  ctx.restore()
+
+  // Lens flare
+  ctx.save()
+  ctx.globalAlpha = 0.06 + 0.02 * Math.sin(t * 0.3)
+  const flare = ctx.createRadialGradient(sunX - 100, sunY + 80, 0, sunX - 100, sunY + 80, 40)
+  flare.addColorStop(0, 'rgba(255,200,50,0.4)')
+  flare.addColorStop(1, 'transparent')
+  ctx.fillStyle = flare
+  ctx.fillRect(sunX - 140, sunY + 40, 80, 80)
+  ctx.restore()
+
+  // Fluffy clouds
+  ctx.save()
+  ctx.globalAlpha = 0.7
+  for (let i = 0; i < 4; i++) {
+    const cx = ((t * 6 + i * 220) % (w + 250)) - 120
+    const cy = 50 + i * 28 + Math.sin(t * 0.3 + i) * 5
+    ctx.fillStyle = 'white'
+    ctx.beginPath()
+    ctx.arc(cx, cy, 25, 0, Math.PI * 2)
+    ctx.arc(cx + 25, cy - 8, 20, 0, Math.PI * 2)
+    ctx.arc(cx + 50, cy, 22, 0, Math.PI * 2)
+    ctx.arc(cx + 20, cy + 5, 18, 0, Math.PI * 2)
+    ctx.fill()
+  }
+  ctx.restore()
+
+  // Rolling hills
+  const hillGreens = ['#66bb6a', '#81c784', '#a5d6a7']
+  for (let hl = 0; hl < 3; hl++) {
+    ctx.fillStyle = hillGreens[hl]
+    ctx.beginPath()
+    ctx.moveTo(0, h)
+    for (let x = 0; x <= w; x += 3) {
+      const yy = h * (0.45 + hl * 0.08)
+        + Math.sin(x * 0.006 + hl * 2) * 25
+        + Math.sin(x * 0.015 + hl) * 12
+      ctx.lineTo(x, yy)
+    }
+    ctx.lineTo(w, h)
+    ctx.closePath()
+    ctx.fill()
+  }
+
+  // Main ground
+  const gnd = ctx.createLinearGradient(0, h * 0.6, 0, h)
+  gnd.addColorStop(0, '#4caf50')
+  gnd.addColorStop(1, '#388e3c')
+  ctx.fillStyle = gnd
+  ctx.fillRect(0, h * 0.6, w, h * 0.4)
+
+  // Grass blades
+  ctx.save()
+  for (let i = 0; i < 100; i++) {
+    const gx = (i / 100) * w + Math.sin(i * 7) * 8
+    const gy = h * 0.62 + (i % 30) * (h * 0.012)
+    const sway = Math.sin(t * 1.5 + i * 0.4) * 5
+    const bladeH = 14 + Math.sin(i * 2.3) * 6
+    ctx.strokeStyle = i % 3 === 0 ? '#43a047' : '#66bb6a'
+    ctx.lineWidth = 1.2
+    ctx.beginPath()
+    ctx.moveTo(gx, gy)
+    ctx.quadraticCurveTo(gx + sway, gy - bladeH * 0.6, gx + sway * 1.3, gy - bladeH)
+    ctx.stroke()
+  }
+  ctx.restore()
+
+  // Wildflowers
+  const flowerColors = ['#ffeb3b', '#ce93d8', '#f48fb1', '#ffffff', '#ff8a65']
+  for (let i = 0; i < 40; i++) {
+    const fx = (i * 37 + Math.sin(i * 5) * 20) % w
+    const fy = h * 0.64 + (i % 20) * (h * 0.015) + Math.sin(i * 3) * 5
+    const sway = Math.sin(t * 1.2 + i * 0.6) * 2
+    ctx.fillStyle = flowerColors[i % flowerColors.length]
+    ctx.beginPath()
+    ctx.arc(fx + sway, fy, 2.5 + Math.sin(i) * 1, 0, Math.PI * 2)
+    ctx.fill()
+    // Stem
+    ctx.strokeStyle = '#388e3c'
+    ctx.lineWidth = 0.8
+    ctx.beginPath()
+    ctx.moveTo(fx, fy + 2)
+    ctx.lineTo(fx, fy + 10)
+    ctx.stroke()
+  }
+
+  // Butterflies
+  if (!particles.current) {
+    particles.current = seededParticles(8, w, h * 0.5, { colors: ['#e91e63', '#ff9800', '#9c27b0', '#2196f3', '#ffeb3b'] })
+  }
+  ctx.save()
+  for (const p of particles.current) {
+    p.x += Math.sin(t * p.speed + p.phase) * 1.2
+    p.y += Math.cos(t * p.speed * 0.8 + p.phase) * 0.8
+    if (p.x < 0) p.x = w
+    if (p.x > w) p.x = 0
+    if (p.y < h * 0.3) p.y = h * 0.6
+    if (p.y > h * 0.7) p.y = h * 0.3
+    const wingAngle = Math.sin(t * 6 + p.phase) * 0.4
+    ctx.save()
+    ctx.translate(p.x, p.y)
+    ctx.fillStyle = p.color || '#e91e63'
+    ctx.globalAlpha = 0.7
+    // Left wing
+    ctx.beginPath()
+    ctx.ellipse(-3, 0, 4, 2.5, -wingAngle, 0, Math.PI * 2)
+    ctx.fill()
+    // Right wing
+    ctx.beginPath()
+    ctx.ellipse(3, 0, 4, 2.5, wingAngle, 0, Math.PI * 2)
+    ctx.fill()
+    // Body
+    ctx.fillStyle = '#333'
+    ctx.globalAlpha = 0.8
+    ctx.fillRect(-0.5, -3, 1, 6)
+    ctx.restore()
+  }
+  ctx.restore()
+
+  // Bees
+  ctx.save()
+  for (let i = 0; i < 5; i++) {
+    const bx = (w * 0.2 + i * w * 0.15 + Math.sin(t * 2 + i * 4) * 25) % w
+    const by = h * 0.58 + Math.sin(t * 3 + i * 2) * 15 + i * 8
+    ctx.fillStyle = '#fdd835'
+    ctx.beginPath()
+    ctx.ellipse(bx, by, 3, 2, 0, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.fillStyle = '#333'
+    ctx.fillRect(bx - 1, by - 2, 2, 1)
+    ctx.fillRect(bx - 1, by, 2, 1)
+  }
+  ctx.restore()
+
+  // Dandelion seeds
+  ctx.save()
+  ctx.globalAlpha = 0.4
+  for (let i = 0; i < 6; i++) {
+    const dx = ((t * 10 + i * 170) % (w + 100)) - 50
+    const dy = h * 0.3 + Math.sin(t * 0.4 + i * 3) * 30 + i * 15
+    ctx.strokeStyle = 'rgba(255,255,255,0.6)'
+    ctx.lineWidth = 0.5
+    // Seed body
+    ctx.beginPath()
+    ctx.moveTo(dx, dy)
+    ctx.lineTo(dx, dy + 4)
+    ctx.stroke()
+    // Fluff
+    ctx.fillStyle = 'rgba(255,255,255,0.5)'
+    for (let f = 0; f < 5; f++) {
+      const fa = (f / 5) * Math.PI * 2
+      ctx.beginPath()
+      ctx.moveTo(dx, dy)
+      ctx.lineTo(dx + Math.cos(fa) * 4, dy + Math.sin(fa) * 4)
+      ctx.stroke()
+    }
+  }
+  ctx.restore()
+}
+
+/* ────────────────────────────────────────────
+   SceneCanvas Component
+   ──────────────────────────────────────────── */
+
+function SceneCanvas({ sceneId, breathingScale }: { sceneId: string; breathingScale: number }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const particlesRef = useRef<Particle[] | null>(null)
+  const breathRef = useRef(breathingScale)
+
+  useEffect(() => {
+    breathRef.current = breathingScale
+  }, [breathingScale])
+
+  useEffect(() => {
+    particlesRef.current = null
+  }, [sceneId])
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+
+    let cw = 0
+    let ch = 0
+
+    const resize = () => {
+      const dpr = window.devicePixelRatio || 1
+      cw = canvas.offsetWidth
+      ch = canvas.offsetHeight
+      canvas.width = cw * dpr
+      canvas.height = ch * dpr
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+    }
+    resize()
+    window.addEventListener('resize', resize)
+
+    let animationId: number
+    let time = 0
+
+    const draw = () => {
+      time += 0.016
+      ctx.clearRect(0, 0, cw, ch)
+
+      const bs = breathRef.current
+      if (sceneId === 'forest') drawForest(ctx, cw, ch, time, bs, particlesRef)
+      else if (sceneId === 'ocean') drawOcean(ctx, cw, ch, time, bs, particlesRef)
+      else if (sceneId === 'mountain') drawMountain(ctx, cw, ch, time, bs, particlesRef)
+      else if (sceneId === 'meadow') drawMeadow(ctx, cw, ch, time, bs, particlesRef)
+
+      animationId = requestAnimationFrame(draw)
+    }
+    draw()
+
+    return () => {
+      cancelAnimationFrame(animationId)
+      window.removeEventListener('resize', resize)
+    }
+  }, [sceneId])
+
+  return <canvas ref={canvasRef} className="absolute inset-0 w-full h-full rounded-3xl" style={{ zIndex: 0 }} />
+}
+
+/* ────────────────────────────────────────────
+   Main Component
+   ──────────────────────────────────────────── */
 
 export default function NatureScenes() {
   const [selectedScene, setSelectedScene] = useState<NatureScene | null>(null)
@@ -571,7 +1214,7 @@ export default function NatureScenes() {
                     </motion.div>
                     <div>
                       <h3 className="text-lg font-semibold text-calm-900">{scene.name}</h3>
-                      <p className="text-sm text-gray-600">{scene.description}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">{scene.description}</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -588,8 +1231,12 @@ export default function NatureScenes() {
 
   return (
     <div className="relative mx-auto max-w-3xl">
-      <SceneBackground scene={selectedScene} breathingScale={breathingScale} />
-      <div className="relative z-10 overflow-hidden rounded-3xl border border-white/25 bg-white/55 p-6 shadow-2xl backdrop-blur-xl sm:p-8">
+      {/* Animated Canvas Background */}
+      <div className="absolute inset-0 -z-10 overflow-hidden rounded-3xl">
+        <SceneCanvas sceneId={selectedScene.id} breathingScale={breathingScale} />
+      </div>
+
+      <div className="relative z-10 overflow-hidden rounded-3xl border border-white/25 bg-white/40 p-6 shadow-2xl backdrop-blur-md sm:p-8">
         <header className="text-center">
           <div className="relative mx-auto mb-6 flex h-36 w-36 items-center justify-center sm:h-44 sm:w-44">
             <ShapeBreather
@@ -613,7 +1260,7 @@ export default function NatureScenes() {
           <h2 className={`text-2xl font-semibold tracking-tight ${palette.text}`}>
             {STEP_LABELS[currentStep]} • {currentLineNumber} of {totalLines}
           </h2>
-          <p className="mt-2 text-sm text-gray-600">{selectedScene.description}</p>
+          <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">{selectedScene.description}</p>
         </header>
 
         <div className="mt-6 flex flex-wrap items-center justify-center gap-3">

@@ -183,8 +183,8 @@ export default function QuickAccessMode() {
             You completed {completedTechniques.length} technique{completedTechniques.length !== 1 ? 's' : ''} in {totalTime} seconds.
           </p>
           
-          <div className="bg-green-50 rounded-lg p-4 mb-6">
-            <p className="text-sm text-green-800">
+          <div className="bg-green-50 dark:bg-green-950/30 rounded-xl p-4 mb-6">
+            <p className="text-sm text-green-800 dark:text-green-200">
               <strong>Great job!</strong> You&rsquo;ve given yourself some quick relief. 
               If you need more support, try a longer technique from the main menu.
             </p>
@@ -211,15 +211,15 @@ export default function QuickAccessMode() {
           <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-3">
             <Zap className="w-6 h-6 text-yellow-600" />
           </div>
-          <CardTitle className="text-yellow-800">Quick Access Mode</CardTitle>
+          <CardTitle className="text-yellow-800 dark:text-yellow-200">Quick Access Mode</CardTitle>
           <CardDescription>
             60 seconds of rapid calming techniques
           </CardDescription>
         </CardHeader>
         
         <CardContent className="space-y-6">
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-center">
-            <p className="text-yellow-800 font-medium mb-2">
+          <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl p-4 text-center">
+            <p className="text-yellow-800 dark:text-yellow-200 font-medium mb-2">
               Perfect when you need immediate relief
             </p>
             <p className="text-yellow-700 text-sm">
@@ -230,14 +230,14 @@ export default function QuickAccessMode() {
 
           <div className="grid grid-cols-3 gap-2 text-center">
             {['🫁 Breathing', '🌱 Grounding', '💪 Physical'].map((type, index) => (
-              <div key={index} className="bg-gray-50 rounded-lg p-2">
-                <p className="text-xs text-gray-600">{type}</p>
+              <div key={index} className="bg-gray-50 rounded-xl p-2">
+                <p className="text-xs text-gray-600 dark:text-gray-400">{type}</p>
               </div>
             ))}
           </div>
 
-          <div className="bg-blue-50 p-4 rounded-lg">
-            <p className="text-sm text-blue-800 font-medium mb-2">What to expect:</p>
+          <div className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-xl">
+            <p className="text-sm text-blue-800 dark:text-blue-200 font-medium mb-2">What to expect:</p>
             <ul className="text-sm text-blue-700 space-y-1">
               <li>• 8 rapid-fire calming techniques</li>
               <li>• 5-15 seconds per technique</li>
@@ -275,23 +275,23 @@ export default function QuickAccessMode() {
       <CardContent className="space-y-6">
         {/* Overall Progress */}
         <div className="space-y-2">
-          <div className="flex justify-between text-sm text-gray-600">
+          <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
             <span>Overall Progress</span>
             <span>{totalTime}/60s</span>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-3">
+          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
             <div 
-              className="bg-yellow-500 h-3 rounded-full transition-all duration-300"
+              className="bg-sky-500 h-1.5 rounded-full transition-all duration-300"
               style={{ width: `${(totalTime / 60) * 100}%` }}
             />
           </div>
         </div>
 
         {/* Current Technique */}
-        <div className={`rounded-lg p-6 text-center ${typeColor === 'blue' ? 'bg-blue-100' : typeColor === 'green' ? 'bg-green-100' : typeColor === 'purple' ? 'bg-purple-100' : 'bg-gray-100'}`}>
+        <div className={`rounded-xl p-6 text-center ${typeColor === 'blue' ? 'bg-blue-100' : typeColor === 'green' ? 'bg-green-100' : typeColor === 'purple' ? 'bg-purple-100' : 'bg-gray-100'}`}>
           <div className="text-3xl mb-3">{getTypeIcon(currentTech.type)}</div>
           
-          <h3 className={`text-xl font-semibold mb-3 ${typeColor === 'blue' ? 'text-blue-800' : typeColor === 'green' ? 'text-green-800' : typeColor === 'purple' ? 'text-purple-800' : 'text-gray-800'}`}>
+          <h3 className={`text-xl font-semibold mb-3 ${typeColor === 'blue' ? 'text-blue-800 dark:text-blue-200' : typeColor === 'green' ? 'text-green-800 dark:text-green-200' : typeColor === 'purple' ? 'text-purple-800 dark:text-purple-200' : 'text-gray-800'}`}>
             {currentTech.title}
           </h3>
           
@@ -300,9 +300,9 @@ export default function QuickAccessMode() {
           </p>
           
           <div className={`text-2xl font-bold ${
-            typeColor === 'blue' ? 'text-blue-800' :
-            typeColor === 'green' ? 'text-green-800' :
-            typeColor === 'purple' ? 'text-purple-800' : 'text-gray-800'
+            typeColor === 'blue' ? 'text-blue-800 dark:text-blue-200' :
+            typeColor === 'green' ? 'text-green-800 dark:text-green-200' :
+            typeColor === 'purple' ? 'text-purple-800 dark:text-purple-200' : 'text-gray-800'
           }`}>
             {Math.ceil(timeRemaining / 1000)}s
           </div>

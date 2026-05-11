@@ -84,57 +84,59 @@ export default function RecommendationsPanel({ tools, onSelectTool }: Recommenda
   }
 
   return (
-    <Card className="mb-8 bg-gradient-to-r from-purple-50 to-pink-50 border-purple-200">
-      <CardHeader>
+    <Card className="mb-6 sm:mb-8 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/50 dark:to-pink-950/50 border-purple-200 dark:border-purple-800">
+      <CardHeader className="p-4 sm:p-6">
         <div className="flex items-center space-x-2">
-          <Sparkles className="w-5 h-5 text-purple-600" />
-          <CardTitle className="text-purple-800">Personalized Recommendations</CardTitle>
+          <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600 dark:text-purple-400" />
+          <CardTitle className="text-base sm:text-lg text-purple-800 dark:text-purple-200">Personalized Recommendations</CardTitle>
         </div>
-        <CardDescription className="text-purple-700">
+        <CardDescription className="text-xs sm:text-sm text-purple-700 dark:text-purple-300 mt-1">
           Based on your preferences and current needs
         </CardDescription>
       </CardHeader>
       
-      <CardContent className="space-y-6">
+      <CardContent className="space-y-4 sm:space-y-6 p-4 sm:p-6">
         {/* Context Selection */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-4">
           <div>
-            <label className="block text-sm font-medium text-purple-700 mb-2">
+            <label className="block text-xs sm:text-sm font-medium text-purple-700 dark:text-purple-300 mb-2">
               How are you feeling?
             </label>
-            <div className="grid grid-cols-3 gap-1">
+            <div className="grid grid-cols-3 gap-1.5 sm:gap-1">
               {(['high', 'medium', 'low'] as const).map((level) => (
                 <Button
                   key={level}
                   onClick={() => setStressLevel(level)}
                   variant={stressLevel === level ? 'calm' : 'outline'}
                   size="sm"
-                  className={`text-xs ${
-                    stressLevel === level ? 'bg-purple-600 hover:bg-purple-700' : ''
+                  className={`text-[10px] sm:text-xs touch-manipulation min-h-[44px] ${
+                    stressLevel === level ? 'bg-purple-600 hover:bg-purple-700 dark:bg-purple-500 dark:hover:bg-purple-400 text-white' : ''
                   }`}
                 >
-                  {getStressIcon(level)} {level === 'high' ? 'Stressed' : level === 'medium' ? 'Okay' : 'Calm'}
+                  <span className="text-xs sm:text-sm">{getStressIcon(level)}</span>
+                  <span className="hidden sm:inline"> {level === 'high' ? 'Stressed' : level === 'medium' ? 'Okay' : 'Calm'}</span>
                 </Button>
               ))}
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-purple-700 mb-2">
+            <label className="block text-xs sm:text-sm font-medium text-purple-700 dark:text-purple-300 mb-2">
               Time available?
             </label>
-            <div className="grid grid-cols-3 gap-1">
+            <div className="grid grid-cols-3 gap-1.5 sm:gap-1">
               {(['quick', 'moderate', 'long'] as const).map((time) => (
                 <Button
                   key={time}
                   onClick={() => setTimeAvailable(time)}
                   variant={timeAvailable === time ? 'calm' : 'outline'}
                   size="sm"
-                  className={`text-xs ${
-                    timeAvailable === time ? 'bg-purple-600 hover:bg-purple-700' : ''
+                  className={`text-[10px] sm:text-xs touch-manipulation min-h-[44px] ${
+                    timeAvailable === time ? 'bg-purple-600 hover:bg-purple-700 dark:bg-purple-500 dark:hover:bg-purple-400 text-white' : ''
                   }`}
                 >
-                  {getTimeIcon(time)} {time === 'quick' ? '<3min' : time === 'moderate' ? '3-10min' : '10min+'}
+                  <span className="text-xs sm:text-sm">{getTimeIcon(time)}</span>
+                  <span className="hidden sm:inline"> {time === 'quick' ? '<3min' : time === 'moderate' ? '3-10min' : '10min+'}</span>
                 </Button>
               ))}
             </div>
@@ -146,15 +148,15 @@ export default function RecommendationsPanel({ tools, onSelectTool }: Recommenda
           {insight && (
             <motion.div
               key={insight}
-              className="bg-white/60 rounded-lg p-3 border border-purple-200"
+              className="bg-white/60 dark:bg-gray-800/60 rounded-lg p-2.5 sm:p-3 border border-purple-200 dark:border-purple-800"
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.25, ease: 'easeOut' }}
             >
               <div className="flex items-start space-x-2">
-                <TrendingUp className="w-4 h-4 text-purple-600 mt-0.5 flex-shrink-0" />
-                <p className="text-sm text-purple-800">{insight}</p>
+                <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-purple-600 dark:text-purple-400 mt-0.5 flex-shrink-0" />
+                <p className="text-xs sm:text-sm text-purple-800 dark:text-purple-200 leading-relaxed">{insight}</p>
               </div>
             </motion.div>
           )}
@@ -162,39 +164,39 @@ export default function RecommendationsPanel({ tools, onSelectTool }: Recommenda
 
         {/* Recommended Tools */}
         <div>
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="font-medium text-purple-800">Suggested for you right now:</h3>
+          <div className="flex items-center justify-between mb-2 sm:mb-3">
+            <h3 className="text-xs sm:text-sm font-medium text-purple-800 dark:text-purple-200">Suggested for you right now:</h3>
             <Button
               onClick={updateRecommendations}
               variant="ghost"
               size="sm"
-              className="text-purple-600 hover:text-purple-700 p-1"
+              className="text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 p-1 touch-manipulation min-w-[44px] min-h-[44px]"
             >
               <RefreshCw size={16} />
             </Button>
           </div>
           
-          <motion.div className="grid grid-cols-1 md:grid-cols-2 gap-3" variants={listVariants} initial="hidden" animate="visible">
+          <motion.div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 sm:gap-3" variants={listVariants} initial="hidden" animate="visible">
             {getRecommendedTools().slice(0, 4).map((tool, index) => (
               <motion.div key={tool.id} variants={itemVariants} whileHover={{ y: -2, scale: 1.01 }} whileTap={{ scale: 0.995 }}>
                 <Card 
-                  className="cursor-pointer bg-white/80 border-purple-100 hover:border-purple-300 transition-colors"
+                  className="cursor-pointer bg-white/80 dark:bg-gray-800/80 border-purple-100 dark:border-purple-800/50 hover:border-purple-300 dark:hover:border-purple-700 transition-colors touch-manipulation"
                   onClick={() => onSelectTool({ toolId: tool.id })}
                 >
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="font-medium text-purple-900 text-sm">{tool.title}</h4>
+                  <CardContent className="p-3 sm:p-4">
+                    <div className="flex items-center justify-between mb-1.5 sm:mb-2 gap-2">
+                      <h4 className="font-medium text-purple-900 dark:text-purple-100 text-xs sm:text-sm truncate flex-1">{tool.title}</h4>
                       {index === 0 && (
-                        <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full">Top Pick</span>
+                        <span className="text-[10px] sm:text-xs bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full flex-shrink-0">Top Pick</span>
                       )}
                     </div>
-                    <p className="text-xs text-purple-600 mb-2">{tool.description}</p>
+                    <p className="text-[10px] sm:text-xs text-purple-600 dark:text-purple-400 mb-2 line-clamp-2">{tool.description}</p>
                     <div className="flex items-center justify-between">
-                      <span className="text-xs text-purple-500">{tool.duration}</span>
+                      <span className="text-[10px] sm:text-xs text-purple-500 dark:text-purple-500">{tool.duration}</span>
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="text-xs text-purple-600 hover:text-purple-700 p-1 h-auto"
+                        className="text-[10px] sm:text-xs text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 p-1 h-auto touch-manipulation min-h-[36px]"
                         onClick={(e) => {
                           e.stopPropagation()
                           onSelectTool({ toolId: tool.id })
@@ -210,16 +212,16 @@ export default function RecommendationsPanel({ tools, onSelectTool }: Recommenda
           </motion.div>
 
           {getRecommendedTools().length === 0 && (
-            <div className="text-center py-4 text-purple-600">
-              <Sparkles className="w-8 h-8 mx-auto mb-2 opacity-50" />
-              <p className="text-sm">Use a few tools to get personalized recommendations!</p>
+            <div className="text-center py-4 text-purple-600 dark:text-purple-400">
+              <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-2 opacity-50" />
+              <p className="text-xs sm:text-sm">Use a few tools to get personalized recommendations!</p>
             </div>
           )}
         </div>
 
         {/* Quick Stats */}
-        <div className="bg-white/40 rounded-lg p-3">
-          <p className="text-xs text-purple-600 text-center">
+        <div className="bg-white/40 dark:bg-gray-800/40 rounded-lg p-2.5 sm:p-3">
+          <p className="text-[10px] sm:text-xs text-purple-600 dark:text-purple-400 text-center leading-relaxed">
             💡 The more you use CalmMyself, the smarter these recommendations become
           </p>
         </div>

@@ -1,5 +1,6 @@
 // Service Worker for CalmMyself PWA
-const CACHE_NAME = 'calmmyself-v1.1.0'
+const CACHE_NAME = 'calmmyself-v1.1.1'
+const IS_LOCAL_PREVIEW = ['localhost', '127.0.0.1', '::1'].includes(self.location.hostname)
 const STATIC_CACHE_URLS = [
   '/',
   '/manifest.json',
@@ -11,6 +12,12 @@ const STATIC_CACHE_URLS = [
 // Install event - cache static assets
 self.addEventListener('install', (event) => {
   console.log('Service Worker installing...')
+
+  if (IS_LOCAL_PREVIEW) {
+    self.skipWaiting()
+    return
+  }
+
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
@@ -28,6 +35,17 @@ self.addEventListener('install', (event) => {
 // Activate event - clean up old caches
 self.addEventListener('activate', (event) => {
   console.log('Service Worker activating...')
+
+  if (IS_LOCAL_PREVIEW) {
+    event.waitUntil(
+      caches.keys()
+        .then((cacheNames) => Promise.all(cacheNames.map((cacheName) => caches.delete(cacheName))))
+        .then(() => self.registration.unregister())
+        .then(() => self.clients.claim())
+    )
+    return
+  }
+
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
@@ -45,6 +63,10 @@ self.addEventListener('activate', (event) => {
 
 // Fetch event - serve from cache, fallback to network
 self.addEventListener('fetch', (event) => {
+  if (IS_LOCAL_PREVIEW) {
+    return
+  }
+
   // Skip non-GET requests
   if (event.request.method !== 'GET') {
     return

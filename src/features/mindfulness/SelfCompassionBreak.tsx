@@ -66,15 +66,15 @@ export default function SelfCompassionBreak() {
 
       <CardContent className="space-y-6">
         {/* Progress */}
-        <div className="flex items-center justify-between text-sm text-gray-600">
+        <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400">
           <span>
             Step {stepIndex + 1} of {STEPS.length}
           </span>
           <span>{isLastStep ? 'Kindness phrase' : 'Brief reflection'}</span>
         </div>
-        <div className="w-full bg-gray-200 rounded-full h-2">
+        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
           <div
-            className="bg-calm-500 h-2 rounded-full transition-all duration-300"
+            className="bg-sky-500 h-2 rounded-full transition-all duration-300"
             style={{ width: `${progressPct}%` }}
           />
         </div>
@@ -97,9 +97,9 @@ export default function SelfCompassionBreak() {
                   key={phrase}
                   type="button"
                   onClick={() => setSelectedPhrase(phrase)}
-                  className={`w-full text-left text-sm px-3 py-2 rounded-md border transition-colors ${
+                  className={`w-full text-left text-sm px-3 py-2 rounded-xl border transition-colors ${
                     selectedPhrase === phrase
-                      ? 'border-calm-400 bg-calm-50 text-calm-800'
+                      ? 'border-calm-400 bg-calm-50 dark:bg-gray-800/50 text-calm-800'
                       : 'border-gray-200 bg-white text-gray-700 hover:border-calm-300'
                   }`}
                 >
@@ -108,7 +108,7 @@ export default function SelfCompassionBreak() {
               ))}
             </div>
             <textarea
-              className="w-full mt-2 p-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-calm-500 focus:border-calm-500"
+              className="w-full mt-2 p-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 text-sm focus:ring-2 focus:ring-calm-500 focus:border-calm-500"
               rows={2}
               value={selectedPhrase}
               onChange={(e) => setSelectedPhrase(e.target.value)}
@@ -118,7 +118,7 @@ export default function SelfCompassionBreak() {
         )}
 
         {/* Gentle reminder */}
-        <div className="text-xs text-gray-600 bg-calm-50 border border-calm-100 p-3 rounded-md">
+        <div className="text-xs text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 p-3 rounded-xl">
           This is not about fixing anything quickly. It is about briefly
           acknowledging difficulty, remembering you&apos;re not alone, and
           turning a small amount of warmth toward yourself.
@@ -154,12 +154,12 @@ export default function SelfCompassionBreak() {
         </div>
       </CardContent>
 
-      <div className="px-6 pb-6">
+      <div className="px-6 pb-6 pt-0"><div className="pt-4 mt-2 border-t border-gray-100 dark:border-gray-800">
         <ShareInline
           title="Self-Compassion Break"
           text="Try a brief self‑compassion break on CalmMyself."
         />
-      </div>
+      </div></div>
     </Card>
   )
 }

@@ -134,20 +134,20 @@ export default function BreathingSpace() {
       
       <CardContent className="space-y-6">
         {/* Overall Progress */}
-        <div className="flex items-center justify-between text-sm text-gray-600">
+        <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400">
           <span>Step {currentStep + 1} of {MINDFULNESS_STEPS.length}</span>
           <span>{Math.round(overallProgress)}% complete</span>
         </div>
 
-        <div className="w-full bg-gray-200 rounded-full h-2">
+        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
           <div 
-            className="bg-calm-500 h-2 rounded-full transition-all duration-300"
+            className="bg-sky-500 h-2 rounded-full transition-all duration-300"
             style={{ width: `${overallProgress}%` }}
           />
         </div>
 
         {/* Current Step */}
-        <div className={`${colors.bg} rounded-lg p-6 text-center`}>
+        <div className={`${colors.bg} rounded-xl p-6 text-center`}>
           <div className="mb-4">
             <h3 className={`text-2xl font-bold ${colors.text} mb-2`}>
               {currentStepData.title}
@@ -198,7 +198,7 @@ export default function BreathingSpace() {
         </div>
 
         {/* Instructions */}
-        <div className="text-xs text-gray-500 text-center bg-gray-50 p-3 rounded-md">
+        <div className="text-xs text-gray-500 text-center bg-gray-50 dark:bg-gray-800/50 p-3 rounded-xl">
           <p className="font-medium mb-1">Perfect for busy moments</p>
           <p>This practice helps you pause, breathe, and reconnect with the present moment 
           whenever you need a reset during your day.</p>

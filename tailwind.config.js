@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+  darkMode: 'class',
   content: [
     './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',
@@ -35,12 +36,27 @@ module.exports = {
           700: '#b45309',
           800: '#92400e',
           900: '#78350f',
+        },
+        warm: {
+          50: '#fdf4f3',
+          100: '#fce8e6',
+          200: '#f9d2ce',
+          300: '#f4ada6',
+          400: '#ec7e73',
+          500: '#e05545',
+          600: '#cd3a29',
+          700: '#ac2e1f',
+          800: '#8e291d',
+          900: '#76271e',
         }
       },
       animation: {
         'breathe-in': 'breathe-in 4s ease-in-out',
         'breathe-out': 'breathe-out 4s ease-in-out',
         'pulse-calm': 'pulse-calm 2s ease-in-out infinite',
+        'blob-drift': 'blob-drift 30s ease-in-out infinite',
+        'blob-drift-reverse': 'blob-drift-reverse 35s ease-in-out infinite',
+        'blob-drift-slow': 'blob-drift-slow 40s ease-in-out infinite',
       },
       keyframes: {
         'breathe-in': {
@@ -54,7 +70,24 @@ module.exports = {
         'pulse-calm': {
           '0%, 100%': { opacity: '1' },
           '50%': { opacity: '0.7' }
-        }
+        },
+        'blob-drift': {
+          '0%, 100%': { transform: 'translate(0, 0) scale(1)' },
+          '25%': { transform: 'translate(20px, -30px) scale(1.05)' },
+          '50%': { transform: 'translate(-10px, 20px) scale(0.95)' },
+          '75%': { transform: 'translate(30px, 10px) scale(1.02)' },
+        },
+        'blob-drift-reverse': {
+          '0%, 100%': { transform: 'translate(0, 0) scale(1)' },
+          '25%': { transform: 'translate(-25px, 15px) scale(0.97)' },
+          '50%': { transform: 'translate(15px, -25px) scale(1.04)' },
+          '75%': { transform: 'translate(-20px, -10px) scale(0.98)' },
+        },
+        'blob-drift-slow': {
+          '0%, 100%': { transform: 'translate(0, 0) scale(1)' },
+          '33%': { transform: 'translate(10px, -20px) scale(1.03)' },
+          '66%': { transform: 'translate(-15px, 10px) scale(0.97)' },
+        },
       }
     },
   },

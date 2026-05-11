@@ -12,6 +12,7 @@ services:
       - NEXT_TELEMETRY_DISABLED=1
     networks:
       - calmmyself-network
+      - proxy
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/"]
       interval: 30s
@@ -29,3 +30,5 @@ networks:
   calmmyself-network:
     driver: bridge
     name: calmmyself-network
+  proxy:
+    external: true

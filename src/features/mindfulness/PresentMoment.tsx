@@ -3,7 +3,9 @@
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card'
-import { RefreshCw, Clock } from 'lucide-react'
+import { RefreshCw, Clock, Play, CheckCircle2, RotateCcw, ArrowLeft, Sparkles } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import ShareInline from '@/components/ShareInline'
 
 const PRESENT_MOMENT_PROMPTS = [
   "What do you notice about your breathing right now?",
@@ -23,43 +25,54 @@ const PRESENT_MOMENT_PROMPTS = [
   "How has this moment been a gift to you?"
 ]
 
+const DURATION_OPTIONS = [
+  { label: '2 min', seconds: 120 },
+  { label: '5 min', seconds: 300 },
+  { label: '10 min', seconds: 600 },
+]
+
 export default function PresentMoment() {
   const [currentPrompt, setCurrentPrompt] = useState(0)
-  const [startTime, setStartTime] = useState<Date | null>(null)
-  const [timeSpent, setTimeSpent] = useState(0)
-  const [isActive, setIsActive] = useState(false)
+  const [sessionState, setSessionState] = useState<'setup' | 'active' | 'completed'>('setup')
+  const [duration, setDuration] = useState(300)
+  const [elapsed, setElapsed] = useState(0)
+  const [promptKey, setPromptKey] = useState(0)
 
   const getRandomPrompt = () => {
     const availablePrompts = PRESENT_MOMENT_PROMPTS.filter((_, index) => index !== currentPrompt)
     const randomIndex = Math.floor(Math.random() * availablePrompts.length)
     const newPromptIndex = PRESENT_MOMENT_PROMPTS.findIndex(prompt => prompt === availablePrompts[randomIndex])
     setCurrentPrompt(newPromptIndex)
+    setPromptKey(k => k + 1)
   }
 
   const startSession = () => {
-    setStartTime(new Date())
-    setIsActive(true)
-    setTimeSpent(0)
+    setSessionState('active')
+    setElapsed(0)
+    getRandomPrompt()
   }
 
-  const endSession = () => {
-    setIsActive(false)
-    setStartTime(null)
+  const reset = () => {
+    setSessionState('setup')
+    setElapsed(0)
   }
 
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null
-    
-    if (isActive && startTime) {
+    if (sessionState === 'active') {
       interval = setInterval(() => {
-        setTimeSpent(Math.floor((Date.now() - startTime.getTime()) / 1000))
+        setElapsed(prev => {
+          const next = prev + 1
+          if (next >= duration) {
+            setSessionState('completed')
+            if (interval) clearInterval(interval)
+          }
+          return next
+        })
       }, 1000)
     }
-
-    return () => {
-      if (interval) clearInterval(interval)
-    }
-  }, [isActive, startTime])
+    return () => { if (interval) clearInterval(interval) }
+  }, [sessionState, duration])
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60)
@@ -67,110 +80,144 @@ export default function PresentMoment() {
     return `${mins}:${secs.toString().padStart(2, '0')}`
   }
 
-  return (
-    <Card className="max-w-md mx-auto">
-      <CardHeader className="text-center">
-        <CardTitle>Present Moment Awareness</CardTitle>
-        <CardDescription>
-          Simple questions to anchor you in the now
-        </CardDescription>
-      </CardHeader>
-      
-      <CardContent className="space-y-6">
-        {/* Timer */}
-        {isActive && (
-          <div className="flex items-center justify-center space-x-2 bg-calm-50 rounded-lg p-3">
-            <Clock size={16} className="text-calm-600" />
-            <span className="text-lg font-mono text-calm-800">
-              {formatTime(timeSpent)}
-            </span>
+  if (sessionState === 'completed') {
+    return (
+      <Card className="max-w-md mx-auto">
+        <CardContent className="text-center py-10 space-y-5">
+          <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', bounce: 0.5 }}>
+            <CheckCircle2 className="w-16 h-16 text-green-500 mx-auto" />
+          </motion.div>
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+            <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-100">Beautifully present ✨</h3>
+            <p className="text-gray-600 dark:text-gray-400 mt-2 text-sm">
+              You spent {formatTime(duration)} in present moment awareness. This moment is always available to you — no app needed.
+            </p>
+          </motion.div>
+          <div className="flex gap-3 justify-center pt-2">
+            <Button onClick={reset} variant="grounding" size="lg" className="gap-2">
+              <RotateCcw size={16} /> Do Again
+            </Button>
+            <Button onClick={() => window.history.back()} variant="outline" size="lg" className="gap-2">
+              <ArrowLeft size={16} /> Back
+            </Button>
           </div>
-        )}
+          <ShareInline title="Present Moment Awareness" text="Practice present moment awareness on CalmMyself" />
+        </CardContent>
+      </Card>
+    )
+  }
 
-        {/* Current Prompt */}
-        <div className="bg-gradient-to-r from-calm-50 to-grounding-50 rounded-lg p-6 text-center">
-          <div className="mb-4">
-            <div className="w-12 h-12 bg-calm-200 rounded-full flex items-center justify-center mx-auto mb-3">
-              <span className="text-xl">💭</span>
+  if (sessionState === 'setup') {
+    return (
+      <Card className="max-w-md mx-auto">
+        <CardHeader className="text-center">
+          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <Sparkles className="w-5 h-5 text-purple-500" />
+              <CardTitle>Present Moment Awareness</CardTitle>
+            </div>
+            <CardDescription>
+              Simple questions to anchor you in the now
+            </CardDescription>
+          </motion.div>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div>
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 text-center">Session Duration</p>
+            <div className="flex gap-2 justify-center">
+              {DURATION_OPTIONS.map((d) => (
+                <Button key={d.seconds} variant={duration === d.seconds ? 'grounding' : 'outline'} size="sm" onClick={() => setDuration(d.seconds)}>
+                  {d.label}
+                </Button>
+              ))}
             </div>
           </div>
-          
-          <p className="text-lg text-gray-800 leading-relaxed font-medium">
-            {PRESENT_MOMENT_PROMPTS[currentPrompt]}
-          </p>
+
+          <div className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-xl">
+            <p className="text-sm text-purple-800 dark:text-purple-200 mb-2 font-medium">
+              How to practice:
+            </p>
+            <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
+              <li>• Read each question slowly</li>
+              <li>• Take a moment to genuinely explore it</li>
+              <li>• Notice what arises without judgment</li>
+              <li>• There are no right or wrong answers</li>
+            </ul>
+          </div>
+
+          <Button onClick={startSession} variant="grounding" size="lg" className="w-full gap-2">
+            <Play size={18} /> Begin Practice
+          </Button>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  return (
+    <Card className="max-w-md mx-auto">
+      <CardHeader className="text-center pb-2">
+        <div className="flex items-center justify-center gap-2 mb-1">
+          <Sparkles className="w-5 h-5 text-purple-500" />
+          <CardTitle>Present Moment</CardTitle>
+        </div>
+      </CardHeader>
+
+      <CardContent className="space-y-6">
+        {/* Timer */}
+        <div className="flex items-center justify-center gap-2 bg-purple-50 dark:bg-purple-950/30 rounded-xl p-3">
+          <Clock size={16} className="text-purple-600" />
+          <span className="text-lg font-mono text-purple-800 dark:text-purple-200">
+            {formatTime(duration - elapsed)}
+          </span>
         </div>
 
-        {/* Instructions */}
-        <div className="bg-blue-50 p-4 rounded-lg">
-          <p className="text-sm text-blue-800 mb-2 font-medium">
-            How to practice:
-          </p>
-          <ul className="text-sm text-blue-700 space-y-1">
-            <li>• Read the question slowly</li>
-            <li>• Take a moment to genuinely explore it</li>
-            <li>• Notice what arises without judgment</li>
-            <li>• There are no right or wrong answers</li>
-          </ul>
+        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+          <div className="bg-purple-400 h-1.5 rounded-full transition-all" style={{ width: `${(elapsed / duration) * 100}%` }} />
         </div>
+
+        {/* Current Prompt */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={promptKey}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.4 }}
+            className="bg-gradient-to-r from-purple-50 to-green-50 dark:from-purple-950/30 dark:to-green-950/30 rounded-xl p-6 text-center"
+          >
+            <div className="mb-4">
+              <div className="w-12 h-12 bg-purple-200 dark:bg-purple-800 rounded-full flex items-center justify-center mx-auto mb-3">
+                <span className="text-xl">💭</span>
+              </div>
+            </div>
+            <p className="text-lg text-gray-800 dark:text-gray-100 leading-relaxed font-medium">
+              {PRESENT_MOMENT_PROMPTS[currentPrompt]}
+            </p>
+          </motion.div>
+        </AnimatePresence>
 
         {/* Reflection Area */}
-        {isActive && (
-          <div className="space-y-3">
-            <label className="text-sm font-medium text-gray-700">
-              Your reflection (optional):
-            </label>
-            <textarea
-              className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-calm-500 focus:border-calm-500 resize-none"
-              rows={3}
-              placeholder="What do you notice? How does this moment feel?"
-            />
-          </div>
-        )}
-
-        {/* Controls */}
-        <div className="flex flex-col space-y-3">
-          {!isActive ? (
-            <Button
-              onClick={startSession}
-              variant="calm"
-              size="lg"
-              className="w-full"
-            >
-              Begin Present Moment Practice
-            </Button>
-          ) : (
-            <Button
-              onClick={endSession}
-              variant="outline"
-              size="lg"
-              className="w-full"
-            >
-              End Session
-            </Button>
-          )}
-          
-          <Button
-            onClick={getRandomPrompt}
-            variant="ghost"
-            size="lg"
-            className="flex items-center space-x-2 w-full"
-          >
-            <RefreshCw size={20} />
-            <span>New Question</span>
-          </Button>
+        <div className="space-y-3">
+          <label className="text-sm font-medium text-gray-700 dark:text-gray-400">
+            Your reflection (optional):
+          </label>
+          <textarea
+            className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 resize-none"
+            rows={3}
+            placeholder="What do you notice? How does this moment feel?"
+          />
         </div>
 
-        {/* Completion Message */}
-        {!isActive && timeSpent > 0 && (
-          <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
-            <p className="text-green-800 font-medium mb-1">
-              Session Complete! ✨
-            </p>
-            <p className="text-sm text-green-700">
-              You spent {formatTime(timeSpent)} in present moment awareness.
-            </p>
-          </div>
-        )}
+        {/* Next prompt */}
+        <Button
+          onClick={getRandomPrompt}
+          variant="ghost"
+          size="lg"
+          className="flex items-center gap-2 w-full"
+        >
+          <RefreshCw size={18} />
+          <span>Next Question</span>
+        </Button>
       </CardContent>
     </Card>
   )

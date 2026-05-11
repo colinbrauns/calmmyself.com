@@ -45,17 +45,17 @@ export default function MicroBreakTimer() {
       </CardHeader>
 
       <CardContent className="space-y-6">
-        <div className="flex items-center justify-between text-sm text-gray-600">
+        <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400">
           <span>Time left: {remaining}s</span>
         </div>
-        <div className="w-full bg-gray-200 rounded-full h-2">
+        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
           <div
-            className="bg-grounding-500 h-2 rounded-full transition-all duration-300"
+            className="bg-sky-500 h-2 rounded-full transition-all duration-300"
             style={{ width: `${progress}%` }}
           />
         </div>
 
-        <div className="space-y-2 text-sm text-gray-700">
+        <div className="space-y-2 text-sm text-gray-700 dark:text-gray-400">
           {STEPS.map((step, i) => (
             <p key={i}>• {step}</p>
           ))}
@@ -75,17 +75,17 @@ export default function MicroBreakTimer() {
           </Button>
         </div>
 
-        <div className="text-xs text-gray-600 bg-grounding-50 border border-grounding-100 p-3 rounded-md">
+        <div className="text-xs text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 p-3 rounded-xl">
           Even brief breaks like this, taken regularly, can help eyes, posture, and nervous system
           recover during longer work sessions.
         </div>
       </CardContent>
-      <div className="px-6 pb-6">
+      <div className="px-6 pb-6 pt-0"><div className="pt-4 mt-2 border-t border-gray-100 dark:border-gray-800">
         <ShareInline
           title="Micro‑Break Timer"
           text="Use a 60‑second micro‑break timer for nervous‑system rest on CalmMyself."
         />
-      </div>
+      </div></div>
     </Card>
   )
 }
