@@ -1,7 +1,7 @@
 import { ButtonHTMLAttributes, forwardRef } from 'react'
 
 const getButtonClasses = (variant: string = 'default', size: string = 'default') => {
-  const baseClasses = 'inline-flex items-center justify-center whitespace-nowrap rounded-xl text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-calm-600 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:scale-[1.02] active:scale-[0.98]'
+  const baseClasses = 'inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-calm-600 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:scale-[1.01] active:scale-[0.99]'
   
   const variantClasses = {
     default: 'bg-calm-600 text-white hover:bg-calm-700 active:bg-calm-800 shadow-sm hover:shadow-md dark:bg-calm-500 dark:hover:bg-calm-400',
@@ -13,8 +13,8 @@ const getButtonClasses = (variant: string = 'default', size: string = 'default')
   
   const sizeClasses = {
     default: 'h-10 px-5 py-2',
-    sm: 'h-9 rounded-xl px-3',
-    lg: 'h-11 rounded-xl px-8',
+    sm: 'h-9 rounded-lg px-3',
+    lg: 'h-11 rounded-lg px-8',
     icon: 'h-10 w-10',
   }
   

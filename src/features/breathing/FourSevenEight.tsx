@@ -1,11 +1,19 @@
 "use client"
 
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
-import { Play, Pause, RotateCcw, Timer } from 'lucide-react'
+import { Timer } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 import ShareInline from '@/components/ShareInline'
 import { useBreathPattern } from '@/hooks/useBreathPattern'
+import {
+  EvidenceNote,
+  ToolBody,
+  ToolCard,
+  ToolControls,
+  ToolFooter,
+  ToolHeader,
+  ToolProgress,
+  ToolStage,
+} from '@/components/CalmTool'
 
 const PATTERN = [
   { phase: 'inhale', label: 'Inhale (4)', durationMs: 4000, color: '#3b82f6', ratio: 4 },
@@ -120,18 +128,16 @@ export default function FourSevenEight() {
   const current = PATTERN[breath.phaseIndex]
 
   return (
-    <Card className="max-w-md mx-auto">
-      <CardHeader className="text-center">
-        <div className="flex items-center justify-center gap-2 mb-2">
-          <Timer className="w-5 h-5 text-calm-600" />
-          <CardTitle>4‑7‑8 Breathing</CardTitle>
-        </div>
-        <CardDescription>4s inhale • 7s hold • 8s exhale</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <div className="flex flex-col items-center space-y-4">
+    <ToolCard>
+      <ToolHeader
+        icon={Timer}
+        title="4-7-8 Breathing"
+        description="4s inhale, 7s hold, 8s exhale"
+      />
+      <ToolBody>
+        <ToolStage>
           {/* Arc Gauge Visualization */}
-          <div className="relative">
+          <div data-testid="tool-visual" className="relative">
             <ArcGauge phaseIndex={breath.phaseIndex} progress={breath.progressPercent} isActive={breath.isRunning} />
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="text-center">
@@ -153,25 +159,23 @@ export default function FourSevenEight() {
             </div>
             <div className="text-sm text-gray-600 dark:text-gray-400">Cycle {breath.cycleCount + 1}</div>
           </div>
-          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-            <div className="bg-sky-500 h-2 rounded-full transition-all duration-100 ease-linear" style={{ width: `${breath.progressPercent}%` }} />
-          </div>
-        </div>
-        <div className="flex justify-center gap-3">
-          <Button onClick={breath.toggle} variant="calm" size="lg" className="flex items-center gap-2">
-            {breath.isRunning ? <Pause size={18}/> : <Play size={18}/>} {breath.isRunning ? 'Pause' : breath.isPaused ? 'Resume' : 'Start'}
-          </Button>
-          <Button onClick={breath.reset} variant="outline" size="lg" className="flex items-center gap-2"><RotateCcw size={18}/>Reset</Button>
-        </div>
-      </CardContent>
-      <div className="px-6 pb-6 pt-0"><div className="pt-4 mt-2 border-t border-gray-100 dark:border-gray-800 space-y-3">
-        <div className="text-xs text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 p-3 rounded-xl">
-          About: 4‑7‑8 uses a longer exhale to encourage parasympathetic activation. Keep breaths gentle; skip holds if dizzy.
+          <ToolProgress value={breath.progressPercent} />
+        </ToolStage>
+        <ToolControls
+          isRunning={breath.isRunning}
+          isPaused={breath.isPaused}
+          onToggle={breath.toggle}
+          onReset={breath.reset}
+        />
+      </ToolBody>
+      <ToolFooter>
+        <EvidenceNote>
+          4-7-8 uses a longer exhale to encourage parasympathetic activation. Skip holds if they feel uncomfortable.
           <br/>
           Evidence: Longer exhalation patterns are commonly used in clinical breathing interventions to downshift arousal.
-        </div>
+        </EvidenceNote>
         <ShareInline title="4‑7‑8 Breathing" text="Practice 4‑7‑8 breathing on CalmMyself" />
-      </div></div>
-    </Card>
+      </ToolFooter>
+    </ToolCard>
   )
 }

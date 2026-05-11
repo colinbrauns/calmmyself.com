@@ -1,11 +1,20 @@
 "use client"
 
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
-import { Play, Pause, RotateCcw, Shuffle } from 'lucide-react'
+import { Shuffle } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import ShareInline from '@/components/ShareInline'
 import { useBreathPattern } from '@/hooks/useBreathPattern'
+import {
+  EvidenceNote,
+  ToolBody,
+  ToolCard,
+  ToolControls,
+  ToolFooter,
+  ToolHeader,
+  ToolInfo,
+  ToolProgress,
+  ToolStage,
+} from '@/components/CalmTool'
 
 type Phase = 'inhaleL' | 'hold1' | 'exhaleR' | 'inhaleR' | 'hold2' | 'exhaleL'
 
@@ -131,25 +140,24 @@ export default function AlternateNostril() {
   const isHold = current.phase === 'hold1' || current.phase === 'hold2'
 
   return (
-    <Card className="max-w-md mx-auto">
-      <CardHeader className="text-center">
-        <div className="flex items-center justify-center gap-2 mb-2">
-          <Shuffle className="w-5 h-5 text-grounding-600" />
-          <CardTitle>Alternate Nostril Breathing</CardTitle>
-        </div>
-        <CardDescription>Balanced pattern to calm and focus</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
+    <ToolCard>
+      <ToolHeader
+        icon={Shuffle}
+        title="Alternate Nostril Breathing"
+        description="Balanced left/right breathing for focus"
+        tone="grounding"
+      />
+      <ToolBody>
         {/* Nostril Diagram */}
-        <NostrilDiagram leftActive={leftActive} rightActive={rightActive} isHold={isHold} isActive={breath.isRunning} />
-
-        {/* Timer */}
-        <div className="text-center">
-          <div className="text-3xl font-bold text-grounding-700 dark:text-gray-100 mb-1">{breath.displaySeconds}</div>
-        </div>
-
-        {/* Labels */}
-        <div className="text-center">
+        <ToolStage>
+          <div data-testid="tool-visual" className="relative">
+            <NostrilDiagram leftActive={leftActive} rightActive={rightActive} isHold={isHold} isActive={breath.isRunning} />
+            <div className="pointer-events-none absolute inset-0 flex items-center justify-center pt-8">
+              <div className="rounded bg-white/75 px-2 py-0.5 text-sm font-semibold text-grounding-800 dark:bg-gray-900/70 dark:text-grounding-100">
+                {breath.displaySeconds}
+              </div>
+            </div>
+          </div>
           <div className="text-2xl font-semibold text-grounding-800 dark:text-gray-100 mb-2 min-h-[32px]">
             <AnimatePresence mode="wait">
               <motion.span key={current.label} initial={{opacity:0,y:6}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-6}} transition={{duration:0.25}}>
@@ -158,31 +166,29 @@ export default function AlternateNostril() {
             </AnimatePresence>
           </div>
           <div className="text-sm text-gray-600 dark:text-gray-400">Cycle {breath.cycleCount + 1}</div>
-        </div>
+          <ToolProgress value={breath.progressPercent} tone="grounding" />
+        </ToolStage>
 
-        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-          <div className="bg-sky-500 h-2 rounded-full transition-all duration-100 ease-linear" style={{ width: `${breath.progressPercent}%` }} />
-        </div>
+        <ToolControls
+          isRunning={breath.isRunning}
+          isPaused={breath.isPaused}
+          onToggle={breath.toggle}
+          onReset={breath.reset}
+          tone="grounding"
+        />
 
-        <div className="flex justify-center gap-3">
-          <Button onClick={breath.toggle} variant="grounding" size="lg" className="flex items-center gap-2">
-            {breath.isRunning ? <Pause size={18}/> : <Play size={18}/>} {breath.isRunning ? 'Pause' : breath.isPaused ? 'Resume' : 'Start'}
-          </Button>
-          <Button onClick={breath.reset} variant="outline" size="lg" className="flex items-center gap-2"><RotateCcw size={18}/>Reset</Button>
-        </div>
-
-        <div className="text-xs text-gray-500 text-xs text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 p-3 rounded-xl">
-          Tip: Use the right hand — thumb to gently close right nostril, ring finger to close left. Breathe softly.
-        </div>
-      </CardContent>
-      <div className="px-6 pb-6 pt-0"><div className="pt-4 mt-2 border-t border-gray-100 dark:border-gray-800 space-y-3">
-        <div className="text-xs text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 p-3 rounded-xl">
-          About: Alternate nostril breathing (nadi shodhana) may help reduce perceived stress and improve attention in some studies. Breathe lightly.
+        <ToolInfo tone="grounding">
+          Use your right hand: thumb closes the right nostril, ring finger closes the left. Breathe softly.
+        </ToolInfo>
+      </ToolBody>
+      <ToolFooter>
+        <EvidenceNote>
+          Alternate nostril breathing may help reduce perceived stress and improve attention in some studies.
           <br/>
           Evidence: Look up controlled trials on "alternate nostril breathing attention anxiety".
-        </div>
+        </EvidenceNote>
         <ShareInline title="Alternate Nostril Breathing" text="Try alternate nostril breathing on CalmMyself" />
-      </div></div>
-    </Card>
+      </ToolFooter>
+    </ToolCard>
   )
 }

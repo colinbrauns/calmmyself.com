@@ -94,3 +94,7 @@ Thumbs.db
 # Temporary folders
 tmp/
 temp/
+
+# Playwright artifacts
+test-results/
+playwright-report/

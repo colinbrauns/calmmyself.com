@@ -1,11 +1,20 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Button } from '@/components/ui/Button'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card'
-import { Play, Pause, RotateCcw } from 'lucide-react'
 import ShareInline from '@/components/ShareInline'
 import { useBreathPattern } from '@/hooks/useBreathPattern'
+import {
+  EvidenceNote,
+  PhaseReadout,
+  ToolBody,
+  ToolCard,
+  ToolControls,
+  ToolFooter,
+  ToolHeader,
+  ToolInfo,
+  ToolProgress,
+  ToolStage,
+} from '@/components/CalmTool'
 
 type BreathingPhase = 'inhale1' | 'inhale2' | 'exhale'
 
@@ -45,7 +54,7 @@ function DoublePulseVisual({ phase, progress, isActive }: { phase: BreathingPhas
   const isInhaling = phase === 'inhale1' || phase === 'inhale2'
 
   return (
-    <div className="relative" style={{ width: size, height: size }}>
+    <div data-testid="tool-visual" className="relative" style={{ width: size, height: size }}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
         {/* Outer circle */}
         <motion.circle
@@ -146,68 +155,42 @@ export default function PhysiologicalSigh() {
   })
 
   return (
-    <Card className="max-w-md mx-auto">
-      <CardHeader className="text-center">
-        <CardTitle>Physiological Sigh</CardTitle>
-        <CardDescription>Double inhale + long exhale for rapid calm</CardDescription>
-      </CardHeader>
-      
-      <CardContent className="space-y-6 pb-6">
-        <div className="flex flex-col items-center space-y-4">
+    <ToolCard>
+      <ToolHeader
+        title="Physiological Sigh"
+        description="Double inhale with a long exhale"
+      />
+      <ToolBody>
+        <ToolStage>
           {/* Double Pulse Visualization */}
           <DoublePulseVisual phase={breath.current.phase} progress={breath.progressPercent} isActive={breath.isRunning} />
-          
-          {/* Cycle Indicator */}
-          <div className="text-center">
-            <div className="text-sm text-gray-600 dark:text-gray-400 min-h-[20px]">
-              Cycle {breath.cycleCount + 1}
-            </div>
-          </div>
+          <PhaseReadout label={breath.current.label} detail={`Cycle ${breath.cycleCount + 1}`} />
+          <ToolProgress value={breath.progressPercent} />
+        </ToolStage>
 
-          {/* Progress Bar */}
-          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-            <div 
-              className="bg-blue-500 h-2 rounded-full transition-all duration-100 ease-linear"
-              style={{ width: `${breath.progressPercent}%` }}
-            />
-          </div>
-        </div>
-
-        {/* Instructions */}
-        <div className="text-sm text-gray-600 text-center bg-gray-50 dark:bg-gray-800/50 p-3 rounded-xl">
-          <p className="mb-2">The most effective calming breath:</p>
-          <ul className="space-y-1">
-            <li>• <strong>First inhale:</strong> Fill lower lungs (2s)</li>
-            <li>• <strong>Second inhale:</strong> Top up upper lungs (1s)</li>
-            <li>• <strong>Long exhale:</strong> Release slowly (6s)</li>
+        <ToolInfo>
+          <ul className="grid gap-1 text-xs sm:text-sm">
+            <li><strong>First inhale:</strong> fill lower lungs, 2s</li>
+            <li><strong>Second inhale:</strong> gently top up, 1s</li>
+            <li><strong>Long exhale:</strong> release slowly, 6s</li>
           </ul>
-          <p className="text-xs text-gray-500 mt-2">Based on neuroscience research - just 1-3 cycles can reduce stress</p>
-        </div>
+        </ToolInfo>
 
-        <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl p-3">
-          <p className="text-sm text-yellow-800 dark:text-yellow-200 font-medium mb-2">⚡ Quick Relief</p>
-          <p className="text-xs text-yellow-700">This technique works in just 1-3 breaths! Perfect for immediate stress relief.</p>
-        </div>
-
-        <div className="flex justify-center space-x-3">
-          <Button onClick={breath.toggle} variant="calm" size="lg" className="flex items-center space-x-2">
-            {breath.isRunning ? <Pause size={20} /> : <Play size={20} />}
-            <span>{breath.isRunning ? 'Pause' : breath.isPaused ? 'Resume' : 'Start'}</span>
-          </Button>
-          <Button onClick={breath.reset} variant="outline" size="lg" className="flex items-center space-x-2">
-            <RotateCcw size={20} />
-            <span>Reset</span>
-          </Button>
-        </div>
-      </CardContent>
-      <div className="px-6 pb-6 pt-0"><div className="pt-4 mt-2 border-t border-gray-100 dark:border-gray-800 space-y-3">
-        <div className="text-xs text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 p-3 rounded-xl">
-          About: The "physiological sigh" (double inhale, long exhale) has been shown to rapidly reduce autonomic arousal in lab settings.
+        <ToolControls
+          isRunning={breath.isRunning}
+          isPaused={breath.isPaused}
+          onToggle={breath.toggle}
+          onReset={breath.reset}
+        />
+      </ToolBody>
+      <ToolFooter>
+        <EvidenceNote>
+          The physiological sigh has been shown to rapidly reduce autonomic arousal in lab settings.
           <br/>
           Evidence: <a className="underline text-blue-700" href="https://www.cell.com/cell-reports-medicine/fulltext/S2666-3791(22)00434-3" target="_blank" rel="noopener noreferrer">Cell Reports Medicine (2023) — Brief structured respiration practices vs. mindfulness</a>.
-        </div>
+        </EvidenceNote>
         <ShareInline title="Physiological Sigh" text="Use the physiological sigh on CalmMyself" />
-      </div></div>
-    </Card>
+      </ToolFooter>
+    </ToolCard>
   )
 }

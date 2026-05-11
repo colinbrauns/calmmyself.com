@@ -1,11 +1,18 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Music2 } from 'lucide-react'
 import { motion } from 'framer-motion'
 import ShareInline from '@/components/ShareInline'
+import {
+  DurationSelector,
+  ToolBody,
+  ToolCard,
+  ToolFooter,
+  ToolHeader,
+  ToolInfo,
+} from '@/components/CalmTool'
 
 const SOUNDS = [
   { label: 'Hmmm', guidance: 'Let the hum vibrate in your chest and throat' },
@@ -84,26 +91,23 @@ export default function VagalHumming() {
 
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Music2 className="w-5 h-5 text-sky-500" />
-            Vagal Humming
-          </CardTitle>
-          <CardDescription>Stimulate your vagus nerve through sustained vocalization</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
+      <ToolCard>
+        <ToolHeader
+          icon={Music2}
+          title="Vagal Humming"
+          description="Use sustained vocalization to support settling"
+        />
+        <ToolBody>
           {!isRunning ? (
             <>
-              <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl p-4 text-sm text-gray-600 dark:text-gray-300 space-y-2">
-                <p>Humming creates vibrations that directly stimulate the vagus nerve, activating your body&apos;s calming response.</p>
+              <ToolInfo>
+                <p>Hum on the exhale as long as comfortable, then begin the next cycle when you are ready.</p>
                 <ol className="list-decimal list-inside space-y-1">
                   <li>Breathe in slowly</li>
                   <li>Hum on your exhale as long as comfortable</li>
                   <li>Feel the vibration in your chest and throat</li>
-                  <li>Tap &quot;Next cycle&quot; when ready to breathe in again</li>
                 </ol>
-              </div>
+              </ToolInfo>
 
               <div>
                 <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Sound</p>
@@ -118,13 +122,7 @@ export default function VagalHumming() {
 
               <div>
                 <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Duration</p>
-                <div className="flex gap-2">
-                  {DURATIONS.map(d => (
-                    <Button key={d} variant={durationMin === d ? 'default' : 'outline'} size="sm" onClick={() => setDurationMin(d)}>
-                      {d} min
-                    </Button>
-                  ))}
-                </div>
+                <DurationSelector values={DURATIONS} value={durationMin} onChange={setDurationMin} />
               </div>
 
               <Button onClick={start} className="w-full">Begin</Button>
@@ -170,11 +168,11 @@ export default function VagalHumming() {
             </>
           )}
 
-          <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
-            <ShareInline title="Vagal Humming" />
-          </div>
-        </CardContent>
-      </Card>
+        </ToolBody>
+        <ToolFooter>
+          <ShareInline title="Vagal Humming" />
+        </ToolFooter>
+      </ToolCard>
     </motion.div>
   )
 }

@@ -1,13 +1,22 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { Button } from '@/components/ui/Button'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card'
-import { Play, Pause, RotateCcw } from 'lucide-react'
+import { motion } from 'framer-motion'
 import { useUsageTracking } from '@/hooks/useUsageTracking'
 import ShareInline from '@/components/ShareInline'
 import { useBreathPattern } from '@/hooks/useBreathPattern'
+import {
+  EvidenceNote,
+  PhaseReadout,
+  ToolBody,
+  ToolCard,
+  ToolControls,
+  ToolFooter,
+  ToolHeader,
+  ToolInfo,
+  ToolProgress,
+  ToolStage,
+} from '@/components/CalmTool'
 
 type BreathingPhase = 'inhale' | 'hold1' | 'exhale' | 'hold2'
 
@@ -73,18 +82,14 @@ export default function BoxBreathing() {
   const endOffset = pathLen * (1 - endFrac)
 
   return (
-    <Card className="max-w-md mx-auto">
-      <CardHeader className="text-center">
-        <CardTitle>Box Breathing</CardTitle>
-        <CardDescription>
-          4-4-4-4 pattern for calm and focus
-        </CardDescription>
-      </CardHeader>
-      
-      <CardContent className="space-y-6 pb-6">
-        {/* Breathing Visual */}
-        <div className="flex flex-col items-center space-y-4">
-          <div className="relative" style={{ width: 200, height: 200 }}>
+    <ToolCard>
+      <ToolHeader
+        title="Box Breathing"
+        description="4-4-4-4 pattern for calm and focus"
+      />
+      <ToolBody>
+        <ToolStage>
+          <div data-testid="tool-visual" className="relative" style={{ width: 200, height: 200 }}>
             <svg className="absolute" width={200} height={200} viewBox="0 0 180 180" aria-hidden="true">
               {/* Track */}
               <path d="M20 20 H160 V160 H20 Z" fill="none" stroke="rgba(2,132,199,0.15)" strokeWidth={4} strokeLinejoin="round" />
@@ -109,83 +114,45 @@ export default function BoxBreathing() {
               </div>
             </div>
           </div>
-          
-          {/* Phase Indicator */}
-          <div className="text-center">
-            <div className="text-2xl font-semibold text-calm-800 dark:text-gray-100 mb-2 min-h-[32px]">
-              <AnimatePresence mode="wait">
-                <motion.span
-                  key={currentPhase}
-                  initial={{ opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -6 }}
-                  transition={{ duration: 0.25, ease: 'easeOut' }}
-                >
-                  {breath.current.label}
-                </motion.span>
-              </AnimatePresence>
-            </div>
-            <div className="text-sm text-gray-600 dark:text-gray-400">
-              Cycle {breath.cycleCount + 1}
-              {breath.cycleCount >= 3 && (
-                <span className="ml-2 text-green-600">Great job!</span>
-              )}
-            </div>
-          </div>
+          <PhaseReadout
+            label={breath.current.label}
+            detail={
+              <>
+                Cycle {breath.cycleCount + 1}
+                {breath.cycleCount >= 3 && <span className="ml-2 text-green-600">Nice work.</span>}
+              </>
+            }
+          />
+          <ToolProgress value={breath.progressPercent} />
+        </ToolStage>
 
-          {/* Progress Bar */}
-          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-            <div 
-              className="bg-sky-500 h-2 rounded-full transition-all duration-100 ease-linear"
-              style={{ width: `${breath.progressPercent}%` }}
-            />
-          </div>
-        </div>
-
-        {/* Instructions */}
-        <div className="text-sm text-gray-600 text-center bg-calm-50 dark:bg-gray-800/50 p-3 rounded-xl">
-          <p className="mb-2">Follow the square sides:</p>
-          <ul className="space-y-1">
-            <li>• Inhale: top side (4s)</li>
-            <li>• Hold: right side (4s)</li>
-            <li>• Exhale: bottom side (4s)</li>
-            <li>• Hold: left side (4s)</li>
+        <ToolInfo>
+          <p className="mb-2 text-center font-medium">Follow the square sides</p>
+          <ul className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs sm:text-sm">
+            <li>Inhale: top</li>
+            <li>Hold: right</li>
+            <li>Exhale: bottom</li>
+            <li>Hold: left</li>
           </ul>
-        </div>
+        </ToolInfo>
 
-        {/* Controls */}
-        <div className="flex justify-center space-x-3 mt-2">
-          <Button
-            onClick={breath.toggle}
-            variant="calm"
-            size="lg"
-            className="flex items-center space-x-2"
-            aria-label={breath.isRunning ? 'Pause breathing exercise' : 'Start breathing exercise'}
-          >
-            {breath.isRunning ? <Pause size={20} /> : <Play size={20} />}
-            <span>{breath.isRunning ? 'Pause' : breath.isPaused ? 'Resume' : 'Start'}</span>
-          </Button>
-          
-          <Button
-            onClick={reset}
-            variant="outline"
-            size="lg"
-            className="flex items-center space-x-2"
-            aria-label="Reset breathing exercise"
-          >
-            <RotateCcw size={20} />
-            <span>Reset</span>
-          </Button>
-        </div>
-      </CardContent>
-      <div className="px-6 pb-6 pt-0"><div className="pt-4 mt-2 border-t border-gray-100 dark:border-gray-800 space-y-3">
-        <div className="text-xs text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 p-3 rounded-xl">
-          About: Box breathing (equal inhale/hold/exhale/hold) can aid attention and reduce arousal when practiced gently.
+        <ToolControls
+          isRunning={breath.isRunning}
+          isPaused={breath.isPaused}
+          onToggle={breath.toggle}
+          onReset={reset}
+          startAriaLabel="Start breathing exercise"
+          pauseAriaLabel="Pause breathing exercise"
+        />
+      </ToolBody>
+      <ToolFooter>
+        <EvidenceNote>
+          Equal inhale, hold, exhale, and hold phases can support calm attention when practiced gently.
           <br/>
           Evidence: Variants of paced breathing are used across clinical settings to support regulation.
-        </div>
+        </EvidenceNote>
         <ShareInline title="Box Breathing" text="Use Box Breathing on CalmMyself" />
-      </div></div>
-    </Card>
+      </ToolFooter>
+    </ToolCard>
   )
 }

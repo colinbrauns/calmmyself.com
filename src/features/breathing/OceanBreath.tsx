@@ -1,12 +1,21 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
-import { Waves, Play, Pause, RotateCcw } from 'lucide-react'
+import { Waves } from 'lucide-react'
 import { motion } from 'framer-motion'
 import ShareInline from '@/components/ShareInline'
 import { useBreathPattern } from '@/hooks/useBreathPattern'
+import {
+  CompletionCard,
+  DurationSelector,
+  EvidenceNote,
+  ToolBody,
+  ToolCard,
+  ToolControls,
+  ToolFooter,
+  ToolHeader,
+} from '@/components/CalmTool'
 
 const INHALE = 5
 const EXHALE = 6
@@ -59,23 +68,15 @@ export default function OceanBreath() {
 
   if (completed) {
     return (
-      <Card className="max-w-md mx-auto">
-        <CardContent className="text-center py-12 space-y-6">
-          <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 200 }}>
-            <div className="w-20 h-20 rounded-full bg-teal-100 dark:bg-teal-900/50 flex items-center justify-center mx-auto">
-              <Waves className="w-10 h-10 text-teal-600" />
-            </div>
-          </motion.div>
-          <div>
-            <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-2">Beautifully done 🌊</h3>
-            <p className="text-gray-500 dark:text-gray-400">You completed {completedCycles} cycles of ocean breathing. Let the calm linger.</p>
-          </div>
-          <div className="flex justify-center gap-3">
-            <Button onClick={reset} variant="calm" size="lg">Do Again</Button>
-          </div>
-          <ShareInline title="Ocean Breath" text="Ujjayi ocean breathing on CalmMyself" />
-        </CardContent>
-      </Card>
+      <CompletionCard
+        icon={<Waves className="h-10 w-10 text-teal-600" />}
+        title="Beautifully done"
+        description={`You completed ${completedCycles} cycles of ocean breathing. Let the calm linger.`}
+        onAction={reset}
+        tone="teal"
+      >
+        <ShareInline title="Ocean Breath" text="Ujjayi ocean breathing on CalmMyself" />
+      </CompletionCard>
     )
   }
 
@@ -83,34 +84,26 @@ export default function OceanBreath() {
   const waveY = phase === 'inhale' ? -20 : 20
 
   return (
-    <Card className="max-w-md mx-auto">
-      <CardHeader className="text-center">
-        <div className="flex items-center justify-center gap-2 mb-2">
-          <Waves className="w-5 h-5 text-teal-600" />
-          <CardTitle>Ocean Breath (Ujjayi)</CardTitle>
-        </div>
-        <CardDescription>Slow breath with gentle throat constriction, like the sound of ocean waves</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
+    <ToolCard>
+      <ToolHeader
+        icon={Waves}
+        title="Ocean Breath (Ujjayi)"
+        description="Slow nasal breath with a soft ocean-like sound"
+        tone="teal"
+      />
+      <ToolBody>
         {breath.status === 'idle' && timeLeft === 0 ? (
           <>
-            <div className="flex justify-center gap-2">
-              {DURATIONS.map(d => (
-                <button key={d} onClick={() => setDurationMin(d)}
-                  className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${d === durationMin ? 'bg-teal-600 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'}`}>
-                  {d} min
-                </button>
-              ))}
-            </div>
+            <DurationSelector values={DURATIONS} value={durationMin} onChange={setDurationMin} tone="teal" />
             <div className="flex justify-center">
-              <Button onClick={start} variant="calm" size="lg" className="flex items-center gap-2">
-                <Play size={18} /> Begin
+              <Button onClick={start} variant="calm" size="lg" className="min-w-[8rem]">
+                Begin
               </Button>
             </div>
           </>
         ) : (
           <>
-            <div className="relative h-32 rounded-xl overflow-hidden bg-gradient-to-b from-teal-50 to-cyan-100 dark:from-teal-950 dark:to-cyan-950">
+            <div data-testid="tool-visual" className="relative h-32 rounded-lg overflow-hidden bg-gradient-to-b from-teal-50 to-cyan-100 dark:from-teal-950 dark:to-cyan-950">
               <motion.div
                 className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-teal-400/40 to-transparent"
                 animate={{ y: waveY }}
@@ -136,22 +129,23 @@ export default function OceanBreath() {
               <span>{breath.cycleCount} cycles</span>
               <span>{formatTime(timeLeft)} remaining</span>
             </div>
-            <div className="flex justify-center gap-3">
-              <Button onClick={breath.toggle} variant="calm" size="lg" className="flex items-center gap-2">
-                {breath.isRunning ? <Pause size={18} /> : <Play size={18} />}
-                {breath.isRunning ? 'Pause' : 'Resume'}
-              </Button>
-              <Button onClick={reset} variant="outline" size="lg" className="flex items-center gap-2">
-                <RotateCcw size={18} /> Reset
-              </Button>
-            </div>
+            <ToolControls
+              isRunning={breath.isRunning}
+              isPaused={breath.isPaused}
+              onToggle={breath.toggle}
+              onReset={reset}
+              tone="teal"
+              startLabel="Resume"
+            />
           </>
         )}
-        <div className="text-xs text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 p-3 rounded-xl">
-          Ujjayi breathing involves a slight constriction at the back of the throat, creating a soft ocean-like sound. Breathe through the nose. This activates the parasympathetic nervous system for deep calm.
-        </div>
+      </ToolBody>
+      <ToolFooter>
+        <EvidenceNote>
+          Ujjayi breathing uses a slight throat constriction to create a soft ocean-like sound. Breathe through the nose without strain.
+        </EvidenceNote>
         <ShareInline title="Ocean Breath" text="Ujjayi ocean breathing on CalmMyself" />
-      </CardContent>
-    </Card>
+      </ToolFooter>
+    </ToolCard>
   )
 }

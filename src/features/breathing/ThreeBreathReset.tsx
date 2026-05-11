@@ -1,11 +1,17 @@
 "use client"
 
 import { useState } from 'react'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { motion } from 'framer-motion'
 import ShareInline from '@/components/ShareInline'
 import { useBreathPattern } from '@/hooks/useBreathPattern'
+import {
+  ToolBody,
+  ToolCard,
+  ToolFooter,
+  ToolHeader,
+  ToolProgress,
+} from '@/components/CalmTool'
 
 const STEPS = [
   {
@@ -143,12 +149,12 @@ export default function ThreeBreathReset() {
   }
 
   return (
-    <Card className="max-w-md mx-auto">
-      <CardHeader className="text-center">
-        <CardTitle>3‑Breath Reset</CardTitle>
-        <CardDescription>Use three short breaths between tasks</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
+    <ToolCard>
+      <ToolHeader
+        title="3-Breath Reset"
+        description="Three short breaths between tasks"
+      />
+      <ToolBody>
         {/* Countdown Dots Visualization */}
         <CountdownDots breathIndex={breathIndex} isBreathing={isBreathing} breathPhase={breathPhase} />
 
@@ -166,12 +172,7 @@ export default function ThreeBreathReset() {
                 </motion.span>
               )}
             </div>
-            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-              <div
-                className="bg-sky-500 h-2 rounded-full transition-all duration-300"
-                style={{ width: `${((breathIndex) / STEPS.length) * 100}%` }}
-              />
-            </div>
+            <ToolProgress value={(breathIndex / STEPS.length) * 100} />
 
             <div className="text-center space-y-2">
               <h3 className="text-lg font-semibold text-calm-800 dark:text-gray-100">{current.title}</h3>
@@ -182,7 +183,7 @@ export default function ThreeBreathReset() {
               <div className="space-y-2">
                 <input
                   type="text"
-                  className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 text-sm focus:ring-2 focus:ring-calm-500 focus:border-calm-500"
+                  className="w-full rounded-lg border border-gray-300 bg-white p-2 text-sm text-gray-900 placeholder-gray-400 focus:border-calm-500 focus:ring-2 focus:ring-calm-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-500"
                   placeholder="My next small step is..."
                   value={intention}
                   onChange={(e) => setIntention(e.target.value)}
@@ -198,7 +199,7 @@ export default function ThreeBreathReset() {
         {isAllDone && (
           <div className="text-center py-4">
             <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ duration: 0.4 }}>
-              <p className="text-xl font-semibold text-green-600 mb-2">✨ Reset Complete</p>
+              <p className="text-xl font-semibold text-green-600 mb-2">Reset complete</p>
               <p className="text-sm text-gray-600 dark:text-gray-400">You&apos;re grounded and ready for your next step.</p>
             </motion.div>
           </div>
@@ -219,10 +220,10 @@ export default function ThreeBreathReset() {
             Reset
           </Button>
         </div>
-      </CardContent>
-      <div className="px-6 pb-6 pt-0"><div className="pt-4 mt-2 border-t border-gray-100 dark:border-gray-800">
+      </ToolBody>
+      <ToolFooter>
         <ShareInline title="3‑Breath Reset" text="Use a quick 3‑breath reset between tasks on CalmMyself." />
-      </div></div>
-    </Card>
+      </ToolFooter>
+    </ToolCard>
   )
 }

@@ -1,12 +1,18 @@
 "use client"
 
 import { useState, useMemo } from 'react'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
-import { Heart, Play, Pause, RotateCcw } from 'lucide-react'
+import { Heart } from 'lucide-react'
 import ShareInline from '@/components/ShareInline'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useBreathPattern } from '@/hooks/useBreathPattern'
+import {
+  ToolBody,
+  ToolCard,
+  ToolControls,
+  ToolFooter,
+  ToolHeader,
+  ToolProgress,
+} from '@/components/CalmTool'
 
 const DEFAULT_PHRASES = [
   'Right now, I am safe enough.',
@@ -93,18 +99,16 @@ export default function AnchorPhraseBreath() {
   const phase = breath.current.phase
 
   return (
-    <Card className="max-w-md mx-auto">
-      <CardHeader className="text-center">
-        <div className="flex items-center justify-center gap-2 mb-2">
-          <Heart className="w-5 h-5 text-calm-600" />
-          <CardTitle>Anchor Phrase + Breath</CardTitle>
-        </div>
-        <CardDescription>Pair a gentle phrase with your breath (4s in, 4s out)</CardDescription>
-      </CardHeader>
+    <ToolCard>
+      <ToolHeader
+        icon={Heart}
+        title="Anchor Phrase + Breath"
+        description="Pair a gentle phrase with 4s in, 4s out"
+      />
 
-      <CardContent className="space-y-8">
+      <ToolBody className="space-y-6">
         {/* Visual Pacer with Expanding Rings */}
-        <div className="relative h-64 flex items-center justify-center bg-calm-50 dark:bg-gray-800/50 rounded-2xl border border-calm-100 overflow-hidden">
+        <div className="relative flex h-64 items-center justify-center overflow-hidden rounded-lg border border-sky-100 bg-sky-50/70 dark:border-sky-900/40 dark:bg-gray-800/50">
             <ExpandingRings isActive={isActive} phase={phase} />
 
             {/* Text Display */}
@@ -158,31 +162,26 @@ export default function AnchorPhraseBreath() {
             </div>
         </div>
 
-        {/* Controls */}
-        <div className="space-y-6">
-            <div className="flex items-center justify-center gap-4">
-                <Button variant={isActive ? "outline" : "calm"} size="lg" className="w-32 gap-2" onClick={breath.toggle}>
-                    {isActive ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-                    {isActive ? "Pause" : breath.isPaused ? "Resume" : "Start"}
-                </Button>
-                <Button variant="ghost" size="icon" onClick={breath.reset} aria-label="Reset" disabled={breath.status === 'idle'}>
-                    <RotateCcw className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-                </Button>
-            </div>
+        <div className="space-y-5">
+            <ToolControls
+              isRunning={isActive}
+              isPaused={breath.isPaused}
+              onToggle={breath.toggle}
+              onReset={breath.reset}
+              resetDisabled={breath.status === 'idle'}
+            />
 
             <div className="flex flex-col items-center gap-2">
                 <div className="text-sm text-gray-600 dark:text-gray-400">
                     Breaths completed: <span className="font-semibold text-calm-700">{breath.cycleCount}</span>
                 </div>
-                <div className="w-full max-w-xs bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
-                    <div className="bg-sky-500 h-1.5 rounded-full transition-all duration-500" style={{ width: `${Math.min((breath.cycleCount / 10) * 100, 100)}%` }} />
-                </div>
+                <ToolProgress value={Math.min((breath.cycleCount / 10) * 100, 100)} className="max-w-xs" />
             </div>
 
           <div className="space-y-3 pt-4 border-t border-gray-100">
-            <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide text-center">Customize Your Phrase</label>
+            <label className="block text-center text-xs font-medium uppercase tracking-wide text-gray-500">Anchor phrase</label>
             <textarea
-              className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 text-center text-sm focus:ring-2 focus:ring-calm-500 focus:border-calm-500 resize-none"
+              className="w-full resize-none rounded-lg border border-gray-300 bg-white p-3 text-center text-sm text-gray-900 placeholder-gray-400 focus:border-calm-500 focus:ring-2 focus:ring-calm-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-500"
               rows={2}
               value={phrase}
               onChange={(e) => setPhrase(e.target.value)}
@@ -197,11 +196,11 @@ export default function AnchorPhraseBreath() {
             </div>
           </div>
         </div>
-      </CardContent>
+      </ToolBody>
 
-      <div className="px-6 pb-6 pt-0"><div className="pt-4 mt-2 border-t border-gray-100 dark:border-gray-800">
+      <ToolFooter>
         <ShareInline title="Anchor Phrase + Breath" text="Pair a gentle phrase with your breath on CalmMyself." />
-      </div></div>
-    </Card>
+      </ToolFooter>
+    </ToolCard>
   )
 }
