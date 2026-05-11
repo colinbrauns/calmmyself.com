@@ -1,11 +1,12 @@
 "use client"
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import ShareInline from '@/components/ShareInline'
 import { Button } from '@/components/ui/Button'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card'
 import { Play, Pause, RotateCcw } from 'lucide-react'
+import { useBreathPattern } from '@/hooks/useBreathPattern'
 
 type BreathingPhase = 'inhale' | 'hold' | 'exhale'
 
@@ -18,54 +19,19 @@ const PHASE_LABELS = {
 
 const PHASES: BreathingPhase[] = ['inhale', 'hold', 'exhale']
 
+const PATTERN = PHASES.map((phase) => ({
+  phase,
+  label: PHASE_LABELS[phase],
+  durationMs: PHASE_DURATION[phase],
+}))
+
 export default function TriangleBreathing() {
-  const [isActive, setIsActive] = useState(false)
-  const [currentPhase, setCurrentPhase] = useState<BreathingPhase>('inhale')
-  const [phaseIndex, setPhaseIndex] = useState(0)
-  const [cycleCount, setCycleCount] = useState(0)
-  const [timeRemaining, setTimeRemaining] = useState(PHASE_DURATION.inhale)
+  const breath = useBreathPattern<BreathingPhase>({
+    pattern: PATTERN,
+  })
 
-  const nextPhase = useCallback(() => {
-    setPhaseIndex((prev) => {
-      const next = (prev + 1) % PHASES.length
-      if (next === 0) setCycleCount((c) => c + 1)
-      const newPhase = PHASES[next]
-      setCurrentPhase(newPhase)
-      setTimeRemaining(PHASE_DURATION[newPhase])
-      return next
-    })
-  }, [])
-
-  const reset = useCallback(() => {
-    setIsActive(false)
-    setCurrentPhase('inhale')
-    setPhaseIndex(0)
-    setCycleCount(0)
-    setTimeRemaining(PHASE_DURATION.inhale)
-  }, [])
-
-  useEffect(() => {
-    let interval: NodeJS.Timeout | null = null
-    
-    if (isActive) {
-      interval = setInterval(() => {
-        setTimeRemaining((time) => {
-          if (time <= 100) {
-            nextPhase()
-            return PHASE_DURATION[PHASES[(phaseIndex + 1) % PHASES.length]]
-          }
-          return time - 100
-        })
-      }, 100)
-    }
-
-    return () => {
-      if (interval) clearInterval(interval)
-    }
-  }, [isActive, nextPhase, phaseIndex])
-
-  const currentPhaseDuration = PHASE_DURATION[currentPhase]
-  const progress = ((currentPhaseDuration - timeRemaining) / currentPhaseDuration) * 100
+  const currentPhase = breath.current.phase
+  const currentPhaseDuration = breath.current.durationMs
 
   // SVG triangle path tracing to visually match 4-4-6 timing
   const pathRef = useRef<SVGPathElement | null>(null)
@@ -129,7 +95,7 @@ export default function TriangleBreathing() {
               />
               {/* Animated progress */}
               <motion.path
-                key={`${currentPhase}-${phaseIndex}-${currentPhaseDuration}-${isActive}`}
+                key={`${currentPhase}-${breath.phaseIndex}-${currentPhaseDuration}-${breath.isRunning}`}
                 ref={pathRef}
                 d="M90 20 L20 160 L160 160 Z"
                 fill="none"
@@ -139,13 +105,13 @@ export default function TriangleBreathing() {
                 strokeLinejoin="round"
                 strokeDasharray={pathLen}
                 initial={{ strokeDashoffset: startOffset }}
-                animate={{ strokeDashoffset: isActive ? endOffset : startOffset }}
-                transition={{ duration: isActive ? currentPhaseDuration / 1000 : 0, ease: 'linear' }}
+                animate={{ strokeDashoffset: breath.isRunning ? endOffset : startOffset }}
+                transition={{ duration: breath.isRunning ? currentPhaseDuration / 1000 : 0, ease: 'linear' }}
               />
             </svg>
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
               <div className="text-white font-medium text-sm text-center select-none">
-                {Math.ceil(timeRemaining / 1000)}
+                {breath.displaySeconds}
               </div>
             </div>
           </div>
@@ -161,12 +127,12 @@ export default function TriangleBreathing() {
                   exit={{ opacity: 0, y: -6 }}
                   transition={{ duration: 0.25, ease: 'easeOut' }}
                 >
-                  {PHASE_LABELS[currentPhase]}
+                  {breath.current.label}
                 </motion.span>
               </AnimatePresence>
             </div>
             <div className="text-sm text-gray-600 dark:text-gray-400">
-              Cycle {cycleCount + 1}
+              Cycle {breath.cycleCount + 1}
             </div>
           </div>
 
@@ -174,7 +140,7 @@ export default function TriangleBreathing() {
           <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
             <div 
               className="bg-sky-500 h-2 rounded-full transition-all duration-100 ease-linear"
-              style={{ width: `${progress}%` }}
+              style={{ width: `${breath.progressPercent}%` }}
             />
           </div>
         </div>
@@ -195,18 +161,18 @@ export default function TriangleBreathing() {
         {/* Controls */}
         <div className="flex justify-center space-x-3">
           <Button
-            onClick={() => setIsActive(!isActive)}
+            onClick={breath.toggle}
             variant="grounding"
             size="lg"
             className="flex items-center space-x-2"
-            aria-label={isActive ? 'Pause breathing exercise' : 'Start breathing exercise'}
+            aria-label={breath.isRunning ? 'Pause breathing exercise' : 'Start breathing exercise'}
           >
-            {isActive ? <Pause size={20} /> : <Play size={20} />}
-            <span>{isActive ? 'Pause' : 'Start'}</span>
+            {breath.isRunning ? <Pause size={20} /> : <Play size={20} />}
+            <span>{breath.isRunning ? 'Pause' : breath.isPaused ? 'Resume' : 'Start'}</span>
           </Button>
           
           <Button
-            onClick={reset}
+            onClick={breath.reset}
             variant="outline"
             size="lg"
             className="flex items-center space-x-2"

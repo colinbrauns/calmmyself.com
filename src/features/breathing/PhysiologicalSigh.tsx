@@ -1,17 +1,19 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/Button'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card'
 import { Play, Pause, RotateCcw } from 'lucide-react'
 import ShareInline from '@/components/ShareInline'
+import { useBreathPattern } from '@/hooks/useBreathPattern'
 
 type BreathingPhase = 'inhale1' | 'inhale2' | 'exhale'
 
-const PHASE_DURATION = { inhale1: 2000, inhale2: 1000, exhale: 6000 }
-
-const PHASES: BreathingPhase[] = ['inhale1', 'inhale2', 'exhale']
+const PATTERN = [
+  { phase: 'inhale1', label: 'First inhale', durationMs: 2000 },
+  { phase: 'inhale2', label: 'Second inhale', durationMs: 1000 },
+  { phase: 'exhale', label: 'Long exhale', durationMs: 6000 },
+] as const
 
 function DoublePulseVisual({ phase, progress, isActive }: { phase: BreathingPhase; progress: number; isActive: boolean }) {
   // Inner circle: expands on inhale1, stays on inhale2, shrinks on exhale
@@ -139,47 +141,9 @@ function DoublePulseVisual({ phase, progress, isActive }: { phase: BreathingPhas
 }
 
 export default function PhysiologicalSigh() {
-  const [isActive, setIsActive] = useState(false)
-  const [currentPhase, setCurrentPhase] = useState<BreathingPhase>('inhale1')
-  const [phaseIndex, setPhaseIndex] = useState(0)
-  const [cycleCount, setCycleCount] = useState(0)
-  const [timeRemaining, setTimeRemaining] = useState(PHASE_DURATION.inhale1)
-
-  const nextPhase = useCallback(() => {
-    setPhaseIndex((prev) => {
-      const next = (prev + 1) % PHASES.length
-      if (next === 0) setCycleCount((c) => c + 1)
-      const newPhase = PHASES[next]
-      setCurrentPhase(newPhase)
-      setTimeRemaining(PHASE_DURATION[newPhase])
-      return next
-    })
-  }, [])
-
-  const reset = useCallback(() => {
-    setIsActive(false)
-    setCurrentPhase('inhale1')
-    setPhaseIndex(0)
-    setCycleCount(0)
-    setTimeRemaining(PHASE_DURATION.inhale1)
-  }, [])
-
-  useEffect(() => {
-    if (!isActive) return
-    const interval = setInterval(() => {
-      setTimeRemaining((time) => {
-        if (time <= 100) {
-          nextPhase()
-          return PHASE_DURATION[PHASES[(phaseIndex + 1) % PHASES.length]]
-        }
-        return time - 100
-      })
-    }, 100)
-    return () => clearInterval(interval)
-  }, [isActive, nextPhase, phaseIndex])
-
-  const currentPhaseDuration = PHASE_DURATION[currentPhase]
-  const progress = ((currentPhaseDuration - timeRemaining) / currentPhaseDuration) * 100
+  const breath = useBreathPattern<BreathingPhase>({
+    pattern: PATTERN,
+  })
 
   return (
     <Card className="max-w-md mx-auto">
@@ -191,12 +155,12 @@ export default function PhysiologicalSigh() {
       <CardContent className="space-y-6 pb-6">
         <div className="flex flex-col items-center space-y-4">
           {/* Double Pulse Visualization */}
-          <DoublePulseVisual phase={currentPhase} progress={progress} isActive={isActive} />
+          <DoublePulseVisual phase={breath.current.phase} progress={breath.progressPercent} isActive={breath.isRunning} />
           
           {/* Cycle Indicator */}
           <div className="text-center">
             <div className="text-sm text-gray-600 dark:text-gray-400 min-h-[20px]">
-              Cycle {cycleCount + 1}
+              Cycle {breath.cycleCount + 1}
             </div>
           </div>
 
@@ -204,7 +168,7 @@ export default function PhysiologicalSigh() {
           <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
             <div 
               className="bg-blue-500 h-2 rounded-full transition-all duration-100 ease-linear"
-              style={{ width: `${progress}%` }}
+              style={{ width: `${breath.progressPercent}%` }}
             />
           </div>
         </div>
@@ -226,11 +190,11 @@ export default function PhysiologicalSigh() {
         </div>
 
         <div className="flex justify-center space-x-3">
-          <Button onClick={() => setIsActive(!isActive)} variant="calm" size="lg" className="flex items-center space-x-2">
-            {isActive ? <Pause size={20} /> : <Play size={20} />}
-            <span>{isActive ? 'Pause' : 'Start'}</span>
+          <Button onClick={breath.toggle} variant="calm" size="lg" className="flex items-center space-x-2">
+            {breath.isRunning ? <Pause size={20} /> : <Play size={20} />}
+            <span>{breath.isRunning ? 'Pause' : breath.isPaused ? 'Resume' : 'Start'}</span>
           </Button>
-          <Button onClick={reset} variant="outline" size="lg" className="flex items-center space-x-2">
+          <Button onClick={breath.reset} variant="outline" size="lg" className="flex items-center space-x-2">
             <RotateCcw size={20} />
             <span>Reset</span>
           </Button>

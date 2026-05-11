@@ -1,22 +1,22 @@
 "use client"
 
-import { useState, useEffect, useCallback } from 'react'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Play, Pause, RotateCcw, Shuffle } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import ShareInline from '@/components/ShareInline'
+import { useBreathPattern } from '@/hooks/useBreathPattern'
 
 type Phase = 'inhaleL' | 'hold1' | 'exhaleR' | 'inhaleR' | 'hold2' | 'exhaleL'
 
-const SEQ: { phase: Phase; label: string; duration: number }[] = [
-  { phase: 'inhaleL', label: 'Inhale Left', duration: 4000 },
-  { phase: 'hold1', label: 'Hold', duration: 4000 },
-  { phase: 'exhaleR', label: 'Exhale Right', duration: 4000 },
-  { phase: 'inhaleR', label: 'Inhale Right', duration: 4000 },
-  { phase: 'hold2', label: 'Hold', duration: 4000 },
-  { phase: 'exhaleL', label: 'Exhale Left', duration: 4000 },
-]
+const SEQ = [
+  { phase: 'inhaleL', label: 'Inhale Left', durationMs: 4000 },
+  { phase: 'hold1', label: 'Hold', durationMs: 4000 },
+  { phase: 'exhaleR', label: 'Exhale Right', durationMs: 4000 },
+  { phase: 'inhaleR', label: 'Inhale Right', durationMs: 4000 },
+  { phase: 'hold2', label: 'Hold', durationMs: 4000 },
+  { phase: 'exhaleL', label: 'Exhale Left', durationMs: 4000 },
+] as const
 
 function NostrilDiagram({ leftActive, rightActive, isHold, isActive }: { leftActive: boolean; rightActive: boolean; isHold: boolean; isActive: boolean }) {
   const size = 180
@@ -120,34 +120,11 @@ function NostrilDiagram({ leftActive, rightActive, isHold, isActive }: { leftAct
 }
 
 export default function AlternateNostril() {
-  const [isActive, setIsActive] = useState(false)
-  const [index, setIndex] = useState(0)
-  const [cycleCount, setCycleCount] = useState(0)
-  const [remaining, setRemaining] = useState(SEQ[0].duration)
+  const breath = useBreathPattern<Phase>({
+    pattern: SEQ,
+  })
 
-  const next = useCallback(() => {
-    setIndex((prev) => {
-      const next = (prev + 1) % SEQ.length
-      if (next === 0) setCycleCount((c) => c + 1)
-      setRemaining(SEQ[next].duration)
-      return next
-    })
-  }, [])
-
-  useEffect(() => {
-    if (!isActive) return
-    const id = setInterval(() => {
-      setRemaining((t) => {
-        if (t <= 100) { next(); return SEQ[(index + 1) % SEQ.length].duration }
-        return t - 100
-      })
-    }, 100)
-    return () => clearInterval(id)
-  }, [isActive, index, next])
-
-  const reset = () => { setIsActive(false); setIndex(0); setCycleCount(0); setRemaining(SEQ[0].duration) }
-  const current = SEQ[index]
-  const progress = ((current.duration - remaining) / current.duration) * 100
+  const current = breath.current
 
   const leftActive = current.phase === 'inhaleL' || current.phase === 'exhaleL'
   const rightActive = current.phase === 'inhaleR' || current.phase === 'exhaleR'
@@ -164,11 +141,11 @@ export default function AlternateNostril() {
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Nostril Diagram */}
-        <NostrilDiagram leftActive={leftActive} rightActive={rightActive} isHold={isHold} isActive={isActive} />
+        <NostrilDiagram leftActive={leftActive} rightActive={rightActive} isHold={isHold} isActive={breath.isRunning} />
 
         {/* Timer */}
         <div className="text-center">
-          <div className="text-3xl font-bold text-grounding-700 dark:text-gray-100 mb-1">{Math.ceil(remaining/1000)}</div>
+          <div className="text-3xl font-bold text-grounding-700 dark:text-gray-100 mb-1">{breath.displaySeconds}</div>
         </div>
 
         {/* Labels */}
@@ -180,18 +157,18 @@ export default function AlternateNostril() {
               </motion.span>
             </AnimatePresence>
           </div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">Cycle {cycleCount + 1}</div>
+          <div className="text-sm text-gray-600 dark:text-gray-400">Cycle {breath.cycleCount + 1}</div>
         </div>
 
         <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-          <div className="bg-sky-500 h-2 rounded-full transition-all duration-100 ease-linear" style={{ width: `${progress}%` }} />
+          <div className="bg-sky-500 h-2 rounded-full transition-all duration-100 ease-linear" style={{ width: `${breath.progressPercent}%` }} />
         </div>
 
         <div className="flex justify-center gap-3">
-          <Button onClick={() => setIsActive(!isActive)} variant="grounding" size="lg" className="flex items-center gap-2">
-            {isActive ? <Pause size={18}/> : <Play size={18}/>} {isActive ? 'Pause' : 'Start'}
+          <Button onClick={breath.toggle} variant="grounding" size="lg" className="flex items-center gap-2">
+            {breath.isRunning ? <Pause size={18}/> : <Play size={18}/>} {breath.isRunning ? 'Pause' : breath.isPaused ? 'Resume' : 'Start'}
           </Button>
-          <Button onClick={reset} variant="outline" size="lg" className="flex items-center gap-2"><RotateCcw size={18}/>Reset</Button>
+          <Button onClick={breath.reset} variant="outline" size="lg" className="flex items-center gap-2"><RotateCcw size={18}/>Reset</Button>
         </div>
 
         <div className="text-xs text-gray-500 text-xs text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 p-3 rounded-xl">

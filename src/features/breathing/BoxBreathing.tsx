@@ -1,12 +1,13 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/Button'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card'
 import { Play, Pause, RotateCcw } from 'lucide-react'
 import { useUsageTracking } from '@/hooks/useUsageTracking'
 import ShareInline from '@/components/ShareInline'
+import { useBreathPattern } from '@/hooks/useBreathPattern'
 
 type BreathingPhase = 'inhale' | 'hold1' | 'exhale' | 'hold2'
 
@@ -20,58 +21,28 @@ const PHASE_LABELS = {
 
 const PHASES: BreathingPhase[] = ['inhale', 'hold1', 'exhale', 'hold2']
 
+const PATTERN = PHASES.map((phase) => ({
+  phase,
+  label: PHASE_LABELS[phase],
+  durationMs: PHASE_DURATION,
+}))
+
 export default function BoxBreathing() {
-  const [isActive, setIsActive] = useState(false)
-  const [currentPhase, setCurrentPhase] = useState<BreathingPhase>('inhale')
-  const [phaseIndex, setPhaseIndex] = useState(0)
-  const [cycleCount, setCycleCount] = useState(0)
-  const [timeRemaining, setTimeRemaining] = useState(PHASE_DURATION)
+  const breath = useBreathPattern<BreathingPhase>({
+    pattern: PATTERN,
+  })
   
   // Usage tracking
-  const { trackUsage } = useUsageTracking('box-breathing', isActive)
-
-  const nextPhase = useCallback(() => {
-    setPhaseIndex((prev) => {
-      const next = (prev + 1) % PHASES.length
-      if (next === 0) setCycleCount((c) => c + 1)
-      setCurrentPhase(PHASES[next])
-      return next
-    })
-    setTimeRemaining(PHASE_DURATION)
-  }, [])
+  const { trackUsage } = useUsageTracking('box-breathing', breath.isRunning)
 
   const reset = useCallback(() => {
-    if (isActive) {
-      trackUsage(cycleCount >= 3) // Consider completed if 3+ cycles
+    if (breath.status !== 'idle') {
+      trackUsage(breath.cycleCount >= 3) // Consider completed if 3+ cycles
     }
-    setIsActive(false)
-    setCurrentPhase('inhale')
-    setPhaseIndex(0)
-    setCycleCount(0)
-    setTimeRemaining(PHASE_DURATION)
-  }, [isActive, cycleCount, trackUsage])
+    breath.reset()
+  }, [breath, trackUsage])
 
-  useEffect(() => {
-    let interval: NodeJS.Timeout | null = null
-    
-    if (isActive) {
-      interval = setInterval(() => {
-        setTimeRemaining((time) => {
-          if (time <= 100) {
-            nextPhase()
-            return PHASE_DURATION
-          }
-          return time - 100
-        })
-      }, 100)
-    }
-
-    return () => {
-      if (interval) clearInterval(interval)
-    }
-  }, [isActive, nextPhase])
-
-  const progress = ((PHASE_DURATION - timeRemaining) / PHASE_DURATION) * 100
+  const currentPhase = breath.current.phase
 
   // Square path trace setup
   const pathRef = useRef<SVGPathElement | null>(null)
@@ -119,7 +90,7 @@ export default function BoxBreathing() {
               <path d="M20 20 H160 V160 H20 Z" fill="none" stroke="rgba(2,132,199,0.15)" strokeWidth={4} strokeLinejoin="round" />
               {/* Animated progress */}
               <motion.path
-                key={`${currentPhase}-${phaseIndex}-${isActive}`}
+                key={`${currentPhase}-${breath.phaseIndex}-${breath.isRunning}`}
                 ref={pathRef}
                 d="M20 20 H160 V160 H20 Z"
                 fill="none"
@@ -128,13 +99,13 @@ export default function BoxBreathing() {
                 strokeLinejoin="round"
                 strokeDasharray={pathLen}
                 initial={{ strokeDashoffset: startOffset }}
-                animate={{ strokeDashoffset: isActive ? endOffset : startOffset }}
-                transition={{ duration: isActive ? PHASE_DURATION / 1000 : 0, ease: 'linear' }}
+                animate={{ strokeDashoffset: breath.isRunning ? endOffset : startOffset }}
+                transition={{ duration: breath.isRunning ? PHASE_DURATION / 1000 : 0, ease: 'linear' }}
               />
             </svg>
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
               <div className="text-calm-800 font-semibold text-sm text-center select-none bg-white/70 rounded px-2 py-0.5">
-                {Math.ceil(timeRemaining / 1000)}
+                {breath.displaySeconds}
               </div>
             </div>
           </div>
@@ -150,14 +121,14 @@ export default function BoxBreathing() {
                   exit={{ opacity: 0, y: -6 }}
                   transition={{ duration: 0.25, ease: 'easeOut' }}
                 >
-                  {PHASE_LABELS[currentPhase]}
+                  {breath.current.label}
                 </motion.span>
               </AnimatePresence>
             </div>
             <div className="text-sm text-gray-600 dark:text-gray-400">
-              Cycle {cycleCount + 1}
-              {cycleCount >= 3 && (
-                <span className="ml-2 text-green-600">✨ Great job!</span>
+              Cycle {breath.cycleCount + 1}
+              {breath.cycleCount >= 3 && (
+                <span className="ml-2 text-green-600">Great job!</span>
               )}
             </div>
           </div>
@@ -166,7 +137,7 @@ export default function BoxBreathing() {
           <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
             <div 
               className="bg-sky-500 h-2 rounded-full transition-all duration-100 ease-linear"
-              style={{ width: `${progress}%` }}
+              style={{ width: `${breath.progressPercent}%` }}
             />
           </div>
         </div>
@@ -185,14 +156,14 @@ export default function BoxBreathing() {
         {/* Controls */}
         <div className="flex justify-center space-x-3 mt-2">
           <Button
-            onClick={() => setIsActive(!isActive)}
+            onClick={breath.toggle}
             variant="calm"
             size="lg"
             className="flex items-center space-x-2"
-            aria-label={isActive ? 'Pause breathing exercise' : 'Start breathing exercise'}
+            aria-label={breath.isRunning ? 'Pause breathing exercise' : 'Start breathing exercise'}
           >
-            {isActive ? <Pause size={20} /> : <Play size={20} />}
-            <span>{isActive ? 'Pause' : 'Start'}</span>
+            {breath.isRunning ? <Pause size={20} /> : <Play size={20} />}
+            <span>{breath.isRunning ? 'Pause' : breath.isPaused ? 'Resume' : 'Start'}</span>
           </Button>
           
           <Button

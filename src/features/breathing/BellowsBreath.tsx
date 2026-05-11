@@ -1,54 +1,29 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Zap, Play, Pause, RotateCcw } from 'lucide-react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import ShareInline from '@/components/ShareInline'
+import { useBreathPattern } from '@/hooks/useBreathPattern'
 
 const TOTAL_CYCLES = 30
+const PATTERN = [
+  { phase: 'in', label: 'IN', durationMs: 1000 },
+  { phase: 'out', label: 'OUT', durationMs: 1000 },
+] as const
 
 export default function BellowsBreath() {
-  const [isRunning, setIsRunning] = useState(false)
-  const [cycle, setCycle] = useState(0)
-  const [phase, setPhase] = useState<'in' | 'out'>('in')
-  const [completed, setCompleted] = useState(false)
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
-
-  const stop = useCallback(() => {
-    setIsRunning(false)
-    if (timerRef.current) clearInterval(timerRef.current)
-    timerRef.current = null
-  }, [])
+  const breath = useBreathPattern({
+    pattern: PATTERN,
+    maxCycles: TOTAL_CYCLES,
+  })
 
   const reset = () => {
-    stop()
-    setCycle(0)
-    setPhase('in')
-    setCompleted(false)
+    breath.reset()
   }
 
-  useEffect(() => {
-    if (!isRunning) return
-    timerRef.current = setInterval(() => {
-      setPhase(prev => {
-        if (prev === 'in') return 'out'
-        setCycle(c => {
-          const next = c + 1
-          if (next >= TOTAL_CYCLES) {
-            stop()
-            setCompleted(true)
-          }
-          return next
-        })
-        return 'in'
-      })
-    }, 1000)
-    return () => { if (timerRef.current) clearInterval(timerRef.current) }
-  }, [isRunning, stop])
-
-  if (completed) {
+  if (breath.isComplete) {
     return (
       <Card className="max-w-md mx-auto">
         <CardContent className="text-center py-12 space-y-6">
@@ -70,7 +45,7 @@ export default function BellowsBreath() {
     )
   }
 
-  const lungScale = isRunning ? (phase === 'in' ? 1.3 : 0.7) : 1
+  const lungScale = breath.isRunning ? (breath.current.phase === 'in' ? 1.3 : 0.7) : 1
 
   return (
     <Card className="max-w-md mx-auto">
@@ -88,16 +63,16 @@ export default function BellowsBreath() {
               className="w-24 h-32 rounded-[40%] bg-gradient-to-b from-amber-200 to-amber-400 dark:from-amber-700 dark:to-amber-900 opacity-60"
               initial={false}
               animate={{ scaleY: lungScale, scaleX: lungScale * 0.8 }}
-              transition={{ duration: isRunning ? 0.4 : 0, ease: 'easeInOut' }}
+              transition={{ duration: breath.isRunning ? 0.4 : 0, ease: 'easeInOut' }}
             />
             <div className="absolute inset-0 flex items-center justify-center">
               <span className="text-lg font-bold text-amber-800 dark:text-amber-200">
-                {isRunning ? (phase === 'in' ? 'IN' : 'OUT') : 'READY'}
+                {breath.isRunning ? breath.current.label : breath.isPaused ? 'PAUSED' : 'READY'}
               </span>
             </div>
           </div>
           <div className="text-center">
-            <p className="text-2xl font-bold text-gray-800 dark:text-gray-100">{cycle} / {TOTAL_CYCLES}</p>
+            <p className="text-2xl font-bold text-gray-800 dark:text-gray-100">{breath.cycleCount} / {TOTAL_CYCLES}</p>
             <p className="text-sm text-gray-500 dark:text-gray-400">cycles completed</p>
           </div>
         </div>
@@ -106,15 +81,15 @@ export default function BellowsBreath() {
           <motion.div
             className="bg-amber-500 h-2 rounded-full"
             initial={false}
-            animate={{ width: `${(cycle / TOTAL_CYCLES) * 100}%` }}
-            transition={{ duration: isRunning ? 0.3 : 0 }}
+            animate={{ width: `${(breath.cycleCount / TOTAL_CYCLES) * 100}%` }}
+            transition={{ duration: breath.isRunning ? 0.3 : 0 }}
           />
         </div>
 
         <div className="flex justify-center gap-3">
-          <Button onClick={() => setIsRunning(r => !r)} variant="calm" size="lg" className="flex items-center gap-2">
-            {isRunning ? <Pause size={18} /> : <Play size={18} />}
-            {isRunning ? 'Pause' : 'Start'}
+          <Button onClick={breath.toggle} variant="calm" size="lg" className="flex items-center gap-2">
+            {breath.isRunning ? <Pause size={18} /> : <Play size={18} />}
+            {breath.isRunning ? 'Pause' : breath.isPaused ? 'Resume' : 'Start'}
           </Button>
           <Button onClick={reset} variant="outline" size="lg" className="flex items-center gap-2">
             <RotateCcw size={18} /> Reset

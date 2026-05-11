@@ -1,17 +1,23 @@
 "use client"
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Heart, Play, Pause, RotateCcw } from 'lucide-react'
 import ShareInline from '@/components/ShareInline'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useBreathPattern } from '@/hooks/useBreathPattern'
 
 const DEFAULT_PHRASES = [
   'Right now, I am safe enough.',
   'This is hard, and I am doing my best.',
   'One breath, at a time is enough.',
 ]
+
+const PATTERN = [
+  { phase: 'inhale', label: 'Inhale', durationMs: 4000 },
+  { phase: 'exhale', label: 'Exhale', durationMs: 4000 },
+] as const
 
 function ExpandingRings({ isActive, phase }: { isActive: boolean; phase: 'inhale' | 'exhale' }) {
   const isInhale = phase === 'inhale'
@@ -63,9 +69,9 @@ function ExpandingRings({ isActive, phase }: { isActive: boolean; phase: 'inhale
 
 export default function AnchorPhraseBreath() {
   const [phrase, setPhrase] = useState(DEFAULT_PHRASES[0])
-  const [breathsCompleted, setBreathsCompleted] = useState(0)
-  const [isActive, setIsActive] = useState(false)
-  const [phase, setPhase] = useState<'inhale' | 'exhale'>('inhale')
+  const breath = useBreathPattern({
+    pattern: PATTERN,
+  })
 
   const [part1, part2] = useMemo(() => {
     if (phrase.includes(',')) {
@@ -83,23 +89,8 @@ export default function AnchorPhraseBreath() {
     return [words.slice(0, mid).join(' '), words.slice(mid).join(' ')]
   }, [phrase])
 
-  useEffect(() => {
-    let interval: NodeJS.Timeout
-    if (isActive) {
-      setPhase('inhale')
-      interval = setInterval(() => {
-        setPhase((prev) => {
-          if (prev === 'inhale') return 'exhale'
-          setBreathsCompleted((c) => c + 1)
-          return 'inhale'
-        })
-      }, 4000)
-    }
-    return () => clearInterval(interval)
-  }, [isActive])
-
-  const toggleActive = () => setIsActive(!isActive)
-  const onReset = () => { setIsActive(false); setBreathsCompleted(0); setPhase('inhale') }
+  const isActive = breath.isRunning
+  const phase = breath.current.phase
 
   return (
     <Card className="max-w-md mx-auto">
@@ -170,21 +161,21 @@ export default function AnchorPhraseBreath() {
         {/* Controls */}
         <div className="space-y-6">
             <div className="flex items-center justify-center gap-4">
-                <Button variant={isActive ? "outline" : "calm"} size="lg" className="w-32 gap-2" onClick={toggleActive}>
+                <Button variant={isActive ? "outline" : "calm"} size="lg" className="w-32 gap-2" onClick={breath.toggle}>
                     {isActive ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-                    {isActive ? "Pause" : "Start"}
+                    {isActive ? "Pause" : breath.isPaused ? "Resume" : "Start"}
                 </Button>
-                <Button variant="ghost" size="icon" onClick={onReset} aria-label="Reset" disabled={breathsCompleted === 0 && !isActive}>
+                <Button variant="ghost" size="icon" onClick={breath.reset} aria-label="Reset" disabled={breath.status === 'idle'}>
                     <RotateCcw className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                 </Button>
             </div>
 
             <div className="flex flex-col items-center gap-2">
                 <div className="text-sm text-gray-600 dark:text-gray-400">
-                    Breaths completed: <span className="font-semibold text-calm-700">{breathsCompleted}</span>
+                    Breaths completed: <span className="font-semibold text-calm-700">{breath.cycleCount}</span>
                 </div>
                 <div className="w-full max-w-xs bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
-                    <div className="bg-sky-500 h-1.5 rounded-full transition-all duration-500" style={{ width: `${Math.min((breathsCompleted / 10) * 100, 100)}%` }} />
+                    <div className="bg-sky-500 h-1.5 rounded-full transition-all duration-500" style={{ width: `${Math.min((breath.cycleCount / 10) * 100, 100)}%` }} />
                 </div>
             </div>
 

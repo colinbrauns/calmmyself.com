@@ -1,63 +1,59 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useEffect, useState } from 'react'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Waves, Play, Pause, RotateCcw } from 'lucide-react'
 import { motion } from 'framer-motion'
 import ShareInline from '@/components/ShareInline'
+import { useBreathPattern } from '@/hooks/useBreathPattern'
 
 const INHALE = 5
 const EXHALE = 6
 const DURATIONS = [2, 3, 5]
+const PATTERN = [
+  { phase: 'inhale', label: 'Breathe In', durationMs: INHALE * 1000 },
+  { phase: 'exhale', label: 'Breathe Out', durationMs: EXHALE * 1000 },
+] as const
 
 export default function OceanBreath() {
-  const [isRunning, setIsRunning] = useState(false)
   const [durationMin, setDurationMin] = useState(3)
-  const [phase, setPhase] = useState<'inhale' | 'exhale'>('inhale')
-  const [phaseTime, setPhaseTime] = useState(INHALE)
   const [timeLeft, setTimeLeft] = useState(0)
   const [completed, setCompleted] = useState(false)
-  const [cycles, setCycles] = useState(0)
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
-
-  const stop = useCallback(() => {
-    setIsRunning(false)
-    if (timerRef.current) clearInterval(timerRef.current)
-    timerRef.current = null
-  }, [])
+  const [completedCycles, setCompletedCycles] = useState(0)
+  const breath = useBreathPattern({
+    pattern: PATTERN,
+  })
 
   const start = () => {
-    setIsRunning(true)
-    setPhase('inhale')
-    setPhaseTime(INHALE)
-    setCycles(0)
     setTimeLeft(durationMin * 60)
     setCompleted(false)
+    setCompletedCycles(0)
+    breath.start()
   }
 
-  const reset = () => { stop(); setCompleted(false); setCycles(0); setTimeLeft(0) }
+  const reset = () => {
+    breath.reset()
+    setCompleted(false)
+    setCompletedCycles(0)
+    setTimeLeft(0)
+  }
 
   useEffect(() => {
-    if (!isRunning) return
-    timerRef.current = setInterval(() => {
+    if (!breath.isRunning) return
+    const id = setInterval(() => {
       setTimeLeft(prev => {
-        if (prev <= 1) { stop(); setCompleted(true); return 0 }
-        return prev - 1
-      })
-      setPhaseTime(prev => {
         if (prev <= 1) {
-          setPhase(p => {
-            if (p === 'exhale') setCycles(c => c + 1)
-            return p === 'inhale' ? 'exhale' : 'inhale'
-          })
-          return phase === 'inhale' ? EXHALE : INHALE
+          setCompletedCycles(breath.cycleCount)
+          breath.reset()
+          setCompleted(true)
+          return 0
         }
         return prev - 1
       })
     }, 1000)
-    return () => { if (timerRef.current) clearInterval(timerRef.current) }
-  }, [isRunning, phase, stop])
+    return () => clearInterval(id)
+  }, [breath.cycleCount, breath.isRunning, breath.reset])
 
   const formatTime = (s: number) => `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, '0')}`
 
@@ -72,7 +68,7 @@ export default function OceanBreath() {
           </motion.div>
           <div>
             <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-2">Beautifully done 🌊</h3>
-            <p className="text-gray-500 dark:text-gray-400">You completed {cycles} cycles of ocean breathing. Let the calm linger.</p>
+            <p className="text-gray-500 dark:text-gray-400">You completed {completedCycles} cycles of ocean breathing. Let the calm linger.</p>
           </div>
           <div className="flex justify-center gap-3">
             <Button onClick={reset} variant="calm" size="lg">Do Again</Button>
@@ -83,6 +79,7 @@ export default function OceanBreath() {
     )
   }
 
+  const phase = breath.current.phase
   const waveY = phase === 'inhale' ? -20 : 20
 
   return (
@@ -95,7 +92,7 @@ export default function OceanBreath() {
         <CardDescription>Slow breath with gentle throat constriction, like the sound of ocean waves</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        {!isRunning && timeLeft === 0 ? (
+        {breath.status === 'idle' && timeLeft === 0 ? (
           <>
             <div className="flex justify-center gap-2">
               {DURATIONS.map(d => (
@@ -131,18 +128,18 @@ export default function OceanBreath() {
                 />
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <p className="text-2xl font-bold text-teal-800 dark:text-teal-200">{phase === 'inhale' ? 'Breathe In' : 'Breathe Out'}</p>
-                <p className="text-lg text-teal-600 dark:text-teal-300">{phaseTime}s</p>
+                <p className="text-2xl font-bold text-teal-800 dark:text-teal-200">{breath.current.label}</p>
+                <p className="text-lg text-teal-600 dark:text-teal-300">{breath.displaySeconds}s</p>
               </div>
             </div>
             <div className="flex justify-between text-sm text-gray-500 dark:text-gray-400">
-              <span>{cycles} cycles</span>
+              <span>{breath.cycleCount} cycles</span>
               <span>{formatTime(timeLeft)} remaining</span>
             </div>
             <div className="flex justify-center gap-3">
-              <Button onClick={() => setIsRunning(r => !r)} variant="calm" size="lg" className="flex items-center gap-2">
-                {isRunning ? <Pause size={18} /> : <Play size={18} />}
-                {isRunning ? 'Pause' : 'Resume'}
+              <Button onClick={breath.toggle} variant="calm" size="lg" className="flex items-center gap-2">
+                {breath.isRunning ? <Pause size={18} /> : <Play size={18} />}
+                {breath.isRunning ? 'Pause' : 'Resume'}
               </Button>
               <Button onClick={reset} variant="outline" size="lg" className="flex items-center gap-2">
                 <RotateCcw size={18} /> Reset

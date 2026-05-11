@@ -4,6 +4,7 @@ import { useEffect, useMemo } from 'react'
 import { motion, useAnimationControls } from 'framer-motion'
 import type { CyclePhase } from '@/components/BreathingCycle'
 import { useMotionPreferences } from '@/components/MotionPreferences'
+import { getBreathEase, getBreathTargetScale } from '@/lib/breathingMotion'
 
 interface ShapeBreatherProps {
   shape: 'square' | 'triangle' | 'circle' | 'flower'
@@ -33,15 +34,8 @@ export default function ShapeBreather({
   const controls = useAnimationControls()
   const { animationsEnabled } = useMotionPreferences()
 
-  const targetScale = useMemo(() => {
-    if (phase === 'inhale' || phase === 'inhale1') return scaleMax
-    if (phase === 'inhale2') return scaleMax
-    if (phase === 'exhale') return scaleMin
-    if (phase === 'hold1') return scaleMax
-    if (phase === 'hold2') return scaleMin
-    if (phase === 'hold') return scaleMax
-    return scaleMin
-  }, [phase, scaleMax, scaleMin])
+  const targetScale = getBreathTargetScale(phase, scaleMin, scaleMax)
+  const ease = useMemo(() => getBreathEase(phase), [phase])
 
   useEffect(() => {
     if (!isActive || !animationsEnabled) {
@@ -54,10 +48,10 @@ export default function ShapeBreather({
       scale: targetScale,
       transition: {
         duration: durationMs / 1000,
-        ease: phase === 'exhale' ? 'easeOut' : 'easeInOut',
+        ease,
       },
     })
-  }, [animationsEnabled, controls, durationMs, isActive, phase, scaleMin, targetScale])
+  }, [animationsEnabled, controls, durationMs, ease, isActive, scaleMin, targetScale])
 
   const containerDim = size * (shape === 'flower' ? scaleMax * 1.6 : scaleMax)
   const dimension = `${size}px`

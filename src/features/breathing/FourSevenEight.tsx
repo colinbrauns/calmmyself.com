@@ -1,11 +1,11 @@
 "use client"
 
-import { useState, useEffect, useCallback } from 'react'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Play, Pause, RotateCcw, Timer } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 import ShareInline from '@/components/ShareInline'
+import { useBreathPattern } from '@/hooks/useBreathPattern'
 
 const PATTERN = [
   { phase: 'inhale', label: 'Inhale (4)', durationMs: 4000, color: '#3b82f6', ratio: 4 },
@@ -113,34 +113,11 @@ function ArcGauge({ phaseIndex, progress, isActive }: { phaseIndex: number; prog
 }
 
 export default function FourSevenEight() {
-  const [isActive, setIsActive] = useState(false)
-  const [phaseIndex, setPhaseIndex] = useState(0)
-  const [cycleCount, setCycleCount] = useState(0)
-  const [timeRemaining, setTimeRemaining] = useState<number>(PATTERN[0].durationMs)
+  const breath = useBreathPattern({
+    pattern: PATTERN,
+  })
 
-  const next = useCallback(() => {
-    setPhaseIndex((prev) => {
-      const next = (prev + 1) % PATTERN.length
-      if (next === 0) setCycleCount((c) => c + 1)
-      setTimeRemaining(PATTERN[next].durationMs)
-      return next
-    })
-  }, [])
-
-  useEffect(() => {
-    if (!isActive) return
-    const id = setInterval(() => {
-      setTimeRemaining((t) => {
-        if (t <= 100) { next(); return PATTERN[(phaseIndex + 1) % PATTERN.length].durationMs }
-        return t - 100
-      })
-    }, 100)
-    return () => clearInterval(id)
-  }, [isActive, phaseIndex, next])
-
-  const reset = () => { setIsActive(false); setPhaseIndex(0); setCycleCount(0); setTimeRemaining(PATTERN[0].durationMs) }
-  const current = PATTERN[phaseIndex]
-  const progress = ((current.durationMs - timeRemaining) / current.durationMs) * 100
+  const current = PATTERN[breath.phaseIndex]
 
   return (
     <Card className="max-w-md mx-auto">
@@ -155,11 +132,11 @@ export default function FourSevenEight() {
         <div className="flex flex-col items-center space-y-4">
           {/* Arc Gauge Visualization */}
           <div className="relative">
-            <ArcGauge phaseIndex={phaseIndex} progress={progress} isActive={isActive} />
+            <ArcGauge phaseIndex={breath.phaseIndex} progress={breath.progressPercent} isActive={breath.isRunning} />
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="text-center">
-                <div className="text-3xl font-bold" style={{ color: isActive ? current.color : '#6b7280' }}>
-                  {Math.ceil(timeRemaining / 1000)}
+                <div className="text-3xl font-bold" style={{ color: breath.isRunning ? current.color : '#6b7280' }}>
+                  {breath.displaySeconds}
                 </div>
                 <div className="text-xs text-gray-500 mt-1">seconds</div>
               </div>
@@ -174,17 +151,17 @@ export default function FourSevenEight() {
                 </motion.span>
               </AnimatePresence>
             </div>
-            <div className="text-sm text-gray-600 dark:text-gray-400">Cycle {cycleCount + 1}</div>
+            <div className="text-sm text-gray-600 dark:text-gray-400">Cycle {breath.cycleCount + 1}</div>
           </div>
           <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-            <div className="bg-sky-500 h-2 rounded-full transition-all duration-100 ease-linear" style={{ width: `${progress}%` }} />
+            <div className="bg-sky-500 h-2 rounded-full transition-all duration-100 ease-linear" style={{ width: `${breath.progressPercent}%` }} />
           </div>
         </div>
         <div className="flex justify-center gap-3">
-          <Button onClick={() => setIsActive(!isActive)} variant="calm" size="lg" className="flex items-center gap-2">
-            {isActive ? <Pause size={18}/> : <Play size={18}/>} {isActive ? 'Pause' : 'Start'}
+          <Button onClick={breath.toggle} variant="calm" size="lg" className="flex items-center gap-2">
+            {breath.isRunning ? <Pause size={18}/> : <Play size={18}/>} {breath.isRunning ? 'Pause' : breath.isPaused ? 'Resume' : 'Start'}
           </Button>
-          <Button onClick={reset} variant="outline" size="lg" className="flex items-center gap-2"><RotateCcw size={18}/>Reset</Button>
+          <Button onClick={breath.reset} variant="outline" size="lg" className="flex items-center gap-2"><RotateCcw size={18}/>Reset</Button>
         </div>
       </CardContent>
       <div className="px-6 pb-6 pt-0"><div className="pt-4 mt-2 border-t border-gray-100 dark:border-gray-800 space-y-3">

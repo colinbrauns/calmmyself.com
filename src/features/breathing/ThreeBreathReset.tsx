@@ -1,10 +1,11 @@
 "use client"
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState } from 'react'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { motion } from 'framer-motion'
 import ShareInline from '@/components/ShareInline'
+import { useBreathPattern } from '@/hooks/useBreathPattern'
 
 const STEPS = [
   {
@@ -19,6 +20,11 @@ const STEPS = [
     title: 'Intention breath',
     description: 'On the third breath, name your next small step out loud or in your mind.',
   },
+] as const
+
+const BREATH_PATTERN = [
+  { phase: 'inhale', label: 'Breathe in...', durationMs: 4000 },
+  { phase: 'exhale', label: 'Breathe out...', durationMs: 4000 },
 ] as const
 
 function CountdownDots({ breathIndex, isBreathing, breathPhase }: { breathIndex: number; isBreathing: boolean; breathPhase: 'inhale' | 'exhale' }) {
@@ -105,41 +111,35 @@ function CountdownDots({ breathIndex, isBreathing, breathPhase }: { breathIndex:
 export default function ThreeBreathReset() {
   const [breathIndex, setBreathIndex] = useState(0)
   const [intention, setIntention] = useState('')
-  const [isBreathing, setIsBreathing] = useState(false)
-  const [breathPhase, setBreathPhase] = useState<'inhale' | 'exhale'>('inhale')
+  const breath = useBreathPattern({
+    pattern: BREATH_PATTERN,
+  })
 
   const current = STEPS[breathIndex]
   const isLast = breathIndex === STEPS.length - 1
   const isAllDone = breathIndex >= STEPS.length
-
-  // Breathing animation cycle when active
-  useEffect(() => {
-    if (!isBreathing || isAllDone) return
-    setBreathPhase('inhale')
-    const interval = setInterval(() => {
-      setBreathPhase((prev) => (prev === 'inhale' ? 'exhale' : 'inhale'))
-    }, 4000)
-    return () => clearInterval(interval)
-  }, [isBreathing, isAllDone, breathIndex])
+  const isBreathing = breath.status === 'running' || breath.status === 'paused'
+  const breathPhase = breath.current.phase
 
   const onNext = () => {
     if (!isLast) {
       setBreathIndex((i) => i + 1)
+      breath.reset()
+      breath.start()
     } else {
       setBreathIndex(STEPS.length) // mark all done
-      setIsBreathing(false)
+      breath.reset()
     }
   }
 
   const onReset = () => {
     setBreathIndex(0)
     setIntention('')
-    setIsBreathing(false)
-    setBreathPhase('inhale')
+    breath.reset()
   }
 
   const onStart = () => {
-    setIsBreathing(true)
+    breath.start()
   }
 
   return (
@@ -162,7 +162,7 @@ export default function ThreeBreathReset() {
                   animate={{ opacity: [0.5, 1, 0.5] }}
                   transition={{ duration: 4, repeat: Infinity }}
                 >
-                  {breathPhase === 'inhale' ? 'Breathe in…' : 'Breathe out…'}
+                  {breath.current.label}
                 </motion.span>
               )}
             </div>

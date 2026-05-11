@@ -3,6 +3,7 @@
 import { useEffect, useMemo } from 'react'
 import { motion, useAnimationControls } from 'framer-motion'
 import { useMotionPreferences } from '@/components/MotionPreferences'
+import { getBreathContainerSize, getBreathEase, getBreathTargetScale } from '@/lib/breathingMotion'
 
 export type CyclePhase = 'inhale' | 'inhale1' | 'inhale2' | 'hold' | 'hold1' | 'exhale' | 'hold2'
 
@@ -36,15 +37,8 @@ export default function BreathingCycle({
 
   const current = pattern[cycleIndex % pattern.length]
 
-  const targetScale = useMemo(() => {
-    if (current.phase === 'inhale' || current.phase === 'inhale1') return scaleMax
-    if (current.phase === 'inhale2') return scaleMax  // Second inhale stays large
-    if (current.phase === 'exhale') return scaleMin
-    if (current.phase === 'hold1') return scaleMax  // Stay large after inhale
-    if (current.phase === 'hold2') return scaleMin  // Stay small after exhale
-    if (current.phase === 'hold') return scaleMax   // Generic hold stays large
-    return scaleMin
-  }, [current.phase, scaleMax, scaleMin])
+  const targetScale = getBreathTargetScale(current.phase, scaleMin, scaleMax)
+  const ease = useMemo(() => getBreathEase(current.phase), [current.phase])
 
   useEffect(() => {
     if (!isActive || !animationsEnabled) {
@@ -57,12 +51,12 @@ export default function BreathingCycle({
       scale: targetScale,
       transition: {
         duration: current.durationMs / 1000,
-        ease: current.phase === 'exhale' ? 'easeOut' : 'easeInOut',
+        ease,
       },
     })
-  }, [animationsEnabled, controls, current.durationMs, current.phase, isActive, scaleMin, targetScale])
+  }, [animationsEnabled, controls, current.durationMs, ease, isActive, scaleMin, targetScale])
 
-  const containerSize = Math.max(size + 16, size * scaleMax)
+  const containerSize = getBreathContainerSize(size, scaleMax)
   const dimension = `${size}px`
   const containerDimension = `${containerSize}px`
 
@@ -119,7 +113,7 @@ export default function BreathingCycle({
                   transform={`rotate(-90 ${cx} ${cy})`}
                   initial={{ strokeDashoffset: circumference }}
                   animate={{ strokeDashoffset: 0 }}
-                  transition={{ duration: current.durationMs / 1000, ease: isExhale ? 'easeOut' : 'easeInOut' }}
+                  transition={{ duration: current.durationMs / 1000, ease: getBreathEase(current.phase) }}
                 />
               )}
             </g>
