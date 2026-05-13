@@ -56,8 +56,10 @@ export default function BreathingCycle({
     })
   }, [animationsEnabled, controls, current.durationMs, ease, isActive, scaleMin, targetScale])
 
-  const containerSize = getBreathContainerSize(size, scaleMax)
+  const progressRingSize = size + 16
+  const containerSize = getBreathContainerSize(progressRingSize, scaleMax)
   const dimension = `${size}px`
+  const progressRingDimension = `${progressRingSize}px`
   const containerDimension = `${containerSize}px`
 
   if (!animationsEnabled) {
@@ -72,7 +74,7 @@ export default function BreathingCycle({
     <div className="relative flex items-center justify-center" style={{ width: containerDimension, height: containerDimension }}>
       {/* Outer soft glow that subtly brightens on inhale */}
       <motion.div
-        className="absolute rounded-full blur-xl opacity-70"
+        className="absolute z-0 rounded-full blur-xl opacity-70"
         style={{ width: dimension, height: dimension }}
         animate={controls}
         initial={{ scale: scaleMin, opacity: 0.35 }}
@@ -81,11 +83,20 @@ export default function BreathingCycle({
       </motion.div>
 
       {/* Animated progress ring synced to current phase */}
-      <svg className="absolute" width={size + 16} height={size + 16} viewBox={`0 0 ${size + 16} ${size + 16}`} aria-hidden="true">
+      <motion.svg
+        data-testid="breathing-progress-ring"
+        className="pointer-events-none absolute z-20 will-change-transform"
+        width={progressRingDimension}
+        height={progressRingDimension}
+        viewBox={`0 0 ${progressRingSize} ${progressRingSize}`}
+        aria-hidden="true"
+        animate={controls}
+        initial={{ scale: scaleMin }}
+      >
         {(() => {
-          const r = (size + 16) / 2 - 6
-          const cx = (size + 16) / 2
-          const cy = (size + 16) / 2
+          const r = progressRingSize / 2 - 6
+          const cx = progressRingSize / 2
+          const cy = progressRingSize / 2
           const circumference = 2 * Math.PI * r
           const isExhale = current.phase === 'exhale'
 
@@ -119,11 +130,12 @@ export default function BreathingCycle({
             </g>
           )
         })()}
-      </svg>
+      </motion.svg>
 
       {/* Main animated core */}
       <motion.div
-        className={`rounded-full ${colors.from} ${colors.to} bg-gradient-to-br shadow-lg will-change-transform`}
+        data-testid="breathing-core"
+        className={`relative z-10 rounded-full ${colors.from} ${colors.to} bg-gradient-to-br shadow-lg will-change-transform`}
         style={{ width: dimension, height: dimension }}
         animate={controls}
         initial={{ scale: scaleMin, opacity: 1 }}
@@ -133,7 +145,7 @@ export default function BreathingCycle({
       {isActive && (
         <motion.div
           key={`${cycleIndex}`}
-          className="absolute rounded-full border-2 border-white/30"
+          className="absolute z-30 rounded-full border-2 border-white/30"
           style={{ width: dimension, height: dimension }}
           initial={{ scale: 0.9, opacity: 0.2 }}
           animate={{ scale: 1.15, opacity: 0 }}

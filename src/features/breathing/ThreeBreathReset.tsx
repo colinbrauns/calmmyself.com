@@ -47,6 +47,18 @@ function CountdownDots({ breathIndex, isBreathing, breathPhase }: { breathIndex:
               className="relative"
               style={{ width: 56, height: 56 }}
             >
+              {/* Fill animation for current breath */}
+              {isCurrent && isBreathing && (
+                <motion.div
+                  className="absolute rounded-full"
+                  style={{ inset: 4, backgroundColor: 'rgba(107, 165, 215, 0.25)' }}
+                  animate={{
+                    scale: isInhale ? [0.3, 1] : [1, 0.3],
+                  }}
+                  transition={{ duration: 4, ease: 'easeInOut' }}
+                />
+              )}
+
               {/* Background circle */}
               <motion.div
                 className="absolute inset-0 rounded-full border-2"
@@ -55,18 +67,6 @@ function CountdownDots({ breathIndex, isBreathing, breathPhase }: { breathIndex:
                   backgroundColor: isCompleted ? 'rgba(34, 197, 94, 0.15)' : 'transparent',
                 }}
               />
-
-              {/* Fill animation for current breath */}
-              {isCurrent && isBreathing && (
-                <motion.div
-                  className="absolute inset-0 rounded-full"
-                  style={{ backgroundColor: 'rgba(107, 165, 215, 0.25)' }}
-                  animate={{
-                    scale: isInhale ? [0.3, 1] : [1, 0.3],
-                  }}
-                  transition={{ duration: 4, ease: 'easeInOut' }}
-                />
-              )}
 
               {/* Pulse ring for current */}
               {isCurrent && isBreathing && (

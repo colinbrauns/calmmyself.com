@@ -55,4 +55,22 @@ test.describe('breathing animations', () => {
       expect(visualBox.y + visualBox.height).toBeLessThanOrEqual(phaseBox.y + 4)
     })
   }
+
+  test('coherent-breathing keeps the progress ring outside the expanding circle', async ({ page }) => {
+    await page.goto('/?tool=coherent-breathing&fresh=animation-regression')
+    await page.getByRole('button', { name: 'Start' }).click()
+    await page.waitForTimeout(2500)
+
+    const ringBox = await page.getByTestId('breathing-progress-ring').boundingBox()
+    const coreBox = await page.getByTestId('breathing-core').boundingBox()
+
+    expect(ringBox).not.toBeNull()
+    expect(coreBox).not.toBeNull()
+    if (!ringBox || !coreBox) return
+
+    expect(ringBox.width).toBeGreaterThan(coreBox.width + 8)
+    expect(ringBox.height).toBeGreaterThan(coreBox.height + 8)
+    expect(ringBox.x + ringBox.width / 2).toBeCloseTo(coreBox.x + coreBox.width / 2, 0)
+    expect(ringBox.y + ringBox.height / 2).toBeCloseTo(coreBox.y + coreBox.height / 2, 0)
+  })
 })
