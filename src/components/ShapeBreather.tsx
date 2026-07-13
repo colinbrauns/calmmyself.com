@@ -1,22 +1,22 @@
-"use client"
+"use client";
 
-import { useEffect, useMemo } from 'react'
-import { motion, useAnimationControls } from 'framer-motion'
-import type { CyclePhase } from '@/components/BreathingCycle'
-import { useMotionPreferences } from '@/components/MotionPreferences'
-import { getBreathEase, getBreathTargetScale } from '@/lib/breathingMotion'
+import { useEffect, useMemo } from "react";
+import { motion, useAnimationControls } from "framer-motion";
+import type { CyclePhase } from "@/components/BreathingCycle";
+import { useMotionPreferences } from "@/components/MotionPreferences";
+import { getBreathEase, getBreathTargetScale } from "@/lib/breathingMotion";
 
 interface ShapeBreatherProps {
-  shape: 'square' | 'triangle' | 'circle' | 'flower'
-  phase: CyclePhase
-  durationMs: number
-  isActive: boolean
-  size?: number
-  colors?: { from: string; to: string }
-  scaleMin?: number
-  scaleMax?: number
-  styleMode?: 'fill' | 'stroke'
-  strokeClass?: string
+  shape: "square" | "triangle" | "circle" | "flower";
+  phase: CyclePhase;
+  durationMs: number;
+  isActive: boolean;
+  size?: number;
+  colors?: { from: string; to: string };
+  scaleMin?: number;
+  scaleMax?: number;
+  styleMode?: "fill" | "stroke";
+  strokeClass?: string;
 }
 
 export default function ShapeBreather({
@@ -25,23 +25,23 @@ export default function ShapeBreather({
   durationMs,
   isActive,
   size = 112,
-  colors = { from: 'from-calm-300', to: 'to-calm-500' },
+  colors = { from: "from-calm-300", to: "to-calm-500" },
   scaleMin = 1,
   scaleMax = 1.5,
-  styleMode = 'fill',
-  strokeClass = 'text-calm-500',
+  styleMode = "fill",
+  strokeClass = "",
 }: ShapeBreatherProps) {
-  const controls = useAnimationControls()
-  const { animationsEnabled } = useMotionPreferences()
+  const controls = useAnimationControls();
+  const { animationsEnabled } = useMotionPreferences();
 
-  const targetScale = getBreathTargetScale(phase, scaleMin, scaleMax)
-  const ease = useMemo(() => getBreathEase(phase), [phase])
+  const targetScale = getBreathTargetScale(phase, scaleMin, scaleMax);
+  const ease = useMemo(() => getBreathEase(phase), [phase]);
 
   useEffect(() => {
     if (!isActive || !animationsEnabled) {
-      controls.stop()
-      controls.set({ scale: scaleMin })
-      return
+      controls.stop();
+      controls.set({ scale: scaleMin });
+      return;
     }
 
     controls.start({
@@ -50,16 +50,24 @@ export default function ShapeBreather({
         duration: durationMs / 1000,
         ease,
       },
-    })
-  }, [animationsEnabled, controls, durationMs, ease, isActive, scaleMin, targetScale])
+    });
+  }, [
+    animationsEnabled,
+    controls,
+    durationMs,
+    ease,
+    isActive,
+    scaleMin,
+    targetScale,
+  ]);
 
-  const containerDim = size * (shape === 'flower' ? scaleMax * 1.6 : scaleMax)
-  const dimension = `${size}px`
+  const containerDim = size * (shape === "flower" ? scaleMax * 1.6 : scaleMax);
+  const dimension = `${size}px`;
 
   const body = (() => {
     switch (shape) {
-      case 'square':
-        if (styleMode === 'stroke') {
+      case "square":
+        if (styleMode === "stroke") {
           return (
             <>
               <motion.div
@@ -68,11 +76,17 @@ export default function ShapeBreather({
                 animate={controls}
                 initial={{ scale: scaleMin, opacity: 0.35 }}
               >
-                <div className={`h-full w-full rounded-lg bg-gradient-to-br ${colors.from} ${colors.to}`} />
+                <div
+                  className={`h-full w-full rounded-lg bg-gradient-to-br ${colors.from} ${colors.to}`}
+                />
               </motion.div>
               <motion.div
                 className={`will-change-transform rounded-lg border-4 border-current ${strokeClass}`}
-                style={{ width: dimension, height: dimension, background: 'transparent' }}
+                style={{
+                  width: dimension,
+                  height: dimension,
+                  background: "transparent",
+                }}
                 animate={controls}
                 initial={{ scale: scaleMin, opacity: 1 }}
               />
@@ -83,11 +97,11 @@ export default function ShapeBreather({
                   style={{ width: dimension, height: dimension, opacity: 0.18 }}
                   initial={{ scale: 0.92, opacity: 0.18 }}
                   animate={{ scale: 1.12, opacity: 0 }}
-                  transition={{ duration: 0.8, ease: 'easeOut' }}
+                  transition={{ duration: 0.8, ease: "easeOut" }}
                 />
               )}
             </>
-          )
+          );
         }
         return (
           <>
@@ -97,7 +111,9 @@ export default function ShapeBreather({
               animate={controls}
               initial={{ scale: scaleMin, opacity: 0.35 }}
             >
-              <div className={`h-full w-full rounded-lg bg-gradient-to-br ${colors.from} ${colors.to}`} />
+              <div
+                className={`h-full w-full rounded-lg bg-gradient-to-br ${colors.from} ${colors.to}`}
+              />
             </motion.div>
             <motion.div
               className={`will-change-transform rounded-lg bg-gradient-to-br ${colors.from} ${colors.to} shadow-[0_0_45px_rgba(255,255,255,0.35)]`}
@@ -106,8 +122,8 @@ export default function ShapeBreather({
               initial={{ scale: scaleMin, opacity: 1 }}
             />
           </>
-        )
-      case 'circle':
+        );
+      case "circle":
         return (
           <>
             <motion.div
@@ -116,7 +132,9 @@ export default function ShapeBreather({
               animate={controls}
               initial={{ scale: scaleMin, opacity: 0.3 }}
             >
-              <div className={`h-full w-full rounded-full bg-gradient-to-br ${colors.from} ${colors.to}`} />
+              <div
+                className={`h-full w-full rounded-full bg-gradient-to-br ${colors.from} ${colors.to}`}
+              />
             </motion.div>
             <motion.div
               className={`will-change-transform rounded-full bg-gradient-to-br ${colors.from} ${colors.to} shadow-[0_0_50px_rgba(255,255,255,0.4)]`}
@@ -131,12 +149,12 @@ export default function ShapeBreather({
                 style={{ width: dimension, height: dimension }}
                 initial={{ scale: 0.9, opacity: 0.25 }}
                 animate={{ scale: 1.25, opacity: 0 }}
-                transition={{ duration: 1.1, ease: 'easeOut' }}
+                transition={{ duration: 1.1, ease: "easeOut" }}
               />
             )}
           </>
-        )
-      case 'triangle':
+        );
+      case "triangle":
         return (
           <>
             <motion.div
@@ -147,23 +165,27 @@ export default function ShapeBreather({
             >
               <div
                 className={`h-full w-full bg-gradient-to-br ${colors.from} ${colors.to}`}
-                style={{ clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)' }}
+                style={{ clipPath: "polygon(50% 0%, 0% 100%, 100% 100%)" }}
               />
             </motion.div>
             <motion.div
               className={`will-change-transform bg-gradient-to-br ${colors.from} ${colors.to} shadow-[0_12px_35px_rgba(0,0,0,0.25)]`}
-              style={{ width: dimension, height: dimension, clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)' }}
+              style={{
+                width: dimension,
+                height: dimension,
+                clipPath: "polygon(50% 0%, 0% 100%, 100% 100%)",
+              }}
               animate={controls}
               initial={{ scale: scaleMin, opacity: 1 }}
             />
           </>
-        )
-      case 'flower': {
-        const petalCount = 6
-        const petalWidth = size * 0.55
-        const petalHeight = size * 1.05
+        );
+      case "flower": {
+        const petalCount = 6;
+        const petalWidth = size * 0.55;
+        const petalHeight = size * 1.05;
         const petals = Array.from({ length: petalCount }).map((_, index) => {
-          const rotation = (360 / petalCount) * index
+          const rotation = (360 / petalCount) * index;
           return (
             <motion.div
               key={`petal-${index}`}
@@ -176,15 +198,15 @@ export default function ShapeBreather({
                   width: `${petalWidth}px`,
                   height: `${petalHeight}px`,
                   borderRadius: `${petalWidth}px`,
-                  transformOrigin: '50% 85%',
-                  boxShadow: '0 0 28px rgba(255,255,255,0.25)',
+                  transformOrigin: "50% 85%",
+                  boxShadow: "0 0 28px rgba(255,255,255,0.25)",
                 }}
                 animate={controls}
                 initial={{ scale: scaleMin, opacity: 0.6 }}
               />
             </motion.div>
-          )
-        })
+          );
+        });
 
         return (
           <>
@@ -210,69 +232,83 @@ export default function ShapeBreather({
                 style={{ width: `${size * 1.1}px`, height: `${size * 1.1}px` }}
                 initial={{ scale: 0.95, opacity: 0.25 }}
                 animate={{ scale: 1.25, opacity: 0 }}
-                transition={{ duration: 1, ease: 'easeOut' }}
+                transition={{ duration: 1, ease: "easeOut" }}
               />
             )}
           </>
-        )
+        );
       }
       default:
-        return null
+        return null;
     }
-  })()
+  })();
 
   if (!animationsEnabled) {
     return (
-      <div className="relative flex items-center justify-center" style={{ width: containerDim, height: containerDim }}>
+      <div
+        className="relative flex items-center justify-center"
+        style={{ width: containerDim, height: containerDim }}
+      >
         {(() => {
           switch (shape) {
-            case 'square':
+            case "square":
               return (
                 <div
                   style={{
                     width: dimension,
                     height: dimension,
-                    borderRadius: '16px',
-                    border: '4px solid rgba(14,165,233,0.45)',
+                    borderRadius: "16px",
+                    border: "4px solid rgba(14,165,233,0.45)",
                   }}
                 />
-              )
-            case 'circle':
+              );
+            case "circle":
               return (
                 <div
                   className={`${colors.from} ${colors.to} bg-gradient-to-br`}
-                  style={{ width: dimension, height: dimension, borderRadius: '50%' }}
+                  style={{
+                    width: dimension,
+                    height: dimension,
+                    borderRadius: "50%",
+                  }}
                 />
-              )
-            case 'triangle':
+              );
+            case "triangle":
               return (
                 <div
                   className={`${colors.from} ${colors.to} bg-gradient-to-br`}
-                  style={{ width: dimension, height: dimension, clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)' }}
+                  style={{
+                    width: dimension,
+                    height: dimension,
+                    clipPath: "polygon(50% 0%, 0% 100%, 100% 100%)",
+                  }}
                 />
-              )
-            case 'flower':
+              );
+            case "flower":
               return (
                 <div
                   className={`${colors.from} ${colors.to} bg-gradient-to-br opacity-80`}
                   style={{
                     width: `${size}px`,
                     height: `${size}px`,
-                    borderRadius: '50%',
+                    borderRadius: "50%",
                   }}
                 />
-              )
+              );
             default:
-              return null
+              return null;
           }
         })()}
       </div>
-    )
+    );
   }
 
   return (
-    <div className="relative flex items-center justify-center" style={{ width: containerDim, height: containerDim }}>
+    <div
+      className="relative flex items-center justify-center"
+      style={{ width: containerDim, height: containerDim }}
+    >
       {body}
     </div>
-  )
+  );
 }

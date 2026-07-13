@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
-import { Timer } from 'lucide-react'
-import { AnimatePresence, motion } from 'framer-motion'
-import ShareInline from '@/components/ShareInline'
-import { useBreathPattern } from '@/hooks/useBreathPattern'
+import { Timer } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import ShareInline from "@/components/ShareInline";
+import { useBreathPattern } from "@/hooks/useBreathPattern";
 import {
   EvidenceNote,
   ToolBody,
@@ -13,62 +13,103 @@ import {
   ToolHeader,
   ToolProgress,
   ToolStage,
-} from '@/components/CalmTool'
+} from "@/components/CalmTool";
 
 const PATTERN = [
-  { phase: 'inhale', label: 'Inhale (4)', durationMs: 4000, color: '#3b82f6', ratio: 4 },
-  { phase: 'hold', label: 'Hold (7)', durationMs: 7000, color: '#f59e0b', ratio: 7 },
-  { phase: 'exhale', label: 'Exhale (8)', durationMs: 8000, color: '#14b8a6', ratio: 8 },
-] as const
+  {
+    phase: "inhale",
+    label: "Inhale (4)",
+    durationMs: 4000,
+    color: "#3b82f6",
+    ratio: 4,
+  },
+  {
+    phase: "hold",
+    label: "Hold (7)",
+    durationMs: 7000,
+    color: "#f59e0b",
+    ratio: 7,
+  },
+  {
+    phase: "exhale",
+    label: "Exhale (8)",
+    durationMs: 8000,
+    color: "#14b8a6",
+    ratio: 8,
+  },
+] as const;
 
-const TOTAL_RATIO = 4 + 7 + 8
+const TOTAL_RATIO = 4 + 7 + 8;
 
-function ArcGauge({ phaseIndex, progress, isActive }: { phaseIndex: number; progress: number; isActive: boolean }) {
-  const size = 200
-  const cx = size / 2
-  const cy = size / 2
-  const r = 80
-  const strokeWidth = 18
+function ArcGauge({
+  phaseIndex,
+  progress,
+  isActive,
+}: {
+  phaseIndex: number;
+  progress: number;
+  isActive: boolean;
+}) {
+  const size = 200;
+  const cx = size / 2;
+  const cy = size / 2;
+  const r = 80;
+  const strokeWidth = 18;
 
   // Calculate arc segments based on 4:7:8 ratio
   const segments = PATTERN.map((p, i) => {
-    const startAngle = PATTERN.slice(0, i).reduce((s, seg) => s + (seg.ratio / TOTAL_RATIO) * 360, 0) - 90
-    const sweepAngle = (p.ratio / TOTAL_RATIO) * 360
-    return { ...p, startAngle, sweepAngle, index: i }
-  })
+    const startAngle =
+      PATTERN.slice(0, i).reduce(
+        (s, seg) => s + (seg.ratio / TOTAL_RATIO) * 360,
+        0,
+      ) - 90;
+    const sweepAngle = (p.ratio / TOTAL_RATIO) * 360;
+    return { ...p, startAngle, sweepAngle, index: i };
+  });
 
   const describeArc = (startAngle: number, endAngle: number) => {
-    const startRad = (startAngle * Math.PI) / 180
-    const endRad = (endAngle * Math.PI) / 180
-    const x1 = cx + r * Math.cos(startRad)
-    const y1 = cy + r * Math.sin(startRad)
-    const x2 = cx + r * Math.cos(endRad)
-    const y2 = cy + r * Math.sin(endRad)
-    const large = endAngle - startAngle > 180 ? 1 : 0
-    return `M ${x1} ${y1} A ${r} ${r} 0 ${large} 1 ${x2} ${y2}`
-  }
+    const startRad = (startAngle * Math.PI) / 180;
+    const endRad = (endAngle * Math.PI) / 180;
+    const x1 = cx + r * Math.cos(startRad);
+    const y1 = cy + r * Math.sin(startRad);
+    const x2 = cx + r * Math.cos(endRad);
+    const y2 = cy + r * Math.sin(endRad);
+    const large = endAngle - startAngle > 180 ? 1 : 0;
+    return `M ${x1} ${y1} A ${r} ${r} 0 ${large} 1 ${x2} ${y2}`;
+  };
 
   // Label positions
-  const labelPos = (seg: typeof segments[number]) => {
-    const midAngle = ((seg.startAngle + seg.sweepAngle / 2) * Math.PI) / 180
+  const labelPos = (seg: (typeof segments)[number]) => {
+    const midAngle = ((seg.startAngle + seg.sweepAngle / 2) * Math.PI) / 180;
     return {
       x: cx + (r + 28) * Math.cos(midAngle),
       y: cy + (r + 28) * Math.sin(midAngle),
-    }
-  }
+    };
+  };
 
   return (
-    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="mx-auto">
+    <svg
+      width={size}
+      height={size}
+      viewBox={`0 0 ${size} ${size}`}
+      className="mx-auto"
+    >
       {/* Background segments */}
       {segments.map((seg) => (
         <path
           key={seg.phase}
           d={describeArc(seg.startAngle, seg.startAngle + seg.sweepAngle - 2)}
           fill="none"
-          stroke={seg.index <= phaseIndex && isActive ? seg.color : '#e5e7eb'}
+          stroke={seg.index <= phaseIndex && isActive ? seg.color : "#e5e7eb"}
           strokeWidth={strokeWidth}
           strokeLinecap="round"
-          opacity={seg.index < phaseIndex && isActive ? 1 : seg.index === phaseIndex && isActive ? 0.3 : 0.2}
+          opacity={
+            seg.index < phaseIndex && isActive
+              ? 1
+              : seg.index === phaseIndex && isActive
+                ? 0.3
+                : 0.2
+          }
         />
       ))}
 
@@ -77,7 +118,9 @@ function ArcGauge({ phaseIndex, progress, isActive }: { phaseIndex: number; prog
         <path
           d={describeArc(
             segments[phaseIndex].startAngle,
-            segments[phaseIndex].startAngle + segments[phaseIndex].sweepAngle * (progress / 100) - 1
+            segments[phaseIndex].startAngle +
+              segments[phaseIndex].sweepAngle * (progress / 100) -
+              1,
           )}
           fill="none"
           stroke={segments[phaseIndex].color}
@@ -87,20 +130,26 @@ function ArcGauge({ phaseIndex, progress, isActive }: { phaseIndex: number; prog
       )}
 
       {/* Filled previous segments */}
-      {isActive && segments.filter((_, i) => i < phaseIndex).map((seg) => (
-        <path
-          key={`filled-${seg.phase}`}
-          d={describeArc(seg.startAngle, seg.startAngle + seg.sweepAngle - 2)}
-          fill="none"
-          stroke={seg.color}
-          strokeWidth={strokeWidth}
-          strokeLinecap="round"
-        />
-      ))}
+      {isActive &&
+        segments
+          .filter((_, i) => i < phaseIndex)
+          .map((seg) => (
+            <path
+              key={`filled-${seg.phase}`}
+              d={describeArc(
+                seg.startAngle,
+                seg.startAngle + seg.sweepAngle - 2,
+              )}
+              fill="none"
+              stroke={seg.color}
+              strokeWidth={strokeWidth}
+              strokeLinecap="round"
+            />
+          ))}
 
       {/* Ratio labels */}
       {segments.map((seg) => {
-        const pos = labelPos(seg)
+        const pos = labelPos(seg);
         return (
           <text
             key={`label-${seg.phase}`}
@@ -108,24 +157,26 @@ function ArcGauge({ phaseIndex, progress, isActive }: { phaseIndex: number; prog
             y={pos.y}
             textAnchor="middle"
             dominantBaseline="central"
-            fill={seg.index === phaseIndex && isActive ? seg.color : '#9ca3af'}
+            fill={seg.index === phaseIndex && isActive ? seg.color : "#9ca3af"}
             fontSize="14"
-            fontWeight={seg.index === phaseIndex && isActive ? 'bold' : 'normal'}
+            fontWeight={
+              seg.index === phaseIndex && isActive ? "bold" : "normal"
+            }
           >
             {seg.ratio}
           </text>
-        )
+        );
       })}
     </svg>
-  )
+  );
 }
 
 export default function FourSevenEight() {
   const breath = useBreathPattern({
     pattern: PATTERN,
-  })
+  });
 
-  const current = PATTERN[breath.phaseIndex]
+  const current = PATTERN[breath.phaseIndex];
 
   return (
     <ToolCard>
@@ -138,26 +189,41 @@ export default function FourSevenEight() {
         <ToolStage>
           {/* Arc Gauge Visualization */}
           <div data-testid="tool-visual" className="relative">
-            <ArcGauge phaseIndex={breath.phaseIndex} progress={breath.progressPercent} isActive={breath.isRunning} />
+            <ArcGauge
+              phaseIndex={breath.phaseIndex}
+              progress={breath.progressPercent}
+              isActive={breath.isRunning}
+            />
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="text-center">
-                <div className="text-3xl font-bold" style={{ color: breath.isRunning ? current.color : '#6b7280' }}>
+                <div
+                  className="text-3xl font-bold"
+                  style={{
+                    color: breath.isRunning ? current.color : "#6b7280",
+                  }}
+                >
                   {breath.displaySeconds}
                 </div>
-                <div className="text-xs text-gray-500 mt-1">seconds</div>
+                <div className="text-xs mt-1">seconds</div>
               </div>
             </div>
           </div>
 
           <div className="text-center">
-            <div className="text-2xl font-semibold text-calm-800 dark:text-gray-100 mb-2 min-h-[32px]">
+            <div className="text-2xl font-semibold mb-2 min-h-[32px]">
               <AnimatePresence mode="wait">
-                <motion.span key={current.label} initial={{opacity:0,y:6}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-6}} transition={{duration:0.25}}>
+                <motion.span
+                  key={current.label}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  transition={{ duration: 0.25 }}
+                >
                   {current.label}
                 </motion.span>
               </AnimatePresence>
             </div>
-            <div className="text-sm text-gray-600 dark:text-gray-400">Cycle {breath.cycleCount + 1}</div>
+            <div className="text-sm">Cycle {breath.cycleCount + 1}</div>
           </div>
           <ToolProgress value={breath.progressPercent} />
         </ToolStage>
@@ -170,12 +236,17 @@ export default function FourSevenEight() {
       </ToolBody>
       <ToolFooter>
         <EvidenceNote>
-          4-7-8 uses a longer exhale to encourage parasympathetic activation. Skip holds if they feel uncomfortable.
-          <br/>
-          Evidence: Longer exhalation patterns are commonly used in clinical breathing interventions to downshift arousal.
+          4-7-8 uses a longer exhale to encourage parasympathetic activation.
+          Skip holds if they feel uncomfortable.
+          <br />
+          Evidence: Longer exhalation patterns are commonly used in clinical
+          breathing interventions to downshift arousal.
         </EvidenceNote>
-        <ShareInline title="4‑7‑8 Breathing" text="Practice 4‑7‑8 breathing on CalmMyself" />
+        <ShareInline
+          title="4‑7‑8 Breathing"
+          text="Practice 4‑7‑8 breathing on CalmMyself"
+        />
       </ToolFooter>
     </ToolCard>
-  )
+  );
 }
