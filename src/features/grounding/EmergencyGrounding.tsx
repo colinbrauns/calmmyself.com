@@ -1,16 +1,22 @@
-'use client'
+"use client";
 
-import { useState, useCallback, useEffect } from 'react'
-import { Button } from '@/components/ui/Button'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card'
-import { AlertTriangle, Phone, CheckCircle, RotateCcw } from 'lucide-react'
+import { useState, useCallback, useEffect } from "react";
+import { Button } from "@/components/ui/Button";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "@/components/ui/Card";
+import { AlertTriangle, Phone, CheckCircle, RotateCcw } from "lucide-react";
 
 interface GroundingStep {
-  title: string
-  instruction: string
-  action: string
-  duration: number
-  type: 'breathing' | 'physical' | 'cognitive' | 'sensory'
+  title: string;
+  instruction: string;
+  action: string;
+  duration: number;
+  type: "breathing" | "physical" | "cognitive" | "sensory";
 }
 
 const EMERGENCY_STEPS: GroundingStep[] = [
@@ -19,145 +25,162 @@ const EMERGENCY_STEPS: GroundingStep[] = [
     instruction: "Stop what you’re doing. You’re going to be okay.",
     action: "Take a moment to pause everything",
     duration: 3000,
-    type: 'cognitive'
+    type: "cognitive",
   },
   {
     title: "BREATHE",
-    instruction: 'Take a deep breath in through your nose, hold for 3, then breathe out slowly through your mouth.',
+    instruction:
+      "Take a deep breath in through your nose, hold for 3, then breathe out slowly through your mouth.",
     action: "In... 2... 3... Hold... 2... 3... Out... 2... 3... 4... 5... 6",
     duration: 12000,
-    type: 'breathing'
+    type: "breathing",
   },
   {
     title: "FEET ON GROUND",
-    instruction: 'Feel your feet firmly planted on the ground. Press them down. You are here, you are safe.',
+    instruction:
+      "Feel your feet firmly planted on the ground. Press them down. You are here, you are safe.",
     action: "Press your feet firmly into the floor",
     duration: 8000,
-    type: 'physical'
+    type: "physical",
   },
   {
     title: "5 THINGS YOU CAN SEE",
-    instruction: 'Look around and name 5 things you can see. Say them out loud if possible.',
+    instruction:
+      "Look around and name 5 things you can see. Say them out loud if possible.",
     action: "Look around and count: 1... 2... 3... 4... 5",
     duration: 15000,
-    type: 'sensory'
+    type: "sensory",
   },
   {
     title: "4 THINGS YOU CAN TOUCH",
-    instruction: 'Find 4 things you can touch. Feel their texture, temperature, weight.',
+    instruction:
+      "Find 4 things you can touch. Feel their texture, temperature, weight.",
     action: "Touch and count: 1... 2... 3... 4",
     duration: 12000,
-    type: 'sensory'
+    type: "sensory",
   },
   {
     title: "3 THINGS YOU CAN HEAR",
-    instruction: 'Listen carefully. What are 3 sounds you can hear right now?',
+    instruction: "Listen carefully. What are 3 sounds you can hear right now?",
     action: "Listen and count: 1... 2... 3",
     duration: 10000,
-    type: 'sensory'
+    type: "sensory",
   },
   {
     title: "YOU ARE SAFE",
-    instruction: 'This feeling will pass. You are in control. You are safe right now.',
-    action: 'Repeat: “I am safe. This will pass. I am in control.”',
+    instruction:
+      "This feeling will pass. You are in control. You are safe right now.",
+    action: "Repeat: “I am safe. This will pass. I am in control.”",
     duration: 8000,
-    type: 'cognitive'
-  }
-]
+    type: "cognitive",
+  },
+];
 
 const CRISIS_RESOURCES = [
   {
     name: "Crisis Text Line",
     contact: "Text HOME to 741741",
-    description: "24/7 crisis support via text"
+    description: "24/7 crisis support via text",
   },
   {
-    name: "National Suicide Prevention Lifeline", 
+    name: "National Suicide Prevention Lifeline",
     contact: "Call or Text 988",
-    description: "24/7 suicide prevention and crisis support"
+    description: "24/7 suicide prevention and crisis support",
   },
   {
     name: "Emergency Services",
     contact: "Call 911",
-    description: "For immediate life-threatening emergencies"
-  }
-]
+    description: "For immediate life-threatening emergencies",
+  },
+];
 
 export default function EmergencyGrounding() {
-  const [currentStep, setCurrentStep] = useState(0)
-  const [timeRemaining, setTimeRemaining] = useState(0)
-  const [isActive, setIsActive] = useState(false)
-  const [isComplete, setIsComplete] = useState(false)
-  const [showCrisisResources, setShowCrisisResources] = useState(false)
+  const [currentStep, setCurrentStep] = useState(0);
+  const [timeRemaining, setTimeRemaining] = useState(0);
+  const [isActive, setIsActive] = useState(false);
+  const [isComplete, setIsComplete] = useState(false);
+  const [showCrisisResources, setShowCrisisResources] = useState(false);
 
-  const currentStepData = EMERGENCY_STEPS[currentStep]
+  const currentStepData = EMERGENCY_STEPS[currentStep];
 
   const nextStep = useCallback(() => {
     if (currentStep < EMERGENCY_STEPS.length - 1) {
-      const nextIndex = currentStep + 1
-      setCurrentStep(nextIndex)
-      setTimeRemaining(EMERGENCY_STEPS[nextIndex].duration)
+      const nextIndex = currentStep + 1;
+      setCurrentStep(nextIndex);
+      setTimeRemaining(EMERGENCY_STEPS[nextIndex].duration);
     } else {
-      setIsComplete(true)
-      setIsActive(false)
+      setIsComplete(true);
+      setIsActive(false);
     }
-  }, [currentStep])
+  }, [currentStep]);
 
   const startProtocol = useCallback(() => {
-    setCurrentStep(0)
-    setTimeRemaining(EMERGENCY_STEPS[0].duration)
-    setIsActive(true)
-    setIsComplete(false)
-  }, [])
+    setCurrentStep(0);
+    setTimeRemaining(EMERGENCY_STEPS[0].duration);
+    setIsActive(true);
+    setIsComplete(false);
+  }, []);
 
   const reset = useCallback(() => {
-    setCurrentStep(0)
-    setTimeRemaining(0)
-    setIsActive(false)
-    setIsComplete(false)
-    setShowCrisisResources(false)
-  }, [])
+    setCurrentStep(0);
+    setTimeRemaining(0);
+    setIsActive(false);
+    setIsComplete(false);
+    setShowCrisisResources(false);
+  }, []);
 
   useEffect(() => {
-    let interval: NodeJS.Timeout | null = null
-    
+    let interval: NodeJS.Timeout | null = null;
+
     if (isActive && !isComplete) {
       interval = setInterval(() => {
         setTimeRemaining((time) => {
           if (time <= 100) {
-            nextStep()
-            return EMERGENCY_STEPS[Math.min(currentStep + 1, EMERGENCY_STEPS.length - 1)].duration
+            nextStep();
+            return EMERGENCY_STEPS[
+              Math.min(currentStep + 1, EMERGENCY_STEPS.length - 1)
+            ].duration;
           }
-          return time - 100
-        })
-      }, 100)
+          return time - 100;
+        });
+      }, 100);
     }
 
     return () => {
-      if (interval) clearInterval(interval)
-    }
-  }, [isActive, isComplete, nextStep, currentStep])
+      if (interval) clearInterval(interval);
+    };
+  }, [isActive, isComplete, nextStep, currentStep]);
 
   const getStepColor = (type: string) => {
     switch (type) {
-      case 'breathing': return 'blue'
-      case 'physical': return 'green' 
-      case 'cognitive': return 'purple'
-      case 'sensory': return 'orange'
-      default: return 'gray'
+      case "breathing":
+        return "blue";
+      case "physical":
+        return "green";
+      case "cognitive":
+        return "purple";
+      case "sensory":
+        return "orange";
+      default:
+        return "gray";
     }
-  }
+  };
 
   const getStepColorClasses = (type: string) => {
-    const color = getStepColor(type)
+    const color = getStepColor(type);
     switch (color) {
-      case 'blue': return { bg: 'bg-blue-100', text: 'text-blue-800', accent: 'bg-blue-500' }
-      case 'green': return { bg: 'bg-green-100', text: 'text-green-800', accent: 'bg-green-500' }
-      case 'purple': return { bg: 'bg-purple-100', text: 'text-purple-800', accent: 'bg-purple-500' }
-      case 'orange': return { bg: 'bg-orange-100', text: 'text-orange-800', accent: 'bg-orange-500' }
-      default: return { bg: 'bg-gray-100', text: 'text-gray-800', accent: 'bg-gray-500' }
+      case "blue":
+        return { bg: "bg-blue-100", text: "", accent: "bg-blue-500" };
+      case "green":
+        return { bg: "bg-green-100", text: "", accent: "bg-green-500" };
+      case "purple":
+        return { bg: "bg-purple-100", text: "", accent: "bg-purple-500" };
+      case "orange":
+        return { bg: "bg-orange-100", text: "", accent: "bg-orange-500" };
+      default:
+        return { bg: "bg-gray-100", text: "", accent: "bg-gray-500" };
     }
-  }
+  };
 
   // Crisis resources view
   if (showCrisisResources) {
@@ -165,27 +188,28 @@ export default function EmergencyGrounding() {
       <Card className="max-w-md mx-auto">
         <CardHeader className="text-center">
           <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3">
-            <Phone className="w-6 h-6 text-red-600" />
+            <Phone className="w-6 h-6" />
           </div>
-          <CardTitle className="text-red-800 dark:text-red-200">Crisis Support Resources</CardTitle>
-          <CardDescription>
-            Professional help is available 24/7
-          </CardDescription>
+          <CardTitle>Crisis Support Resources</CardTitle>
+          <CardDescription>Professional help is available 24/7</CardDescription>
         </CardHeader>
-        
+
         <CardContent className="space-y-4">
           {CRISIS_RESOURCES.map((resource, index) => (
-            <div key={index} className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/50 rounded-xl p-4">
-              <h3 className="font-semibold text-red-800 dark:text-red-200 mb-1">{resource.name}</h3>
-              <p className="text-lg font-mono text-red-700 mb-1">{resource.contact}</p>
-              <p className="text-sm text-red-600">{resource.description}</p>
+            <div
+              key={index}
+              className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/50 rounded-xl p-4"
+            >
+              <h3 className="font-semibold mb-1">{resource.name}</h3>
+              <p className="text-lg font-mono mb-1">{resource.contact}</p>
+              <p className="text-sm">{resource.description}</p>
             </div>
           ))}
-          
+
           <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
-            <p className="text-sm text-yellow-800 dark:text-yellow-200">
-              <strong>Remember:</strong> You are not alone. These feelings will pass. 
-              Professional support is just a call or text away.
+            <p className="text-sm">
+              <strong>Remember:</strong> You are not alone. These feelings will
+              pass. Professional support is just a call or text away.
             </p>
           </div>
 
@@ -209,7 +233,7 @@ export default function EmergencyGrounding() {
           </div>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   // Completion view
@@ -217,23 +241,26 @@ export default function EmergencyGrounding() {
     return (
       <Card className="max-w-md mx-auto">
         <CardContent className="text-center py-8">
-          <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
-          <h2 className="text-2xl font-semibold text-green-700 mb-2">
-            You Made It Through
-          </h2>
-          <p className="text-gray-600 mb-6">
-            You&rsquo;ve completed the emergency grounding protocol. 
-            Take a moment to notice how you&rsquo;re feeling now. You are safe.
+          <CheckCircle className="w-16 h-16 mx-auto mb-4" />
+          <h2 className="text-2xl font-semibold mb-2">You Made It Through</h2>
+          <p className="mb-6">
+            You&rsquo;ve completed the emergency grounding protocol. Take a
+            moment to notice how you&rsquo;re feeling now. You are safe.
           </p>
-          
+
           <div className="space-y-3">
-            <Button onClick={reset} variant="grounding" size="lg" className="w-full">
+            <Button
+              onClick={reset}
+              variant="grounding"
+              size="lg"
+              className="w-full"
+            >
               I&rsquo;m Feeling Better
             </Button>
-            <Button 
+            <Button
               onClick={() => setShowCrisisResources(true)}
-              variant="outline" 
-              size="lg" 
+              variant="outline"
+              size="lg"
               className="w-full"
             >
               I Still Need Help
@@ -241,7 +268,7 @@ export default function EmergencyGrounding() {
           </div>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   // Initial screen
@@ -250,27 +277,28 @@ export default function EmergencyGrounding() {
       <Card className="max-w-md mx-auto">
         <CardHeader className="text-center">
           <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3">
-            <AlertTriangle className="w-6 h-6 text-red-600" />
+            <AlertTriangle className="w-6 h-6" />
           </div>
-          <CardTitle className="text-red-800 dark:text-red-200">Emergency Grounding Protocol</CardTitle>
+          <CardTitle>Emergency Grounding Protocol</CardTitle>
           <CardDescription>
             Quick grounding for overwhelming moments
           </CardDescription>
         </CardHeader>
-        
+
         <CardContent className="space-y-6">
           <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/50 rounded-xl p-4 text-center">
-            <p className="text-red-800 dark:text-red-200 font-medium mb-2">
+            <p className="font-medium mb-2">
               If you&rsquo;re feeling overwhelmed, panicked, or disconnected:
             </p>
-            <p className="text-red-700 text-sm">
-              This protocol will guide you through 7 steps to help you feel grounded and safe again.
+            <p className="text-sm">
+              This protocol will guide you through 7 steps to help you feel
+              grounded and safe again.
             </p>
           </div>
 
           <div className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-xl">
-            <p className="text-sm text-blue-800 dark:text-blue-200 font-medium mb-2">What this will do:</p>
-            <ul className="text-sm text-blue-700 space-y-1">
+            <p className="text-sm font-medium mb-2">What this will do:</p>
+            <ul className="text-sm space-y-1">
               <li>• Interrupt the overwhelm cycle</li>
               <li>• Reconnect you to your body and surroundings</li>
               <li>• Use proven grounding techniques</li>
@@ -287,24 +315,26 @@ export default function EmergencyGrounding() {
             >
               Start Emergency Grounding
             </Button>
-            
+
             <Button
               onClick={() => setShowCrisisResources(true)}
               variant="outline"
               size="lg"
-              className="w-full border-red-300 text-red-700 hover:bg-red-50"
+              className="w-full border-red-300 hover:bg-red-50"
             >
               Crisis Support Resources
             </Button>
           </div>
         </CardContent>
       </Card>
-    )
+    );
   }
 
-  const colors = getStepColorClasses(currentStepData.type)
-  const progress = ((currentStepData.duration - timeRemaining) / currentStepData.duration) * 100
-  const overallProgress = ((currentStep + 1) / EMERGENCY_STEPS.length) * 100
+  const colors = getStepColorClasses(currentStepData.type);
+  const progress =
+    ((currentStepData.duration - timeRemaining) / currentStepData.duration) *
+    100;
+  const overallProgress = ((currentStep + 1) / EMERGENCY_STEPS.length) * 100;
 
   return (
     <Card className="max-w-md mx-auto">
@@ -314,11 +344,11 @@ export default function EmergencyGrounding() {
           Step {currentStep + 1} of {EMERGENCY_STEPS.length}
         </CardDescription>
       </CardHeader>
-      
+
       <CardContent className="space-y-6">
         {/* Overall Progress */}
         <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
-          <div 
+          <div
             className="bg-sky-500 h-1.5 rounded-full transition-all duration-300"
             style={{ width: `${overallProgress}%` }}
           />
@@ -329,15 +359,17 @@ export default function EmergencyGrounding() {
           <h2 className={`text-2xl font-bold ${colors.text} mb-4`}>
             {currentStepData.title}
           </h2>
-          
+
           <p className={`text-lg ${colors.text} leading-relaxed mb-4`}>
             {currentStepData.instruction}
           </p>
-          
-          <div className={`bg-white rounded-xl p-3 ${colors.text} font-medium mb-4`}>
+
+          <div
+            className={`bg-white rounded-xl p-3 ${colors.text} font-medium mb-4`}
+          >
             {currentStepData.action}
           </div>
-          
+
           <div className={`text-3xl font-bold ${colors.text}`}>
             {Math.ceil(timeRemaining / 1000)}s
           </div>
@@ -345,7 +377,7 @@ export default function EmergencyGrounding() {
 
         {/* Step Progress */}
         <div className={`w-full ${colors.bg} rounded-full h-2`}>
-          <div 
+          <div
             className={`${colors.accent} h-2 rounded-full transition-all duration-100 ease-linear`}
             style={{ width: `${progress}%` }}
           />
@@ -362,12 +394,12 @@ export default function EmergencyGrounding() {
             <RotateCcw size={20} />
             <span>Stop</span>
           </Button>
-          
+
           <Button
             onClick={() => setShowCrisisResources(true)}
             variant="outline"
             size="lg"
-            className="flex items-center space-x-2 border-red-300 text-red-700 hover:bg-red-50"
+            className="flex items-center space-x-2 border-red-300 hover:bg-red-50"
           >
             <Phone size={20} />
             <span>Get Help</span>
@@ -375,5 +407,5 @@ export default function EmergencyGrounding() {
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }

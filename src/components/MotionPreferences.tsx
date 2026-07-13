@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import {
   createContext,
@@ -7,53 +7,61 @@ import {
   useEffect,
   useMemo,
   useState,
-} from 'react'
-import { MotionConfig } from 'framer-motion'
+} from "react";
+import { MotionConfig } from "framer-motion";
 
-const STORAGE_KEY = 'calmmyself:animations-enabled'
+const STORAGE_KEY = "calmmyself:animations-enabled";
 
 interface MotionPreferencesContextValue {
-  animationsEnabled: boolean
-  setAnimationsEnabled: (enabled: boolean) => void
-  toggleAnimations: () => void
-  isReady: boolean
+  animationsEnabled: boolean;
+  setAnimationsEnabled: (enabled: boolean) => void;
+  toggleAnimations: () => void;
+  isReady: boolean;
 }
 
-const MotionPreferencesContext = createContext<MotionPreferencesContextValue | null>(null)
+const MotionPreferencesContext =
+  createContext<MotionPreferencesContextValue | null>(null);
 
 function getInitialPreference() {
-  if (typeof window === 'undefined') return true
+  if (typeof window === "undefined") return true;
 
   try {
-    const saved = window.localStorage.getItem(STORAGE_KEY)
-    if (saved === 'true') return true
-    if (saved === 'false') return false
+    const saved = window.localStorage.getItem(STORAGE_KEY);
+    if (saved === "true") return true;
+    if (saved === "false") return false;
   } catch {
     // Fall back to the system preference when storage is unavailable.
   }
 
-  const reducedMotionQuery = window.matchMedia?.('(prefers-reduced-motion: reduce)')
-  return reducedMotionQuery ? !reducedMotionQuery.matches : true
+  const reducedMotionQuery = window.matchMedia?.(
+    "(prefers-reduced-motion: reduce)",
+  );
+  return reducedMotionQuery ? !reducedMotionQuery.matches : true;
 }
 
-export function MotionPreferencesProvider({ children }: { children: ReactNode }) {
-  const [animationsEnabled, setAnimationsEnabledState] = useState(getInitialPreference)
-  const [isReady, setIsReady] = useState(false)
+export function MotionPreferencesProvider({
+  children,
+}: {
+  children: ReactNode;
+}) {
+  const [animationsEnabled, setAnimationsEnabledState] =
+    useState(getInitialPreference);
+  const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    setIsReady(true)
-  }, [])
+    setIsReady(true);
+  }, []);
 
   useEffect(() => {
-    const root = document.documentElement
-    root.classList.toggle('allow-animations', animationsEnabled)
+    const root = document.documentElement;
+    root.classList.toggle("allow-animations", animationsEnabled);
 
     try {
-      window.localStorage.setItem(STORAGE_KEY, String(animationsEnabled))
+      window.localStorage.setItem(STORAGE_KEY, String(animationsEnabled));
     } catch {
       // The root class remains the source of truth for this session.
     }
-  }, [animationsEnabled])
+  }, [animationsEnabled]);
 
   const value = useMemo(
     () => ({
@@ -63,22 +71,24 @@ export function MotionPreferencesProvider({ children }: { children: ReactNode })
       isReady,
     }),
     [animationsEnabled, isReady],
-  )
+  );
 
   return (
     <MotionPreferencesContext.Provider value={value}>
-      <MotionConfig reducedMotion={animationsEnabled ? 'never' : 'always'}>
+      <MotionConfig reducedMotion={animationsEnabled ? "never" : "always"}>
         {children}
       </MotionConfig>
     </MotionPreferencesContext.Provider>
-  )
+  );
 }
 
 export function useMotionPreferences() {
-  const context = useContext(MotionPreferencesContext)
+  const context = useContext(MotionPreferencesContext);
   if (!context) {
-    throw new Error('useMotionPreferences must be used within MotionPreferencesProvider')
+    throw new Error(
+      "useMotionPreferences must be used within MotionPreferencesProvider",
+    );
   }
 
-  return context
+  return context;
 }

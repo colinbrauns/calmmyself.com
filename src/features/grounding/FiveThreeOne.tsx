@@ -1,114 +1,130 @@
-'use client'
+"use client";
 
-import { useState, useCallback } from 'react'
-import { Button } from '@/components/ui/Button'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card'
-import { ChevronRight, RotateCcw, CheckCircle, Eye, Hand, Ear, Wind, Sparkles } from 'lucide-react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { useState, useCallback } from "react";
+import { Button } from "@/components/ui/Button";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "@/components/ui/Card";
+import {
+  ChevronRight,
+  RotateCcw,
+  CheckCircle,
+  Eye,
+  Hand,
+  Ear,
+  Wind,
+  Sparkles,
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface GroundingStep {
-  sense: string
-  count: number
-  prompt: string
-  icon: any
-  color: string
+  sense: string;
+  count: number;
+  prompt: string;
+  icon: any;
+  color: string;
 }
 
 const GROUNDING_STEPS: GroundingStep[] = [
   {
-    sense: 'See',
+    sense: "See",
     count: 5,
-    prompt: '5 things you can see',
+    prompt: "5 things you can see",
     icon: Eye,
-    color: 'text-blue-500'
+    color: "",
   },
   {
-    sense: 'Touch',
-    count: 4, 
-    prompt: '4 things you can touch',
+    sense: "Touch",
+    count: 4,
+    prompt: "4 things you can touch",
     icon: Hand,
-    color: 'text-amber-600'
+    color: "",
   },
   {
-    sense: 'Hear',
+    sense: "Hear",
     count: 3,
-    prompt: '3 things you can hear',
+    prompt: "3 things you can hear",
     icon: Ear,
-    color: 'text-purple-500'
+    color: "",
   },
   {
-    sense: 'Smell',
+    sense: "Smell",
     count: 2,
-    prompt: '2 things you can smell',
+    prompt: "2 things you can smell",
     icon: Wind,
-    color: 'text-emerald-500'
+    color: "",
   },
   {
-    sense: 'Taste',
+    sense: "Taste",
     count: 1,
-    prompt: '1 thing you can taste',
+    prompt: "1 thing you can taste",
     icon: Sparkles,
-    color: 'text-rose-500'
-  }
-]
+    color: "",
+  },
+];
 
 export default function FiveThreeOne() {
-  const [currentStep, setCurrentStep] = useState(0)
-  const [completedCounts, setCompletedCounts] = useState<number[]>([0, 0, 0, 0, 0])
-  const [isComplete, setIsComplete] = useState(false)
+  const [currentStep, setCurrentStep] = useState(0);
+  const [completedCounts, setCompletedCounts] = useState<number[]>([
+    0, 0, 0, 0, 0,
+  ]);
+  const [isComplete, setIsComplete] = useState(false);
 
-  const currentStepData = GROUNDING_STEPS[currentStep]
+  const currentStepData = GROUNDING_STEPS[currentStep];
 
   const handleTap = useCallback(() => {
-    const newCounts = [...completedCounts]
+    const newCounts = [...completedCounts];
     if (newCounts[currentStep] < currentStepData.count) {
-      newCounts[currentStep] += 1
-      setCompletedCounts(newCounts)
+      newCounts[currentStep] += 1;
+      setCompletedCounts(newCounts);
     }
-  }, [completedCounts, currentStep, currentStepData.count])
+  }, [completedCounts, currentStep, currentStepData.count]);
 
   const nextStep = useCallback(() => {
     if (currentStep < GROUNDING_STEPS.length - 1) {
-      setCurrentStep(currentStep + 1)
+      setCurrentStep(currentStep + 1);
     } else {
-      setIsComplete(true)
+      setIsComplete(true);
     }
-  }, [currentStep])
+  }, [currentStep]);
 
   const reset = useCallback(() => {
-    setCurrentStep(0)
-    setCompletedCounts([0, 0, 0, 0, 0])
-    setIsComplete(false)
-  }, [])
+    setCurrentStep(0);
+    setCompletedCounts([0, 0, 0, 0, 0]);
+    setIsComplete(false);
+  }, []);
 
-  const isStepComplete = completedCounts[currentStep] >= currentStepData.count
+  const isStepComplete = completedCounts[currentStep] >= currentStepData.count;
 
   if (isComplete) {
     return (
       <Card className="max-w-md mx-auto">
         <CardContent className="text-center py-12">
-          <motion.div 
+          <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ type: "spring", stiffness: 200, damping: 15 }}
           >
-            <CheckCircle className="w-20 h-20 text-green-500 mx-auto mb-6" />
+            <CheckCircle className="w-20 h-20 mx-auto mb-6" />
           </motion.div>
-          <h2 className="text-2xl font-semibold text-green-700 mb-3">
-            Grounded & Ready
-          </h2>
-          <p className="text-gray-600 mb-8">
-            You&rsquo;ve connected with all 5 senses. Take a deep breath and notice how you feel.
+          <h2 className="text-2xl font-semibold mb-3">Grounded & Ready</h2>
+          <p className="mb-8">
+            You&rsquo;ve connected with all 5 senses. Take a deep breath and
+            notice how you feel.
           </p>
           <Button onClick={reset} variant="grounding" size="lg">
             Start Again
           </Button>
         </CardContent>
       </Card>
-    )
+    );
   }
 
-  const Icon = currentStepData.icon
+  const Icon = currentStepData.icon;
 
   return (
     <Card className="max-w-md mx-auto overflow-hidden">
@@ -118,7 +134,7 @@ export default function FiveThreeOne() {
           Tap the icons as you find things with your senses
         </CardDescription>
       </CardHeader>
-      
+
       <CardContent className="space-y-8 relative z-10">
         {/* Dynamic Progress Header */}
         <div className="text-center space-y-2 px-2">
@@ -126,11 +142,11 @@ export default function FiveThreeOne() {
             key={currentStepData.sense}
             initial={{ y: 10, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-gray-100"
+            className="text-xl sm:text-2xl font-bold"
           >
             {currentStepData.prompt}
           </motion.div>
-          <div className="text-xs sm:text-sm text-gray-500 font-medium">
+          <div className="text-xs sm:text-sm font-medium">
             {completedCounts[currentStep]} / {currentStepData.count} Found
           </div>
         </div>
@@ -139,7 +155,7 @@ export default function FiveThreeOne() {
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 justify-items-center min-h-[160px] sm:min-h-[180px] px-2">
           <AnimatePresence mode="popLayout">
             {Array.from({ length: currentStepData.count }).map((_, i) => {
-              const isFound = i < completedCounts[currentStep]
+              const isFound = i < completedCounts[currentStep];
               return (
                 <motion.button
                   key={`${currentStep}-${i}`}
@@ -149,14 +165,7 @@ export default function FiveThreeOne() {
                   transition={{ delay: i * 0.1 }}
                   onClick={() => !isFound && handleTap()}
                   disabled={isFound}
-                  className={`
-                    relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl sm:rounded-2xl flex items-center justify-center
-                    transition-all duration-300 touch-manipulation
-                    ${isFound 
-                      ? 'bg-grounding-100 shadow-inner ring-2 ring-grounding-200' 
-                      : 'bg-white dark:bg-gray-800 shadow-md active:shadow-lg border-2 border-dashed border-gray-200 dark:border-gray-700 cursor-pointer active:border-grounding-300 active:bg-gray-50 dark:active:bg-gray-700'
-                    }
-                  `}
+                  className={`relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl sm:rounded-2xl flex items-center justify-center transition-all duration-300 touch-manipulation ${isFound ? "bg-grounding-100 shadow-inner ring-2 ring-grounding-200" : "bg-white dark:bg-gray-800 shadow-md active:shadow-lg border-2 border-dashed border-gray-200 dark:border-gray-700 cursor-pointer active:border-grounding-300 active:bg-gray-50 dark:active:bg-gray-700"}`}
                 >
                   {isFound ? (
                     <motion.div
@@ -167,9 +176,9 @@ export default function FiveThreeOne() {
                       <Icon className="w-6 h-6 sm:w-8 sm:h-8" />
                     </motion.div>
                   ) : (
-                    <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-gray-300" />
+                    <Icon className="w-5 h-5 sm:w-6 sm:h-6" />
                   )}
-                  
+
                   {/* Checkmark badge */}
                   {isFound && (
                     <motion.div
@@ -181,16 +190,16 @@ export default function FiveThreeOne() {
                     </motion.div>
                   )}
                 </motion.button>
-              )
+              );
             })}
           </AnimatePresence>
         </div>
 
         {/* Context Tip */}
         {!isStepComplete && (
-           <div className="text-center text-sm text-gray-400 animate-pulse">
-              Look around you... tap a box when you find one.
-           </div>
+          <div className="text-center text-sm animate-pulse">
+            Look around you... tap a box when you find one.
+          </div>
         )}
 
         {/* Controls */}
@@ -221,11 +230,11 @@ export default function FiveThreeOne() {
                 animate={{ opacity: 1 }}
                 className="w-full"
               >
-                 <Button
+                <Button
                   onClick={reset}
                   variant="ghost"
                   size="sm"
-                  className="w-full text-gray-400 hover:text-gray-600 dark:text-gray-400"
+                  className="w-full"
                 >
                   Start Over
                 </Button>
@@ -241,5 +250,5 @@ export default function FiveThreeOne() {
         <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-blue-50 dark:bg-blue-950/30 rounded-full blur-3xl opacity-50" />
       </div>
     </Card>
-  )
+  );
 }

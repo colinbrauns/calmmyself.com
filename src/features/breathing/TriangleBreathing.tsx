@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
-import { useEffect, useRef, useState } from 'react'
-import { motion } from 'framer-motion'
-import ShareInline from '@/components/ShareInline'
-import { useBreathPattern } from '@/hooks/useBreathPattern'
+import { useEffect, useRef, useState } from "react";
+import { motion } from "framer-motion";
+import ShareInline from "@/components/ShareInline";
+import { useBreathPattern } from "@/hooks/useBreathPattern";
 import {
   EvidenceNote,
   PhaseReadout,
@@ -15,62 +15,64 @@ import {
   ToolInfo,
   ToolProgress,
   ToolStage,
-} from '@/components/CalmTool'
+} from "@/components/CalmTool";
 
-type BreathingPhase = 'inhale' | 'hold' | 'exhale'
+type BreathingPhase = "inhale" | "hold" | "exhale";
 
-const PHASE_DURATION = { inhale: 4000, hold: 4000, exhale: 6000 }
+const PHASE_DURATION = { inhale: 4000, hold: 4000, exhale: 6000 };
 const PHASE_LABELS = {
-  inhale: 'Breathe In',
-  hold: 'Hold',
-  exhale: 'Breathe Out'
-}
+  inhale: "Breathe In",
+  hold: "Hold",
+  exhale: "Breathe Out",
+};
 
-const PHASES: BreathingPhase[] = ['inhale', 'hold', 'exhale']
+const PHASES: BreathingPhase[] = ["inhale", "hold", "exhale"];
 
 const PATTERN = PHASES.map((phase) => ({
   phase,
   label: PHASE_LABELS[phase],
   durationMs: PHASE_DURATION[phase],
-}))
+}));
 
 export default function TriangleBreathing() {
   const breath = useBreathPattern<BreathingPhase>({
     pattern: PATTERN,
-  })
+  });
 
-  const currentPhase = breath.current.phase
-  const currentPhaseDuration = breath.current.durationMs
+  const currentPhase = breath.current.phase;
+  const currentPhaseDuration = breath.current.durationMs;
 
   // SVG triangle path tracing to visually match 4-4-6 timing
-  const pathRef = useRef<SVGPathElement | null>(null)
-  const [pathLen, setPathLen] = useState(300)
+  const pathRef = useRef<SVGPathElement | null>(null);
+  const [pathLen, setPathLen] = useState(300);
 
   useEffect(() => {
     if (pathRef.current) {
       try {
-        const len = pathRef.current.getTotalLength()
-        if (Number.isFinite(len) && len > 0) setPathLen(len)
+        const len = pathRef.current.getTotalLength();
+        if (Number.isFinite(len) && len > 0) setPathLen(len);
       } catch {}
     }
-  }, [])
+  }, []);
 
   const phaseStartEnd = () => {
     // Fractions of total triangle perimeter to draw
     // Each phase traces one edge: Inhale 0->1/3, Hold 1/3->2/3, Exhale 2/3->1
     switch (currentPhase) {
-      case 'inhale': return [0, 1 / 3] as const
-      case 'hold': return [1 / 3, 2 / 3] as const
-      case 'exhale': return [2 / 3, 1] as const
-      default: return [0, 0] as const
+      case "inhale":
+        return [0, 1 / 3] as const;
+      case "hold":
+        return [1 / 3, 2 / 3] as const;
+      case "exhale":
+        return [2 / 3, 1] as const;
+      default:
+        return [0, 0] as const;
     }
-  }
+  };
 
-  const [startFrac, endFrac] = phaseStartEnd()
-  const startOffset = pathLen * (1 - startFrac)
-  const endOffset = pathLen * (1 - endFrac)
-
-
+  const [startFrac, endFrac] = phaseStartEnd();
+  const startOffset = pathLen * (1 - startFrac);
+  const endOffset = pathLen * (1 - endFrac);
 
   return (
     <ToolCard>
@@ -81,9 +83,19 @@ export default function TriangleBreathing() {
       />
       <ToolBody>
         <ToolStage>
-          <div data-testid="tool-visual" className="relative" style={{ width: 200, height: 200 }}>
+          <div
+            data-testid="tool-visual"
+            className="relative"
+            style={{ width: 200, height: 200 }}
+          >
             {/* Triangle path trace only (no scaling) */}
-            <svg className="absolute" width={200} height={200} viewBox="0 0 180 180" aria-hidden="true">
+            <svg
+              className="absolute"
+              width={200}
+              height={200}
+              viewBox="0 0 180 180"
+              aria-hidden="true"
+            >
               <defs>
                 <linearGradient id="triGrad" x1="0" y1="0" x2="1" y2="1">
                   <stop offset="0%" stopColor="#fcd34d" stopOpacity="0.9" />
@@ -111,8 +123,13 @@ export default function TriangleBreathing() {
                 strokeLinejoin="round"
                 strokeDasharray={pathLen}
                 initial={{ strokeDashoffset: startOffset }}
-                animate={{ strokeDashoffset: breath.isRunning ? endOffset : startOffset }}
-                transition={{ duration: breath.isRunning ? currentPhaseDuration / 1000 : 0, ease: 'linear' }}
+                animate={{
+                  strokeDashoffset: breath.isRunning ? endOffset : startOffset,
+                }}
+                transition={{
+                  duration: breath.isRunning ? currentPhaseDuration / 1000 : 0,
+                  ease: "linear",
+                }}
               />
             </svg>
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -150,12 +167,17 @@ export default function TriangleBreathing() {
       </ToolBody>
       <ToolFooter>
         <EvidenceNote>
-          Triangle breathing emphasizes a slightly longer exhale, which can support downshifting arousal.
-          <br/>
-          Evidence: Controlled breathing with extended exhalation is commonly used to reduce physiological arousal.
+          Triangle breathing emphasizes a slightly longer exhale, which can
+          support downshifting arousal.
+          <br />
+          Evidence: Controlled breathing with extended exhalation is commonly
+          used to reduce physiological arousal.
         </EvidenceNote>
-        <ShareInline title="Triangle Breathing" text="Practice Triangle Breathing on CalmMyself" />
+        <ShareInline
+          title="Triangle Breathing"
+          text="Practice Triangle Breathing on CalmMyself"
+        />
       </ToolFooter>
     </ToolCard>
-  )
+  );
 }
