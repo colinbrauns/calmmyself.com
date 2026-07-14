@@ -46,7 +46,7 @@ export default function GratitudeList() {
             <h3 className="text-xl font-semibold mb-2">
               Gratitude fills the heart 🌻
             </h3>
-            <p className="text-sm mb-6">Today you're grateful for:</p>{" "}
+            <p className="text-sm mb-6">Today you&apos;re grateful for:</p>{" "}
           </div>{" "}
           {items.map((item, i) => (
             <motion.div

@@ -161,7 +161,7 @@ export default function ThoughtDefusion() {
                 <p className="text-lg">&ldquo;{prefixed1}&rdquo;</p>{" "}
               </div>{" "}
               <p className="text-center text-xs">
-                Notice how adding &ldquo;I notice I'm having the thought
+                Notice how adding &ldquo;I notice I&apos;m having the thought
                 that...&rdquo; creates a little distance.
               </p>
               <div className="flex justify-center">

@@ -306,8 +306,8 @@ export default function SoundFrequencies() {
         </div>
 
         <div className="text-xs bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 p-3 rounded-xl">
-          Listen at low volume. Evidence for specific "healing frequencies"
-          varies \u2014 use what feels pleasant and calming.
+          Listen at low volume. Evidence for specific &quot;healing
+          frequencies&quot; varies \u2014 use what feels pleasant and calming.
         </div>
       </CardContent>
       <div className="px-6 pb-6 pt-0">

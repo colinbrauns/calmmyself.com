@@ -19,13 +19,14 @@ import {
   Wind,
   Sparkles,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface GroundingStep {
   sense: string;
   count: number;
   prompt: string;
-  icon: any;
+  icon: LucideIcon;
   color: string;
 }
 

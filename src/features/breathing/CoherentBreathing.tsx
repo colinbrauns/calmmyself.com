@@ -82,8 +82,8 @@ export default function CoherentBreathing() {
           Coherent breathing can support autonomic balance and HRV. Breathe
           softly without strain.
           <br />
-          Evidence: Search for "HRV biofeedback coherent breathing randomized
-          controlled trial".
+          Evidence: Search for &quot;HRV biofeedback coherent breathing
+          randomized controlled trial&quot;.
         </EvidenceNote>
         <ShareInline
           title="Coherent Breathing"

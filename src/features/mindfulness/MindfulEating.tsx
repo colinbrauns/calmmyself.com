@@ -106,7 +106,7 @@ export default function MindfulEating() {
               Mindful moment complete 🍃
             </h3>{" "}
             <p>
-              You just experienced one bite with full presence. That's all
+              You just experienced one bite with full presence. That&apos;s all
               mindfulness is — full attention to this moment.
             </p>
           </div>

@@ -318,8 +318,8 @@ export default function AlternateNostril() {
           Alternate nostril breathing may help reduce perceived stress and
           improve attention in some studies.
           <br />
-          Evidence: Look up controlled trials on "alternate nostril breathing
-          attention anxiety".
+          Evidence: Look up controlled trials on &quot;alternate nostril
+          breathing attention anxiety&quot;.
         </EvidenceNote>
         <ShareInline
           title="Alternate Nostril Breathing"

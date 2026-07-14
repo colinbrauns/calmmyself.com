@@ -103,7 +103,7 @@ export default function NameFiveThings() {
               </div>
             </motion.div>
             <h3 className="text-xl font-semibold mb-2">
-              You're here. You're grounded. 🌿
+              You&apos;re here. You&apos;re grounded. 🌿
             </h3>
             <p className="text-sm mb-6">Your anchors to this moment:</p>
           </div>
