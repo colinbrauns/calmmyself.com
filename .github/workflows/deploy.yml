@@ -68,8 +68,8 @@ jobs:
           key: ${{ secrets.LINODE_SSH_PRIVATE_KEY }}
           script: |
             # Set up application directory
-            mkdir -p /home/col/srv/apps/site-calmmyself
-            cd /home/col/srv/apps/site-calmmyself
+            mkdir -p /home/col/srv/apps/calmmyself
+            cd /home/col/srv/apps/calmmyself
 
             # Clone or pull latest code
             if [ -d ".git" ]; then
