@@ -25,8 +25,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
-          cache: 'npm'
+          node-version: "18"
+          cache: "npm"
 
       - name: Install dependencies
         run: npm ci
@@ -51,33 +51,42 @@ jobs:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/master'
     steps:
+      - name: Validate Linode SSH credentials
+        env:
+          LINODE_SSH_PRIVATE_KEY: ${{ secrets.LINODE_SSH_PRIVATE_KEY }}
+        run: |
+          if [ -z "$LINODE_SSH_PRIVATE_KEY" ]; then
+            echo "::error::LINODE_SSH_PRIVATE_KEY is not configured"
+            exit 1
+          fi
+
       - name: Deploy to Linode via Docker
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: 96.126.98.14
           username: col
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          key: ${{ secrets.LINODE_SSH_PRIVATE_KEY }}
           script: |
             # Set up application directory
             mkdir -p /home/col/srv/apps/site-calmmyself
             cd /home/col/srv/apps/site-calmmyself
-            
+
             # Clone or pull latest code
             if [ -d ".git" ]; then
               git pull origin master
             else
               git clone https://github.com/colinbrauns/calmmyself.com.git .
             fi
-            
+
             # Stop existing containers
             docker-compose -f docker-compose.prod.yml down 2>/dev/null || true
-            
+
             # Build and start new containers
             docker-compose -f docker-compose.prod.yml up -d --build
-            
+
             # Clean up old Docker images
             docker image prune -f
-            
+
             # Wait for health check
             echo "⏳ Waiting for application to be healthy..."
             timeout 120 bash -c 'until docker-compose -f docker-compose.prod.yml ps | grep "healthy"; do sleep 5; done' || {
@@ -85,7 +94,7 @@ jobs:
               docker-compose -f docker-compose.prod.yml logs
               exit 1
             }
-            
+
             echo "✅ Docker deployment completed successfully!"
             echo "🐳 Container status:"
             docker-compose -f docker-compose.prod.yml ps
